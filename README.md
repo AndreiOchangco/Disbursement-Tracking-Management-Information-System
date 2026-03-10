@@ -205,7 +205,10 @@ Potential enhancements for the system include:
 
 # License
 
-Copyright 2026-present | Andrei Luise Ochangco
+Copyright 2026-present | Kathleen Anne De Guzman, 
+Jhuneille Mark Milan, Jem Vladimir Negranza, 
+Andrei Luise Ochangco, John Michael Rivera, 
+Louis Ricardo Servito
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
