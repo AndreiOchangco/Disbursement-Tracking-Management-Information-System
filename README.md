@@ -200,9 +200,3 @@ Potential enhancements for the system include:
 - Advanced analytics dashboards
 - Cloud-based deployment
 - Multi-department reporting tools
-
----
-
-# License
-
-This project was developed for **academic and research purposes** as part of a capstone requirement.
