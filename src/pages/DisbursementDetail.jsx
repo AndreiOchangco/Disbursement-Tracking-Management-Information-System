@@ -22,8 +22,8 @@ export default function DisbursementDetail() {
   if (!disbursement) {
     return (
       <div>
-        <h2>Disbursement not found</h2>
-        <p>The requested disbursement does not exist.</p>
+        <h2>Disbursement Voucher Entry Request not found</h2>
+        <p>The requested disbursement voucher entry does not exist.</p>
         <button onClick={() => navigate('/disbursements')} className="btn-primary">
           Back to list
         </button>
@@ -34,19 +34,19 @@ export default function DisbursementDetail() {
   return (
     <div>
       <div className="page-header">
-        <h2>Disbursement Request #{disbursement.id}</h2>
-        <p>Details for {disbursement.project}</p>
+        <h2>Disbursement Voucher Entry Request #{disbursement.id}</h2>
+        <p>Details for {disbursement.trackingno}</p>
       </div>
       <section className="panel">
         <div>
-          <p><strong>Project:</strong> {disbursement.project}</p>
-          <p><strong>Amount:</strong> ${disbursement.amount.toLocaleString()}</p>
+          <p><strong>Tracking Number:</strong> {disbursement.trackingno}</p>
+          <p><strong>DV Number:</strong> {disbursement.dvno.toLocaleString()}</p>
           <p><strong>Status:</strong> {disbursement.status}</p>
           <p><strong>Request Date:</strong> {disbursement.date}</p>
           <p><strong>Officer:</strong> {disbursement.officer}</p>
         </div>
       </section>
-      <Link to="/disbursements" className="btn-primary">Back to Disbursements</Link>
+      <Link to="/disbursements" className="btn-primary">Back to Voucher Entry List</Link>
     </div>
   )
 }

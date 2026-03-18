@@ -3,57 +3,31 @@ import { Link } from 'react-router-dom'
 
 const STORAGE_KEY = 'dtmis.disbursements'
 
-const initialDisbursements = [
-  {
-    id: 1,
-    project: 'Road Repair Program',
-    amount: 125000,
-    status: 'Approved',
-    date: '2026-03-05',
-    officer: 'J. Rivera',
-  },
-  {
-    id: 2,
-    project: 'School Construction',
-    amount: 85000,
-    status: 'Pending',
-    date: '2026-03-10',
-    officer: 'M. Santos',
-  },
-  {
-    id: 3,
-    project: 'Health Clinic Supplies',
-    amount: 42000,
-    status: 'Released',
-    date: '2026-03-12',
-    officer: 'A. Cruz',
-  },
-]
-
 const statusOptions = ['Pending', 'Approved', 'Released', 'Rejected']
-const statusLifeCycle = {
-  Pending: 'Approved',
-  Approved: 'Released',
-  Released: 'Released',
-  Rejected: 'Rejected',
-}
+const statusCycle = ['Pending', 'Approved', 'Released', 'Locked']
+
 
 function readSaved() {
-  if (typeof window === 'undefined') return initialDisbursements
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return initialDisbursements
-    return JSON.parse(raw)
+    if (!raw) return []
+    const data = JSON.parse(raw)
+    // Normalize older entries that used `project` instead of `trackingno`
+    return data.map((item) => {
+      if (item.trackingno !== undefined) return item
+      if (item.project !== undefined) return { ...item, trackingno: item.project }
+      return item
+    })
   } catch {
-    return initialDisbursements
+    return []
   }
 }
 
 export default function Disbursements() {
   const [disbursements, setDisbursements] = useState(() => readSaved())
   const [search, setSearch] = useState('')
-  const [project, setProject] = useState('')
-  const [amount, setAmount] = useState('')
+  const [trackingno, setTrackingNo] = useState('')
+  const [dvno, setDVno] = useState('')
   const [status, setStatus] = useState('Pending')
   const [officer, setOfficer] = useState('')
 
@@ -65,8 +39,9 @@ export default function Disbursements() {
     const query = search.trim().toLowerCase()
     if (!query) return disbursements
     return disbursements.filter((d) => {
+      const tn = d.trackingno ?? d.project
       return (
-        d.project.toLowerCase().includes(query) ||
+        String(tn).toLowerCase().includes(query) ||
         d.status.toLowerCase().includes(query) ||
         d.officer.toLowerCase().includes(query)
       )
@@ -75,22 +50,22 @@ export default function Disbursements() {
 
   const addDisbursement = (e) => {
     e.preventDefault()
-    if (!project || !amount || !officer) return
+    if (!trackingno || !dvno || !officer) return
 
     setDisbursements((prev) => [
       ...prev,
       {
         id: prev.length ? Math.max(...prev.map((d) => d.id)) + 1 : 1,
-        project,
-        amount: Number(amount),
+        trackingno: Number(trackingno),
+        dvno: Number(dvno),
         status,
         date: new Date().toISOString().slice(0, 10),
         officer,
       },
     ])
 
-    setProject('')
-    setAmount('')
+    setTrackingNo('')
+    setDVno('')
     setStatus('Pending')
     setOfficer('')
   }
@@ -99,7 +74,9 @@ export default function Disbursements() {
     setDisbursements((prev) =>
       prev.map((item) => {
         if (item.id !== id) return item
-        const nextStatus = statusLifeCycle[item.status] ?? 'Pending'
+        // Cycle through the normal lifecycle (Pending -> Approved -> Released -> Locked -> Pending ...)
+        const idx = statusCycle.indexOf(item.status)
+        const nextStatus = idx === -1 ? 'Pending' : statusCycle[(idx + 1) % statusCycle.length]
         return { ...item, status: nextStatus }
       }),
     )
@@ -111,30 +88,31 @@ export default function Disbursements() {
         <div>
           <h2>Disbursement Tracking</h2>
           <p>
-            Track requests, approvals, and release statuses in your financial MIS.
+            Track requests, approvals, and release statuses in Disbursement MIS.
           </p>
         </div>
       </div>
 
       <section className="panel">
-        <h3>New Disbursement Request</h3>
+        <h3>New Disbursement Voucher Entry</h3>
         <form className="form-grid" onSubmit={addDisbursement}>
           <label>
-            Project
+            Tracking Number
             <input
-              value={project}
-              onChange={(e) => setProject(e.target.value)}
-              placeholder="Project name"
+              type="number"
+              value={trackingno}
+              onChange={(e) => setTrackingNo(e.target.value)}
+              placeholder="Tracking number"
             />
           </label>
           <label>
-            Amount
+            DV Number
             <input
               type="number"
               min="0"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Amount"
+              value={dvno}
+              onChange={(e) => setDVno(e.target.value)}
+              placeholder="DV Number"
             />
           </label>
           <label>
@@ -142,7 +120,7 @@ export default function Disbursements() {
             <input
               value={officer}
               onChange={(e) => setOfficer(e.target.value)}
-              placeholder="Fiscal officer"
+              placeholder="Budget Officer"
             />
           </label>
           <label>
@@ -156,7 +134,7 @@ export default function Disbursements() {
             </select>
           </label>
           <button type="submit" className="btn-primary">
-            Add Request
+            Add Voucher Entry
           </button>
         </form>
       </section>
@@ -164,13 +142,13 @@ export default function Disbursements() {
       <section className="panel">
         <div className="table-toolbar">
           <div>
-            <h3>Open Disbursement Requests</h3>
+            <h3>Open Disbursement Voucher Entry Requests</h3>
             <p>{filtered.length} records</p>
           </div>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by project, status, or officer"
+            placeholder="Search by tracking number, status, or officer"
             className="search"
           />
         </div>
@@ -180,8 +158,8 @@ export default function Disbursements() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Project</th>
-                <th>Amount</th>
+                <th>Tracking Number</th>
+                <th>DV Number</th>
                 <th>Status</th>
                 <th>Request Date</th>
                 <th>Officer</th>
@@ -196,18 +174,33 @@ export default function Disbursements() {
                       #{d.id}
                     </Link>
                   </td>
-                  <td>{d.project}</td>
-                  <td>${d.amount.toLocaleString()}</td>
-                  <td>{d.status}</td>
+                  <td>{d.trackingno ?? d.project}</td>
+                  <td>
+                    {d.dvno !== undefined && d.dvno !== null && d.dvno !== ''
+                      ? Number(d.dvno).toLocaleString()
+                      : ''}
+                  </td>
+                  <td>
+                    <span
+                      className={
+                        'status-badge status-' +
+                        String(d.status || '')
+                          .toLowerCase()
+                          .replace(/\s+/g, '-')
+                      }
+                    >
+                      {d.status}
+                    </span>
+                  </td>
                   <td>{d.date}</td>
                   <td>{d.officer}</td>
                   <td>
-                    <button
-                      className="btn-primary" 
-                      onClick={() => updateStatus(d.id)}
-                      disabled={d.status === 'Released' || d.status === 'Rejected'}
-                    >
-                      {d.status === 'Pending' ? 'Approve' : d.status === 'Approved' ? 'Release' : 'Locked'}
+                    <button className="btn-primary" onClick={() => updateStatus(d.id)}>
+                      {d.status === 'Pending' && 'Approve'}
+                      {d.status === 'Approved' && 'Release'}
+                      {d.status === 'Released' && 'Lock'}
+                      {d.status === 'Locked' && 'Reopen'}
+                      {d.status === 'Rejected' && 'Rejected'}
                     </button>
                   </td>
                 </tr>

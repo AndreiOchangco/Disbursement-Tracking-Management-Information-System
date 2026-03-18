@@ -1,64 +1,85 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setCurrentUser } from '../auth'
-
-const roles = [
-  'System Administrator',
-  'Accountant',
-  'Budget Officer',
-  'Treasurer',
-  'Technical Officer',
-  'Secretary',
-]
+import { useEffect } from 'react'
 
 export default function Login() {
   const [username, setUsername] = useState('')
-  const [role, setRole] = useState(roles[0])
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault()
-    if (!username.trim()) {
-      setError('Please enter your name')
+    setError('')
+    if (!username.trim() || !password) {
+      setError('Please enter username and password')
       return
     }
-    setCurrentUser({ name: username.trim(), role })
-    navigate('/dashboard')
+
+    try {
+      const res = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setError(json.error || 'Login failed')
+        return
+      }
+      const user = json.user
+      setCurrentUser({ name: user.username, role: user.role })
+      navigate('/dashboard')
+    } catch (err) {
+      setError('Network error')
+    }
   }
 
+  useEffect(() => {
+    // clear password on mount for safety
+    setPassword('')
+  }, [])
+
   return (
-    <div>
-      <div className="page-header">
+    <div className="auth-wrapper">
+      <div className="auth-inner">
+        <div className="page-header">
         <h2>Login to DTMIS</h2>
         <p>Select your role and continue to your dashboard.</p>
       </div>
-      <section className="panel">
+        <section className="panel auth-panel">
         <form className="form-grid" onSubmit={onSubmit}>
           <label>
-            Name
+            Username
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your name"
+              placeholder="Enter your username"
             />
           </label>
           <label>
-            Role
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
-              {roles.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+            />
           </label>
+          {/* role is determined by registration/back-end; login only needs username/password */}
           <button type="submit" className="btn-primary">
-            Continue to Dashboard
+            Login
           </button>
         </form>
+        <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
+          <a href="/register">Create an account</a>
+        </div>
         {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
-      </section>
+        </section>
+      </div>
     </div>
   )
 }

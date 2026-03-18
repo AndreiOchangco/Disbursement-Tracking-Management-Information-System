@@ -66,7 +66,7 @@ export default function Dashboard() {
       <div className="page-header">
         <h2>{user.role} Dashboard</h2>
         <p>
-          Welcome <strong>{user.name}</strong>. This dashboard shows quick tasks
+          Welcome <strong>{user.name} ({user.role})</strong>. This dashboard shows quick tasks
           for your role.
         </p>
       </div>

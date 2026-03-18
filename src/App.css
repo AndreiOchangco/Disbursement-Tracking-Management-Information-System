@@ -3,6 +3,12 @@
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
+:root {
+  --sidebar-width: 240px;
+  --footer-height: 56px;
+  --mobile-header-height: 64px;
+}
+
 #root {
   min-height: 100vh;
   margin: 0;
@@ -10,12 +16,77 @@
 }
 
 .app-shell {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 1rem 1.25rem 2rem;
-  border-radius: 10px;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
   background: #f8fbff;
-  box-shadow: 0 8px 30px rgba(11, 30, 59, 0.08);
+  box-shadow: none;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+}
+
+.app-sidebar {
+  width: var(--sidebar-width);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: var(--footer-height);
+  padding: 1.25rem 1rem;
+  border-right: 1px solid #dde6f3;
+  background: #f8fbff;
+  box-sizing: border-box;
+  overflow: auto;
+  z-index: 20;
+}
+
+.sidebar-brand h1 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+}
+
+.sidebar-brand p {
+  margin: 0 0 1rem 0;
+  color: #46516f;
+  font-size: 0.85rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-nav a {
+  text-decoration: none;
+  color: #1f3f8e;
+  font-weight: 600;
+  background: #eef4ff;
+  border: 1px solid #c4d5ff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  font-size: 0.85rem;
+  color: #5d6376;
+  padding-top: 1rem;
+  border-top: 1px solid #dde6f3;
+}
+
+.app-content {
+  flex: 1 1 auto;
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+  padding: 1rem 1.5rem calc(1rem + var(--footer-height));
+  box-sizing: border-box;
+  color: #142f5b;
+  height: calc(100vh - var(--footer-height));
+  overflow: auto;
 }
 
 .app-header {
@@ -67,11 +138,21 @@
 }
 
 .app-footer {
-  margin-top: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 1.5rem;
+  margin: 0;
+  height: var(--footer-height);
+  line-height: var(--footer-height);
   font-size: 0.85rem;
   color: #5d6376;
   border-top: 1px solid #dde6f3;
-  padding-top: 0.5rem;
+  background: transparent;
+  text-align: center;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 30;
 }
 
 .page-header {
@@ -193,19 +274,92 @@ th {
   font-style: italic;
 }
 
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: capitalize;
+}
+.status-pending { background: #f59e0b; } /* amber */
+.status-approved { background: #2563eb; } /* blue */
+.status-released { background: #16a34a; } /* green */
+.status-locked { background: #dc2626; } /* red */
+.status-rejected { background: #6b7280; } /* gray */
+
 @media (max-width: 800px) {
   .form-grid {
     grid-template-columns: 1fr;
   }
 
-  .app-header {
-    flex-wrap: wrap;
+  .app-shell {
+    flex-direction: column;
   }
 
-  .app-header nav {
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--mobile-header-height);
+    border-right: none;
+    border-bottom: 1px solid #dde6f3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    z-index: 40;
   }
+
+  .sidebar-nav {
+    flex-direction: row;
+    gap: 0.5rem;
+    overflow-x: auto;
+  }
+
+  .app-content {
+    margin-left: 0;
+    padding-top: calc(var(--mobile-header-height) + 1rem);
+    height: calc(100vh - var(--footer-height));
+  }
+}
+
+/* Login / Auth page styles (centred card) */
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+}
+.auth-inner {
+  width: 100%;
+  max-width: 480px;
+}
+.auth-panel {
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 30px rgba(11,30,59,0.08);
+  background: #fff;
+}
+
+.auth-wrapper .page-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* auth form tweaks */
+.auth-panel .form-grid {
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+.auth-panel .form-grid label input,
+.auth-panel .form-grid label select {
+  width: 100%;
 }
 
