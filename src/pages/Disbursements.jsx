@@ -157,7 +157,6 @@ export default function Disbursements() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Tracking Number</th>
                 <th>DV Number</th>
                 <th>Status</th>
@@ -169,11 +168,6 @@ export default function Disbursements() {
             <tbody>
               {filtered.map((d) => (
                 <tr key={d.id}>
-                  <td>
-                    <Link to={`/disbursements/${d.id}`} className="small-link">
-                      #{d.id}
-                    </Link>
-                  </td>
                   <td>{d.trackingno ?? d.project}</td>
                   <td>
                     {d.dvno !== undefined && d.dvno !== null && d.dvno !== ''
