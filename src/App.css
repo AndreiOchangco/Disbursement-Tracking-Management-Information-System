@@ -203,6 +203,28 @@
   width: fit-content;
 }
 
+.btn-danger {
+  border: none;
+  background: #e11d48; /* red */
+  color: #fff;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0.45rem 0.75rem;
+}
+.btn-danger:hover { background: #be1238; }
+
+.btn-archive {
+  border: none;
+  background: #7c3aed; /* purple */
+  color: #fff;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0.45rem 0.75rem;
+}
+.btn-archive:hover { background: #5b21b6; }
+
 .table-toolbar {
   display: flex;
   justify-content: space-between;

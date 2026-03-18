@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCurrentUser } from '../auth'
@@ -8,24 +9,10 @@ const statusOptions = ['Pending', 'Approved', 'Released', 'Rejected']
 const statusCycle = ['Pending', 'Approved', 'Released', 'Locked']
 
 
-function readSaved() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const data = JSON.parse(raw)
-    // Normalize older entries that used `project` instead of `trackingno`
-    return data.map((item) => {
-      if (item.trackingno !== undefined) return item
-      if (item.project !== undefined) return { ...item, trackingno: item.project }
-      return item
-    })
-  } catch {
-    return []
-  }
-}
+// Data is now persisted on the backend; frontend will fetch from API.
 
 export default function Disbursements() {
-  const [disbursements, setDisbursements] = useState(() => readSaved())
+  const [disbursements, setDisbursements] = useState([])
   const [search, setSearch] = useState('')
   const [trackingno, setTrackingNo] = useState('')
   const [dvno, setDVno] = useState('')
@@ -35,9 +22,38 @@ export default function Disbursements() {
     return (u && u.role) || ''
   })
 
+  // Load disbursements from backend on mount
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(disbursements))
-  }, [disbursements])
+    let mounted = true
+    async function load() {
+      try {
+        const res = await fetch('http://localhost:5000/api/disbursements')
+        const json = await res.json()
+        if (mounted && json && json.success) {
+          // normalize older entries (project -> trackingno)
+          const data = (json.disbursements || []).map((item) => {
+            if (item.trackingno !== undefined) return item
+            if (item.project !== undefined) return { ...item, trackingno: item.project }
+            return item
+          })
+          setDisbursements(data)
+        }
+      } catch (e) {
+        console.error('Failed to load disbursements', e)
+      }
+    }
+    // expose loader to other handlers by attaching to component scope
+    // call once on mount
+    load()
+    // store loader reference
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    ;(function attach() {
+      // noop; loader is closed over
+    })()
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -52,26 +68,37 @@ export default function Disbursements() {
     })
   }, [search, disbursements])
 
-  const addDisbursement = (e) => {
+  const addDisbursement = async (e) => {
     e.preventDefault()
     if (!trackingno || !dvno || !officer) return
 
-    setDisbursements((prev) => [
-      ...prev,
-      {
-        id: prev.length ? Math.max(...prev.map((d) => d.id)) + 1 : 1,
-        trackingno: Number(trackingno),
-        dvno: Number(dvno),
-        status,
-        date: new Date().toISOString().slice(0, 10),
-        officer,
-      },
-    ])
+    const payload = {
+      trackingno: trackingno,
+      dvno: Number(dvno),
+      status,
+      date: new Date().toISOString().slice(0, 10),
+      officer,
+    }
 
-    setTrackingNo('')
-    setDVno('')
-    setStatus('Pending')
-    setOfficer('')
+    try {
+      const res = await fetch('http://localhost:5000/api/disbursements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const json = await res.json()
+      if (res.ok && json.success) {
+        setDisbursements((prev) => [json.disbursement, ...prev])
+        setTrackingNo('')
+        setDVno('')
+        setStatus('Pending')
+        setOfficer('')
+      } else {
+        console.error('Failed to add disbursement', json)
+      }
+    } catch (err) {
+      console.error('Error adding disbursement', err)
+    }
   }
 
   const updateStatus = (id) => {
@@ -148,6 +175,11 @@ export default function Disbursements() {
             <h3>Open Disbursement Voucher Entry Requests</h3>
             <p>{filtered.length} records</p>
           </div>
+          <div>
+            <Link to="/disbursements/archived" className="btn-secondary">
+              Archived Voucher Entry
+            </Link>
+          </div>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -198,6 +230,64 @@ export default function Disbursements() {
                       {d.status === 'Released' && 'Lock'}
                       {d.status === 'Locked' && 'Reopen'}
                       {d.status === 'Rejected' && 'Rejected'}
+                    </button>
+                    <button
+                      className="btn-danger"
+                      style={{ marginLeft: 8 }}
+                      onClick={async () => {
+                        if (!confirm('Delete this disbursement?')) return
+                        try {
+                          const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}`, { method: 'DELETE' })
+                          const json = await res.json()
+                          if (res.ok && json.success) {
+                            // reload from backend to ensure DB/UI sync
+                            try {
+                              console.log('Deleted', d.id)
+                              const r = await fetch('http://localhost:5000/api/disbursements')
+                              const j = await r.json()
+                              if (j && j.success) setDisbursements(j.disbursements || [])
+                              alert('Disbursement deleted')
+                            } catch (e) {
+                              // fallback to local filter
+                              setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
+                              alert('Deleted locally (could not reload)')
+                            }
+                            } else {
+                              console.error('Delete failed', json)
+                            }
+                            } catch (e) {
+                              console.error('Delete error', e)
+                            }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    <button
+                      className="btn-archive"
+                      style={{ marginLeft: 8 }}
+                      onClick={async () => {
+                        if (!confirm('Archive this disbursement?')) return
+                        try {
+                          const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}/archive`, { method: 'POST' })
+                          const json = await res.json()
+                          if (res.ok && json.success) {
+                            // reload list from backend
+                            try {
+                              const r = await fetch('http://localhost:5000/api/disbursements')
+                              const j = await r.json()
+                              if (j && j.success) setDisbursements(j.disbursements || [])
+                            } catch (e) {
+                              setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
+                            }
+                          } else {
+                            console.error('Archive failed', json)
+                          }
+                        } catch (e) {
+                          console.error('Archive error', e)
+                        }
+                      }}
+                    >
+                      Archive
                     </button>
                   </td>
                 </tr>

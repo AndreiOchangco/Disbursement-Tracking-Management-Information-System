@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import os
 import json
+from datetime import datetime
 
 USERS_JSON = os.path.join(os.path.dirname(__file__), 'users.json')
 
@@ -75,6 +76,31 @@ class Disbursement(db.Model):
         }
 
 
+class ArchivedDisbursement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    orig_id = db.Column(db.Integer, nullable=True)
+    trackingno = db.Column(db.String(100), nullable=True)
+    dvno = db.Column(db.Integer, nullable=True)
+    project = db.Column(db.String(255), nullable=True)
+    status = db.Column(db.String(50), nullable=True)
+    date = db.Column(db.String(50), nullable=True)
+    officer = db.Column(db.String(150), nullable=True)
+    archived_at = db.Column(db.String(50), nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'orig_id': self.orig_id,
+            'trackingno': self.trackingno,
+            'dvno': self.dvno,
+            'project': self.project,
+            'status': self.status,
+            'date': self.date,
+            'officer': self.officer,
+            'archived_at': self.archived_at,
+        }
+
+
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json(force=True, silent=True) or {}
@@ -118,6 +144,85 @@ def login():
 def list_users():
     users = User.query.order_by(User.created_at.desc()).all()
     return jsonify({'success': True, 'users': [u.to_dict() for u in users]})
+
+
+@app.route('/api/disbursements', methods=['GET'])
+def list_disbursements():
+    ds = Disbursement.query.order_by(Disbursement.id.desc()).all()
+    return jsonify({'success': True, 'disbursements': [d.to_dict() for d in ds]})
+
+
+@app.route('/api/disbursements', methods=['POST'])
+def create_disbursement():
+    data = request.get_json(force=True, silent=True) or {}
+    trackingno = data.get('trackingno') or data.get('project')
+    dvno = data.get('dvno')
+    status = data.get('status') or 'Pending'
+    date = data.get('date') or datetime.utcnow().strftime('%Y-%m-%d')
+    officer = data.get('officer') or ''
+
+    # Basic validation
+    if not trackingno:
+        return jsonify({'success': False, 'error': 'trackingno is required'}), 400
+
+    try:
+        dv_int = int(dvno) if dvno is not None and dvno != '' else None
+    except Exception:
+        return jsonify({'success': False, 'error': 'dvno must be a number'}), 400
+
+    d = Disbursement(trackingno=str(trackingno), dvno=dv_int, project=None, status=status, date=date, officer=officer)
+    db.session.add(d)
+    db.session.commit()
+
+    return jsonify({'success': True, 'disbursement': d.to_dict()}), 201
+
+
+@app.route('/api/disbursements/<int:did>', methods=['DELETE'])
+def delete_disbursement(did):
+    d = Disbursement.query.get(did)
+    if not d:
+        return jsonify({'success': False, 'error': 'Not found'}), 404
+    db.session.delete(d)
+    db.session.commit()
+    return jsonify({'success': True}), 200
+
+
+@app.route('/api/disbursements/<int:did>/archive', methods=['POST'])
+def archive_disbursement(did):
+    d = Disbursement.query.get(did)
+    if not d:
+        return jsonify({'success': False, 'error': 'Not found'}), 404
+
+    archived = ArchivedDisbursement(
+        orig_id=d.id,
+        trackingno=d.trackingno,
+        dvno=d.dvno,
+        project=d.project,
+        status=d.status,
+        date=d.date,
+        officer=d.officer,
+        archived_at=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+    )
+    db.session.add(archived)
+    db.session.delete(d)
+    db.session.commit()
+    return jsonify({'success': True, 'archived': archived.to_dict()}), 200
+
+
+@app.route('/api/disbursements/archived', methods=['GET'])
+def list_archived_disbursements():
+    ds = ArchivedDisbursement.query.order_by(ArchivedDisbursement.id.desc()).all()
+    return jsonify({'success': True, 'disbursements': [d.to_dict() for d in ds]})
+
+
+@app.route('/api/disbursements/archived/<int:aid>', methods=['DELETE'])
+def delete_archived_disbursement(aid):
+    a = ArchivedDisbursement.query.get(aid)
+    if not a:
+        return jsonify({'success': False, 'error': 'Not found'}), 404
+    db.session.delete(a)
+    db.session.commit()
+    return jsonify({'success': True}), 200
 
 
 if __name__ == '__main__':

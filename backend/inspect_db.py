@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DB = 'dtmis.db'
+DB = './instance/dtmis.db'
 path = os.path.join(os.path.dirname(__file__), DB)
 if not os.path.exists(path):
     print('DB not found:', path)

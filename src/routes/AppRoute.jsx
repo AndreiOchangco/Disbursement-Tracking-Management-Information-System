@@ -2,6 +2,7 @@
 import { createBrowserRouter, Link, Outlet } from 'react-router-dom'
 import Disbursements from '../pages/Disbursements'
 import DisbursementDetail from '../pages/DisbursementDetail'
+import ArchivedDisbursements from '../pages/ArchivedDisbursements'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
 import Dashboard from '../pages/Dashboard'
@@ -43,6 +44,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, path: 'dashboard', element: <Dashboard /> },
       { path: 'disbursements', element: <Disbursements /> },
+      { path: 'disbursements/archived', element: <ArchivedDisbursements /> },
       { path: 'disbursements/:id', element: <DisbursementDetail /> },
       { path: '*', element: <NotFound /> },
     ],
