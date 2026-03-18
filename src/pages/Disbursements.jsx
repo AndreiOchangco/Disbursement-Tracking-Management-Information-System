@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { getCurrentUser } from '../auth'
 
 const STORAGE_KEY = 'dtmis.disbursements'
 
@@ -29,7 +30,10 @@ export default function Disbursements() {
   const [trackingno, setTrackingNo] = useState('')
   const [dvno, setDVno] = useState('')
   const [status, setStatus] = useState('Pending')
-  const [officer, setOfficer] = useState('')
+  const [officer, setOfficer] = useState(() => {
+    const u = getCurrentUser()
+    return (u && u.role) || ''
+  })
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(disbursements))
@@ -109,18 +113,17 @@ export default function Disbursements() {
             DV Number
             <input
               type="number"
-              min="0"
               value={dvno}
               onChange={(e) => setDVno(e.target.value)}
               placeholder="DV Number"
             />
           </label>
           <label>
-            Officer
+            Role
             <input
               value={officer}
               onChange={(e) => setOfficer(e.target.value)}
-              placeholder="Budget Officer"
+              placeholder="Role"
             />
           </label>
           <label>
@@ -161,7 +164,7 @@ export default function Disbursements() {
                 <th>DV Number</th>
                 <th>Status</th>
                 <th>Request Date</th>
-                <th>Officer</th>
+                <th>Role</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -171,7 +174,7 @@ export default function Disbursements() {
                   <td>{d.trackingno ?? d.project}</td>
                   <td>
                     {d.dvno !== undefined && d.dvno !== null && d.dvno !== ''
-                      ? Number(d.dvno).toLocaleString()
+                      ? Number(d.dvno).toString()
                       : ''}
                   </td>
                   <td>

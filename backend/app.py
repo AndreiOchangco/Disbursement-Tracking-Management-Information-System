@@ -54,6 +54,27 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+class Disbursement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    trackingno = db.Column(db.String(100), nullable=True)
+    dvno = db.Column(db.Integer, nullable=True)
+    project = db.Column(db.String(255), nullable=True)
+    status = db.Column(db.String(50), nullable=False, default='Pending')
+    date = db.Column(db.String(50), nullable=True)
+    officer = db.Column(db.String(150), nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'trackingno': self.trackingno,
+            'dvno': self.dvno,
+            'project': self.project,
+            'status': self.status,
+            'date': self.date,
+            'officer': self.officer,
+        }
+
+
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json(force=True, silent=True) or {}

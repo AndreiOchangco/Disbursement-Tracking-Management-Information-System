@@ -20,3 +20,22 @@ class User(models.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+class Disbursement(models.Model):
+    trackingno = models.CharField(max_length=100, unique=True)
+    dvno = models.IntegerField(null=True, blank=True)
+    project = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length=50)
+    date = models.DateTimeField()
+    officer = models.CharField(max_length=150)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'trackingno': self.trackingno,
+            'dvno': self.dvno,
+            'project': self.project,
+            'status': self.status,
+            'date': self.date.isoformat() if self.date else None,
+            'officer': self.officer,
+        }
