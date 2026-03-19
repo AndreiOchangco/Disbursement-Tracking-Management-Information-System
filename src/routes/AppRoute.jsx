@@ -14,7 +14,7 @@ function AppLayout() {
       <div className="app-shell">
         <aside className="app-sidebar">
         <div className="sidebar-brand">
-          <h1>DTMIS</h1>
+          <img src="/logo.png" alt="DTMIS Logo" />
           <p>Disbursement Tracking Management Information System</p>
         </div>
         <nav className="sidebar-nav">
