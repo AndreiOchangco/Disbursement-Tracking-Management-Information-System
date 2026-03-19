@@ -140,7 +140,7 @@
 .app-footer {
   width: 100%;
   box-sizing: border-box;
-  padding: 0 1.5rem;
+  padding: 0 1.3rem;
   margin: 0;
   height: var(--footer-height);
   line-height: var(--footer-height);
