@@ -14,24 +14,40 @@ export default function Login() {
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
     if (!username.trim() || !password) {
       setError('Please enter username and password')
       return
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/login', {
+      const res = await fetch('http://localhost:8000/api/login/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), password }),
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+        }),
       })
-      const json = await res.json()
+
+      const data = await res.json()
+
       if (!res.ok) {
-        setError(json.error || 'Login failed')
+        setError(data.detail || 'Login failed')
         return
       }
-      const user = json.user
-      setCurrentUser({ name: user.username, role: user.role })
+
+      // 🔑 Django JWT response
+      // { access: "...", refresh: "..." }
+
+      localStorage.setItem('token', data.access)
+
+      // optional: store basic user info (not from backend yet)
+      setCurrentUser({
+        name: username,
+        role: 'user', // placeholder unless you implement roles in backend
+      })
+
       navigate('/dashboard')
     } catch (err) {
       setError('Network error')
