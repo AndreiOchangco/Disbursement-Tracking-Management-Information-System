@@ -1,28 +1,23 @@
-const API_BASE = "http://localhost:8000/api";
+const BASE_URL = 'http://localhost:8000/api'
 
-export async function apiRequest(endpoint, method = "GET", body = null) {
-  const token = localStorage.getItem("token");
+export async function apiRequest(endpoint, method = 'GET', body = null) {
+  const token = localStorage.getItem('token')
 
-  const headers = {
-    "Content-Type": "application/json",
-  };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(`${API_BASE}${endpoint}`, {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
     method,
-    headers,
-    body: body ? JSON.stringify(body) : null,
-  });
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Token ${token}` }), // ✅ FIX HERE
+    },
+    ...(body && { body: JSON.stringify(body) }),
+  })
 
-  if (res.status === 401) {
-    // Token invalid → force logout
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-    return;
+  const data = await res.json().catch(() => null)
+
+  if (!res.ok) {
+    console.error("API ERROR:", data)
+    throw new Error(data?.detail || JSON.stringify(data) || 'API error')
   }
 
-  return res.json();
+  return data
 }

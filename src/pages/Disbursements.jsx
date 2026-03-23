@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom'
 import { getCurrentUser } from '../auth'
 import { apiRequest } from '../api'
 
-const statusOptions = ['Pending', 'Approved', 'Released', 'Locked']
+const user = JSON.parse(localStorage.getItem("user"))
+const statusOptions = ['Pending', 'Approved', 'Rejected']
 
 export default function Disbursements() {
   const [disbursements, setDisbursements] = useState([])
@@ -69,29 +70,21 @@ export default function Disbursements() {
   }
 
   // 🔄 Update Status (persisted)
-  const updateStatus = async (item) => {
-    const next =
-      item.status === 'Pending'
-        ? 'Approved'
-        : item.status === 'Approved'
-        ? 'Released'
-        : item.status === 'Released'
-        ? 'Locked'
-        : 'Pending'
+  const updateStatus = async (item, newStatus) => {
+  try {
+    const updated = await apiRequest(`/disbursements/${item.id}/`, 'PUT', {
+      ...item,
+      status: newStatus,
+    })
 
-    try {
-      const updated = await apiRequest(`/disbursements/${item.id}/`, 'PUT', {
-        ...item,
-        status: next,
-      })
-
-      setDisbursements((prev) =>
-        prev.map((d) => (d.id === item.id ? updated : d))
-      )
-    } catch (err) {
-      console.error('Update failed', err)
-    }
+    setDisbursements((prev) =>
+      prev.map((d) => (d.id === item.id ? updated : d))
+    )
+  } catch (err) {
+    console.error(err)
+    alert("Action not allowed")
   }
+}
 
   // ❌ Delete
   const deleteItem = async (id) => {
@@ -115,47 +108,49 @@ export default function Disbursements() {
       </div>
 
       {/* ➕ CREATE FORM */}
-      <section className="panel">
-        <h3>New Disbursement</h3>
+      {(user?.role === 'accountant' || user?.is_admin) && (
+        <section className="panel">
+          <h3>New Disbursement</h3>
 
-        <form className="form-grid" onSubmit={addDisbursement}>
-          <label>
-            Tracking Number
-            <input
-              value={trackingno}
-              onChange={(e) => setTrackingNo(e.target.value)}
-            />
-          </label>
+          <form className="form-grid" onSubmit={addDisbursement}>
+            <label>
+              Tracking Number
+              <input
+                value={trackingno}
+                onChange={(e) => setTrackingNo(e.target.value)}
+              />
+            </label>
 
-          <label>
-            DV Number
-            <input
-              type="number"
-              value={dvno}
-              onChange={(e) => setDVno(e.target.value)}
-            />
-          </label>
+            <label>
+              DV Number
+              <input
+                type="number"
+                value={dvno}
+                onChange={(e) => setDVno(e.target.value)}
+              />
+            </label>
 
-          <label>
-            Officer
-            <input
-              value={officer}
-              onChange={(e) => setOfficer(e.target.value)}
-            />
-          </label>
+            <label>
+              Officer
+              <input
+                value={officer}
+                onChange={(e) => setOfficer(e.target.value)}
+              />
+            </label>
 
-          <label>
-            Status
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
-              {statusOptions.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-          </label>
+            <label>
+              Status
+              <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                {statusOptions.map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
+              </select>
+            </label>
 
-          <button className="btn-primary">Add</button>
-        </form>
-      </section>
+            <button className="btn-primary">Add</button>
+          </form>
+        </section>
+      )}
 
       {/* 📊 TABLE */}
       <section className="panel">
@@ -188,7 +183,7 @@ export default function Disbursements() {
                   <td>{d.dvno}</td>
 
                   <td>
-                    <span className={'status-badge status-' + d.status.toLowerCase()}>
+                    <span className={'status-badge status-' + (d.status || '').toLowerCase()}>
                       {d.status}
                     </span>
                   </td>
@@ -196,20 +191,39 @@ export default function Disbursements() {
                   <td>{d.officer}</td>
 
                   <td>
-                    <button
-                      className="btn-primary"
-                      onClick={() => updateStatus(d)}
-                    >
-                      Next
-                    </button>
+                    {/* ONLY budget officer or admin can approve/reject */}
+                    {(user?.role === 'budget_officer' || user?.is_admin) && d.status === 'Pending' && (
+                      <>
+                        <button
+                          className="btn-primary"
+                          onClick={() => updateStatus(d, 'Approved')}
+                        >
+                          Approve
+                        </button>
 
-                    <button
-                      className="btn-danger"
-                      onClick={() => deleteItem(d.id)}
-                      style={{ marginLeft: 8 }}
-                    >
-                      Delete
-                    </button>
+                        <button
+                          className="btn-danger"
+                          style={{ marginLeft: 8 }}
+                          onClick={() => updateStatus(d, 'Rejected')}
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+
+                    {/* show status if already processed */}
+                    {d.status !== 'Pending' && <span>{d.status}</span>}
+
+                    {/* ONLY admin can delete */}
+                    {user?.is_admin && (
+                      <button
+                        className="btn-danger"
+                        onClick={() => deleteItem(d.id)}
+                        style={{ marginLeft: 8 }}
+                      >
+                        Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

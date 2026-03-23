@@ -1,9 +1,10 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { setCurrentUser } from '../auth'
 import { useEffect } from 'react'
+import { apiRequest } from '../api'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -23,9 +24,11 @@ export default function Login() {
     try {
       const res = await fetch('http://localhost:8000/api/login/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          username: username.trim(),
+          username,
           password,
         }),
       })
@@ -37,20 +40,23 @@ export default function Login() {
         return
       }
 
-      // 🔑 Django JWT response
-      // { access: "...", refresh: "..." }
-
       localStorage.setItem('token', data.access)
 
-      // optional: store basic user info (not from backend yet)
-      setCurrentUser({
-        name: username,
-        role: 'user', // placeholder unless you implement roles in backend
-      })
+      // 🔥 GET USER INFO
+      const me = await apiRequest('/me/')
 
-      navigate('/dashboard')
+      // store user
+      localStorage.setItem('user', JSON.stringify(me))
+
+      // route based on role
+      if (me.is_admin) {
+        navigate('/admin-dashboard')
+      } else {
+        navigate('/dashboard')
+      }
     } catch (err) {
-      setError('Network error')
+      console.error(err)
+      setError("Cannot connect to server")
     }
   }
 
