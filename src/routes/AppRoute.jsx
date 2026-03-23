@@ -4,7 +4,6 @@ import Disbursements from '../pages/Disbursements'
 import DisbursementDetail from '../pages/DisbursementDetail'
 import ArchivedDisbursements from '../pages/ArchivedDisbursements'
 import Login from '../pages/Login'
-import Register from '../pages/Register'
 import NotFound from '../pages/NotFound'
 import PrivateRoute from './PrivateRoute'
 import RoleRoute from './RoleRoute'
@@ -65,7 +64,6 @@ function AppLayout() {
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
-  { path: '/register', element: <Register /> },
 
   { path: '/', element: <Navigate to="/login" replace /> },
 

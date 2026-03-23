@@ -21,7 +21,7 @@ export default function Disbursements() {
   // 🔥 Load data from Django backend
   useEffect(() => {
     async function load() {
-      const data = await apiRequest('/disbursements/')
+      const data = await apiRequest('/dv/')
       if (data) setDisbursements(data)
     }
     load()
@@ -50,7 +50,7 @@ export default function Disbursements() {
     if (!trackingno || !dvno || !officer) return
 
     try {
-      const newItem = await apiRequest('/disbursements/', 'POST', {
+      const newItem = await apiRequest('/dv/', 'POST', {
         trackingno,
         dvno: Number(dvno),
         status,
@@ -72,7 +72,7 @@ export default function Disbursements() {
   // 🔄 Update Status (persisted)
   const updateStatus = async (item, newStatus) => {
   try {
-    const updated = await apiRequest(`/disbursements/${item.id}/`, 'PUT', {
+    const updated = await apiRequest(`/dv/${item.id}/`, 'PUT', {
       ...item,
       status: newStatus,
     })
@@ -91,7 +91,7 @@ export default function Disbursements() {
     if (!confirm('Delete this disbursement?')) return
 
     try {
-      await apiRequest(`/disbursements/${id}/`, 'DELETE')
+      await apiRequest(`/dv/${id}/`, 'DELETE')
       setDisbursements((prev) => prev.filter((d) => d.id !== id))
     } catch (err) {
       console.error('Delete failed', err)
