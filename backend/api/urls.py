@@ -4,7 +4,10 @@ from . import views
 urlpatterns = [
     # Auth
     path('auth/login/', views.login, name='login'),
+    path('auth/refresh/', views.refresh_token, name='token_refresh'),
+    path('auth/logout/', views.logout, name='logout'),
     path('auth/me/', views.me, name='me'),
+    path('auth/csrf/', views.get_csrf_token, name='csrf_token'),
 
     # Admin
     path('auth/signup/', views.register, name='register'),

@@ -1,13 +1,14 @@
 import jwt
 import datetime
 from django.conf import settings
+from django.middleware.csrf import CsrfViewMiddleware, get_token
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.authentication import BaseAuthentication
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE
 from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DVWorkflowSerializer, DVArchivedSerializer
 from .authentication import JWTAuthentication
@@ -28,7 +29,50 @@ STEP_DEPT_LABEL = {
     5: "Mayor's Office",
 }
 
+# --- Custom CSRF Permission ---
+class EnforceCSRF(BasePermission):
+    """
+    DRF disables CSRF for non-session auth. This custom permission 
+    forces Django's standard CSRF check on specific endpoints.
+    """
+    def has_permission(self, request, view):
+        # Use Django's built-in CSRF middleware manually
+        check = CsrfViewMiddleware(lambda req: None)
+        check.process_request(request._request)
+        reason = check.process_view(request._request, None, (), {})
+        
+        if reason:
+            raise PermissionDenied(f'CSRF Failed: {reason}')
+        return True
+
+
+# --- CSRF Token Endpoint ---
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_csrf_token(request):
+    """Sets the CSRF cookie on the frontend."""
+    return Response({'csrfToken': get_token(request)})
+
 # ─────────────────── AUTH ───────────────────
+
+def get_tokens_for_user(user):
+    access_payload = {
+        'user_id': user.id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=15),
+        'iat': datetime.datetime.utcnow(),
+        'type': 'access'
+    }
+    refresh_payload = {
+        'user_id': user.id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7),
+        'iat': datetime.datetime.utcnow(),
+        'type': 'refresh'
+    }
+    
+    access_token = jwt.encode(access_payload, settings.SECRET_KEY, algorithm='HS256')
+    refresh_token = jwt.encode(refresh_payload, settings.SECRET_KEY, algorithm='HS256')
+    
+    return access_token, refresh_token
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -39,28 +83,75 @@ def login(request):
     try:
         user = User.objects.get(email__iexact=email)
     except User.DoesNotExist:
-        return Response({'error': 'Email is not yet registered. Contact the system administrator to register this email.'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'Email is not yet registered.'}, status=status.HTTP_401_UNAUTHORIZED)
 
     if not user.check_password(password):
         return Response({'error': 'Password is incorrect.'}, status=status.HTTP_401_UNAUTHORIZED)
 
     if user.status != 'active':
-        return Response(
-            {'error': 'Your account has been deactivated. Contact the system administrator.'},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        return Response({'error': 'Account deactivated.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    payload = {
-        'user_id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24),
-        'iat': datetime.datetime.utcnow(),
-    }
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+    access_token, refresh_token = get_tokens_for_user(user)
 
-    return Response({
-        'access_token': token,
+    response = Response({
+        'access_token': access_token,
         'user': UserSerializer(user).data,
     })
+
+    # Set the refresh token in an HttpOnly cookie
+    response.set_cookie(
+        key='refresh_token',
+        value=refresh_token,
+        httponly=True,
+        secure=settings.DEBUG is False, # Use True in production (HTTPS)
+        samesite='Lax', # Adjust to 'None' if frontend/backend are on different domains
+        max_age=7 * 24 * 60 * 60 # 7 days in seconds
+    )
+    
+    return response
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny, EnforceCSRF])
+def refresh_token(request):
+    """Generate a new access token using the HttpOnly refresh token cookie."""
+    refresh_token = request.COOKIES.get('refresh_token')
+    
+    if not refresh_token:
+        return Response({'error': 'Refresh token missing.'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+    try:
+        payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=['HS256'])
+        if payload.get('type') != 'refresh':
+            raise jwt.InvalidTokenError
+            
+        user = User.objects.get(id=payload['user_id'])
+        if user.status != 'active':
+            return Response({'error': 'Account deactivated.'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        access_payload = {
+            'user_id': user.id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=15),
+            'iat': datetime.datetime.utcnow(),
+            'type': 'access'
+        }
+        new_access_token = jwt.encode(access_payload, settings.SECRET_KEY, algorithm='HS256')
+        
+        return Response({'access_token': new_access_token})
+        
+    except jwt.ExpiredSignatureError:
+        return Response({'error': 'Refresh token expired. Please log in again.'}, status=status.HTTP_401_UNAUTHORIZED)
+    except (jwt.InvalidTokenError, User.DoesNotExist):
+        return Response({'error': 'Invalid refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny, EnforceCSRF])
+def logout(request):
+    """Clear the refresh token cookie."""
+    response = Response({'message': 'You have been logged out successfully.'})
+    response.delete_cookie('refresh_token')
+    return response
 
 
 @api_view(['GET'])

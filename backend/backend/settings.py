@@ -120,7 +120,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
  
 CORS_ALLOW_HEADERS = [
@@ -134,6 +134,24 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",  
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+]
+
+CSRF_COOKIE_HTTPONLY = False
+
+# Use Lax if frontend and backend share the same parent domain (e.g., localhost), 
+# use 'None' if they are on completely different domains (requires HTTPS).
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 JWT_EXPIRATION_HOURS = 8928
 
