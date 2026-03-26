@@ -114,179 +114,117 @@ export default function Disbursements() {
   }
 
   return (
-    <div>
-      <div className="page-header">
-        <div>
-          <h2>Disbursement Tracking</h2>
-          <p>
-            Track requests, approvals, and release statuses in Disbursement MIS.
-          </p>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <header className="border-b border-slate-200 pb-4">
+        <h2 className="text-2xl font-bold text-slate-800">Disbursement Voucher Entry Management</h2>
+        <p className="text-sm text-slate-600">Add new disbursement voucher entries, provide details, and track requests, approvals, and release statuses in the Disbursement MIS.</p>
+      </header>
 
-      <section className="panel">
-        <h3>New Disbursement Voucher Entry</h3>
-        <form className="form-grid" onSubmit={addDisbursement}>
-          <label>
-            Tracking Number
-            <input
-              type="number"
-              value={trackingno}
-              onChange={(e) => setTrackingNo(e.target.value)}
-              placeholder="Tracking number"
-            />
-          </label>
-          <label>
-            DV Number
-            <input
-              type="number"
-              value={dvno}
-              onChange={(e) => setDVno(e.target.value)}
-              placeholder="DV Number"
-            />
-          </label>
-          <label>
-            Role
-            <input
-              value={officer}
-              onChange={(e) => setOfficer(e.target.value)}
-              placeholder="Role"
-            />
-          </label>
-          <label>
-            Status
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
-              {statusOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="submit" className="btn-primary">
-            Add Voucher Entry
-          </button>
+      <section className="border border-slate-200 bg-white p-4">
+        <h3 className="text-lg font-semibold text-slate-800">New Disbursement Voucher Entry</h3>
+        <form onSubmit={addDisbursement} className="grid gap-3 md:grid-cols-2">
+          <div className="flex flex-col gap-1 text-sm text-slate-700">
+            <label className="font-medium">Tracking Number</label>
+            <input type="number" value={trackingno} onChange={(e) => setTrackingNo(e.target.value)} placeholder="Tracking number" className="border border-slate-300 p-2" />
+          </div>
+          <div className="flex flex-col gap-1 text-sm text-slate-700">
+            <label className="font-medium">DV Number</label>
+            <input type="number" value={dvno} onChange={(e) => setDVno(e.target.value)} placeholder="DV Number" className="border border-slate-300 p-2" />
+          </div>
+          
+        
+          <div className="md:col-span-2">
+            <button type="submit" className="border border-blue-600 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">Add Voucher Entry</button>
+          </div>
         </form>
       </section>
 
-      <section className="panel">
-        <div className="table-toolbar">
+      <section className="border border-slate-200 bg-white p-4">
+        <div className="mb-3 grid gap-3 md:grid-cols-2 md:items-center">
           <div>
-            <h3>Open Disbursement Voucher Entry Requests</h3>
-            <p>{filtered.length} records</p>
+            <h3 className="text-lg font-semibold text-slate-800">Disbursement Tracking</h3>
+            <p className="text-sm text-slate-600">{filtered.length} records</p>
           </div>
-          <div>
-            <Link to="/disbursements/archived" className="btn-secondary">
-              Archived Voucher Entry
-            </Link>
+          <div className="flex items-center gap-2 justify-end">
+            <Link to="/disbursements/archived" className="border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700">Archived Voucher Entry</Link>
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by tracking number, status, or officer" className="border border-slate-300 p-2 text-sm" />
           </div>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by tracking number, status, or officer"
-            className="search"
-          />
         </div>
 
-        <div className="table-wrap">
-          <table>
-            <thead>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-100 text-slate-700">
               <tr>
-                <th>Tracking Number</th>
-                <th>DV Number</th>
-                <th>Status</th>
-                <th>Request Date</th>
-                <th>Role</th>
-                <th>Actions</th>
+                <th className="px-3 py-2 text-left font-semibold">Tracking Number</th>
+                <th className="px-3 py-2 text-left font-semibold">DV Number</th>
+                <th className="px-3 py-2 text-left font-semibold">Status</th>
+                <th className="px-3 py-2 text-left font-semibold">Request Date</th>
+                <th className="px-3 py-2 text-left font-semibold">Role</th>
+                <th className="px-3 py-2 text-left font-semibold">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-200">
               {filtered.map((d) => (
                 <tr key={d.id}>
-                  <td>{d.trackingno ?? d.project}</td>
-                  <td>
-                    {d.dvno !== undefined && d.dvno !== null && d.dvno !== ''
-                      ? Number(d.dvno).toString()
-                      : ''}
+                  <td className="px-3 py-2">{d.trackingno ?? d.project}</td>
+                  <td className="px-3 py-2">{d.dvno !== undefined && d.dvno !== null && d.dvno !== '' ? Number(d.dvno).toString() : ''}</td>
+                  <td className="px-3 py-2">
+                    <span className={`px-2 py-1 text-xs font-bold ${d.status === 'Pending' ? 'bg-amber-100 text-amber-700' : d.status === 'Approved' ? 'bg-blue-100 text-blue-700' : d.status === 'Released' ? 'bg-green-100 text-green-700' : d.status === 'Locked' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'}`}>{d.status}</span>
                   </td>
-                  <td>
-                    <span
-                      className={
-                        'status-badge status-' +
-                        String(d.status || '')
-                          .toLowerCase()
-                          .replace(/\s+/g, '-')
-                      }
-                    >
-                      {d.status}
-                    </span>
-                  </td>
-                  <td>{d.date}</td>
-                  <td>{d.officer}</td>
-                  <td>
-                    <button className="btn-primary" onClick={() => updateStatus(d.id)}>
+                  <td className="px-3 py-2">{d.date}</td>
+                  <td className="px-3 py-2">{d.officer}</td>
+                  <td className="px-3 py-2 space-x-1">
+                    <button onClick={() => updateStatus(d.id)} className="border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
                       {d.status === 'Pending' && 'Approve'}
                       {d.status === 'Approved' && 'Release'}
                       {d.status === 'Released' && 'Lock'}
                       {d.status === 'Locked' && 'Reopen'}
                       {d.status === 'Rejected' && 'Rejected'}
                     </button>
-                    <button
-                      className="btn-danger"
-                      style={{ marginLeft: 8 }}
-                      onClick={async () => {
-                        if (!confirm('Delete this disbursement?')) return
-                        try {
-                          const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}`, { method: 'DELETE' })
-                          const json = await res.json()
-                          if (res.ok && json.success) {
-                            // reload from backend to ensure DB/UI sync
-                            try {
-                              console.log('Deleted', d.id)
-                              const r = await fetch('http://localhost:5000/api/disbursements')
-                              const j = await r.json()
-                              if (j && j.success) setDisbursements(j.disbursements || [])
-                              alert('Disbursement deleted')
-                            } catch (e) {
-                              // fallback to local filter
-                              setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
-                              alert('Deleted locally (could not reload)')
-                            }
-                            } else {
-                              console.error('Delete failed', json)
-                            }
-                            } catch (e) {
-                              console.error('Delete error', e)
-                            }
-                        }}
-                      >
-                        Delete
-                      </button>
-                    <button
-                      className="btn-archive"
-                      style={{ marginLeft: 8 }}
-                      onClick={async () => {
-                        if (!confirm('Archive this disbursement?')) return
-                        try {
-                          const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}/archive`, { method: 'POST' })
-                          const json = await res.json()
-                          if (res.ok && json.success) {
-                            // reload list from backend
-                            try {
-                              const r = await fetch('http://localhost:5000/api/disbursements')
-                              const j = await r.json()
-                              if (j && j.success) setDisbursements(j.disbursements || [])
-                            } catch (e) {
-                              setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
-                            }
-                          } else {
-                            console.error('Archive failed', json)
+                    <button onClick={async () => {
+                      if (!confirm('Delete this disbursement?')) return
+                      try {
+                        const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}`, { method: 'DELETE' })
+                        const json = await res.json()
+                        if (res.ok && json.success) {
+                          try {
+                            const r = await fetch('http://localhost:5000/api/disbursements')
+                            const j = await r.json()
+                            if (j && j.success) setDisbursements(j.disbursements || [])
+                            alert('Disbursement deleted')
+                          } catch (e) {
+                            setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
+                            alert('Deleted locally (could not reload)')
                           }
-                        } catch (e) {
-                          console.error('Archive error', e)
+                        } else {
+                          console.error('Delete failed', json)
                         }
-                      }}
-                    >
+                      } catch (e) {
+                        console.error('Delete error', e)
+                      }
+                    }} className="border border-red-300 bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+                      Delete
+                    </button>
+                    <button onClick={async () => {
+                      if (!confirm('Archive this disbursement?')) return
+                      try {
+                        const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}/archive`, { method: 'POST' })
+                        const json = await res.json()
+                        if (res.ok && json.success) {
+                          try {
+                            const r = await fetch('http://localhost:5000/api/disbursements')
+                            const j = await r.json()
+                            if (j && j.success) setDisbursements(j.disbursements || [])
+                          } catch (e) {
+                            setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
+                          }
+                        } else {
+                          console.error('Archive failed', json)
+                        }
+                      } catch (e) {
+                        console.error('Archive error', e)
+                      }
+                    }} className="border border-purple-300 bg-purple-50 px-2 py-1 text-xs font-semibold text-purple-700">
                       Archive
                     </button>
                   </td>
@@ -294,7 +232,7 @@ export default function Disbursements() {
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <p className="empty">No disbursements found.</p>}
+          {filtered.length === 0 && <p className="mt-3 text-sm text-slate-600">No disbursements found.</p>}
         </div>
       </section>
     </div>
