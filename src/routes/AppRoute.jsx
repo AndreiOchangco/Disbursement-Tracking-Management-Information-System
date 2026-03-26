@@ -12,6 +12,16 @@ import logo from '../components/MuniLuna.png'
 function AppLayout() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* Header */}
+      <header className="ml-64 h-14 flex items-center justify-between px-6 bg-blue-800 border-b border-slate-200">
+        <div className='flex items-center gap-2'>
+
+        <img src={logo} alt="Logo" className="w-18 h-18 " />
+        <h1 className="text-xs font-semibold text-slate-800">
+          Disbursement Tracking Management Information System
+        </h1>
+        </div>
+      </header>
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-200 p-4 overflow-y-auto">
         <div className="mb-4 text-center">
@@ -27,16 +37,6 @@ function AppLayout() {
         </nav>
       </aside>
 
-      {/* Header */}
-      <header className="ml-64 h-14 flex items-center justify-between px-6 bg-blue-800 border-b border-slate-200">
-        <div className='flex items-center gap-2'>
-
-        <img src={logo} alt="Logo" className="w-18 h-18 " />
-        <h1 className="text-xs font-semibold text-slate-800">
-          Disbursement Tracking Management Information System
-        </h1>
-        </div>
-      </header>
 
       {/* Main Content */}
       <main className="ml-64 p-4 bg-white border border-slate-200 min-h-[calc(100vh-3.5rem)]">
