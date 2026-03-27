@@ -24,7 +24,7 @@ export default function ArchivedDisbursements() {
     <div>
       <div className="page-header">
         <div>
-          <h2>Archived Voucher Entry</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Archived Voucher Entry</h2>
           <p>Previously archived voucher entries.</p>
         </div>
         <div>

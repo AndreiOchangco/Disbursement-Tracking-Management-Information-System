@@ -101,7 +101,7 @@ export default function Disbursements() {
     <div>
       <div className="page-header">
         <div>
-          <h2>Disbursement Tracking</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Disbursement Tracking</h2>
           <p>
             Track requests, approvals, and release statuses in Disbursement MIS.
           </p>
