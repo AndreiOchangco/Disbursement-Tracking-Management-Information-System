@@ -2,9 +2,9 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { setCurrentUser } from '../auth'
-import { useEffect } from 'react'
+import logo from '../components/MuniLuna.png'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -22,13 +22,13 @@ export default function Login() {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/api/login/', {
+      const res = await fetch('http://localhost:8000/api/auth/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username,
+          email: username.trim(),
           password,
         }),
       })
@@ -40,16 +40,11 @@ export default function Login() {
         return
       }
 
-      localStorage.setItem('token', data.access)
+      localStorage.setItem('token', data.access_token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      setCurrentUser(data.user)
 
-      // 🔥 GET USER INFO
-      const me = await apiRequest('/me/')
-
-      // store user
-      localStorage.setItem('user', JSON.stringify(me))
-
-      // route based on role
-      if (me.is_admin) {
+      if (data.user.department === 'admin') {
         navigate('/admin-dashboard')
       } else {
         navigate('/dashboard')
@@ -64,9 +59,6 @@ export default function Login() {
   }, [])
 
 
-
-
-  
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="bg-white p-8 w-full max-w-md border border-gray-300">
@@ -89,7 +81,7 @@ export default function Login() {
           {/* Username */}
           <div>
             <label className="block text-black mb-1">
-              Username
+              E-mail Address or Username
             </label>
             <input
               className="w-full border border-gray-300 text-black p-2"
@@ -122,7 +114,9 @@ export default function Login() {
           </button>
         </form>
         <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
-          <a href="/register">Create an account</a>
+          <Link to="/register" className="text-blue-500">
+            Create an account
+          </Link>
         </div>
         {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
       </div>

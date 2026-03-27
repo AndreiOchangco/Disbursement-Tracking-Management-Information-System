@@ -29,11 +29,13 @@ export default function Register() {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/api/login/', {
+      const res = await fetch('http://localhost:8000/api/auth/signup/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: username.trim(),
+          email: username.trim(),
+          department: roleToDepartment[role] || 'accounting',
           password,
         }),
       })
@@ -41,22 +43,12 @@ export default function Register() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.detail || 'Registration failed')
+        setError(data.error || 'Registration failed')
         return
       }
 
-      // 🔑 Django JWT response
-      // { access: "...", refresh: "..." }
-
-      localStorage.setItem('token', data.access)
-
-      // optional: store basic user info (not from backend yet)
-      setCurrentUser({
-        name: username,
-        role: 'user', // placeholder unless you implement roles in backend
-      })
-
-      navigate('/dashboard')
+      // On successful signup, send user to login page
+      navigate('/login')
     } catch (err) {
       setError('Network error')
     }

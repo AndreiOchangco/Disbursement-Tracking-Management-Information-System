@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 :root {
+  --sidebar-width: 260px;
+  --footer-height: 42px;
+  --header-height: 64px;
+  --mobile-header-height: 64px;
   color-scheme: light;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
@@ -29,10 +33,16 @@ button {
 
 /* Legacy class warnings removed in favor of declarative Tailwind utilities. */
 
+.app-shell {
+  display: flex;
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
+  margin-top: var(--header-height);
+}
+
 .app-sidebar {
   width: var(--sidebar-width);
   position: fixed;
-  top: 0;
+  top: var(--header-height);
   left: 0;
   bottom: var(--footer-height);
   padding: 1.25rem 1rem;
@@ -40,7 +50,7 @@ button {
   background: #f8fbff;
   box-sizing: border-box;
   overflow: auto;
-  z-index: 20;
+  z-index: 30;
 }
 
 .sidebar-brand h1 {
@@ -80,23 +90,52 @@ button {
 
 .app-content {
   flex: 1 1 auto;
-  min-height: 100vh;
   margin-left: var(--sidebar-width);
-  padding: 1rem 1.5rem calc(1rem + var(--footer-height));
+  margin-top: 0;
+  padding: calc(1rem + var(--header-height)) 1.5rem calc(1rem + var(--footer-height));
   box-sizing: border-box;
   color: #142f5b;
-  height: calc(100vh - var(--footer-height));
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
   overflow: auto;
 }
 
 .app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: var(--header-height);
+  background: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1rem;
+  padding: 0 1.5rem;
   border-bottom: 1px solid #dde6f3;
-  padding-bottom: 0.75rem;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-logo {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-actions span {
+  font-weight: 600;
+  color: #1f3f8e;
 }
 
 .app-header h1 {
