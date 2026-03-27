@@ -1,13 +1,11 @@
-Django Admin
+# Django Admin
 Username: lguluna
 Password: DTMIS2026
 
 
-All Users password: pogiako123
+# All Users password: pogiako123
 
-/**------------AUTH------------**/
-** URL: http://127.0.0.1:8000/auth/login/ **
-Method: POST
+# thod: POST
 Description: API para sa Login
 Sample Request:
 {
@@ -15,7 +13,7 @@ Sample Request:
   "password": "pogiako123"
 }
 
-Sample Response:
+# Sample Response:
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3NzQzNDgxMTIsImlhdCI6MTc3NDI2MTcxMn0.xpK_clEirjqsNBBX5BSjYcRHB3emebZrXVJc-hVkD_k",
   "user": {
@@ -43,7 +41,7 @@ Sample Response:
   }
 }
 
-/**------------ADMIN------------**/
+# ------------ADMIN------------
 ** URL: http://127.0.0.1:8000/api/auth/signup/ **
 Method: POST
 Description: API para mag-create/register ng another user, Di niyo need ng bearer/token.
@@ -117,7 +115,7 @@ Sample Request: [
   }
 ]
 
-/**------------DV------------**/
+# ------------DV------------
 ** URL: http://127.0.0.1:8000/api/dv/ **
 Method: GET
 Description: API para sa i-fetch lahat ng disbursement Vouchers
@@ -553,7 +551,7 @@ Sample Response:
   }
 ]
 
-/**------------Dashboard------------**/
+# ------------Dashboard------------
 ** URL: http://127.0.0.1:8000/api/dashboard/ **
 Method: GET
 Description: API para i-fetch yung mga data na i-display sa dashboard, Need ng bearer/token.
