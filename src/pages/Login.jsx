@@ -7,7 +7,7 @@ import { setCurrentUser } from '../auth'
 import logo from '../components/MuniLuna.png'
 
 export default function Login() {
-  const [fullname, setFullname] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
