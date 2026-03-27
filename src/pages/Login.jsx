@@ -1,10 +1,10 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setCurrentUser } from '../auth'
-import logo from '../components/MuniLuna.png'
-
+import { useEffect } from 'react'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -15,27 +15,47 @@ export default function Login() {
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
     if (!username.trim() || !password) {
       setError('Please enter email address/username and password')
       return
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/login', {
+      const res = await fetch('http://localhost:8000/api/login/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), password }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
       })
-      const json = await res.json()
+
+      const data = await res.json()
+
       if (!res.ok) {
-        setError(json.error || 'Login failed')
+        setError(data.detail || 'Login failed')
         return
       }
-      const user = json.user
-      setCurrentUser({ name: user.username, role: user.role })
-      navigate('/dashboard')
+
+      localStorage.setItem('token', data.access)
+
+      // 🔥 GET USER INFO
+      const me = await apiRequest('/me/')
+
+      // store user
+      localStorage.setItem('user', JSON.stringify(me))
+
+      // route based on role
+      if (me.is_admin) {
+        navigate('/admin-dashboard')
+      } else {
+        navigate('/dashboard')
+      }
     } catch (err) {
-      setError('Invalid email address/username or password')
+      setError('Network error')
     }
   }
 
@@ -101,20 +121,10 @@ export default function Login() {
             Sign in
           </button>
         </form>
-
-        {/* Error message */}
-        {error && (
-          <p className="text-red-500 text-sm mt-3 text-center">
-            {error}
-          </p>
-        )}
-        {/* Register link */}
-        <div className="mt-4 text-center text-sm">
-          <a href="/register" className="text-blue-500">
-            Create an account
-          </a>
+        <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
+          <a href="/register">Create an account</a>
         </div>
-
+        {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
       </div>
     </div>
   )
