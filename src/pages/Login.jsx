@@ -6,7 +6,7 @@ import { setToken, setCurrentUser, apiRequest } from '../api'
 import logo from '../components/MuniLuna.png'
 
 export default function Login() {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -15,8 +15,8 @@ export default function Login() {
     e.preventDefault()
     setError('')
 
-    if (!username.trim() || !password) {
-      setError('Please enter username and password')
+    if (!email.trim() || !password) {
+      setError('Please enter email and password')
       return
     }
 
@@ -28,7 +28,7 @@ export default function Login() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: username.trim(), // ✅ FIXED (NOT email)
+          email: email.trim(), // ✅ FIXED (NOT email)
           password,
         }),
       })
@@ -49,12 +49,7 @@ export default function Login() {
       // 🔥 SAVE USER
       setCurrentUser(me)
 
-      // 🔥 ROLE-BASED REDIRECT
-      if (me.is_admin) {
-        navigate('/admin-dashboard')
-      } else {
-        navigate('/dashboard')
-      }
+      navigate('/dashboard')
 
     } catch (err) {
       console.error(err)
@@ -77,22 +72,22 @@ export default function Login() {
 
         {/* Title */}
         <h2 className="text-xl font-bold text-yellow-500 text-center mb-4">
-          Disbursement Tracking System
+          Disbursement Tracking Management Information System
         </h2>
 
         {/* Form */}
         <form onSubmit={onSubmit} className="space-y-4">
 
-          {/* Username */}
+          {/* Email */}
           <div>
             <label className="block text-black mb-1">
-              Username
+              Email
             </label>
             <input
               className="w-full border border-gray-300 text-black p-2"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email"
             />
           </div>
 
