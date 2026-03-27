@@ -44,11 +44,8 @@ export default function Login() {
       localStorage.setItem('user', JSON.stringify(data.user))
       setCurrentUser(data.user)
 
-      if (data.user.department === 'admin') {
-        navigate('/admin-dashboard')
-      } else {
-        navigate('/dashboard')
-      }
+      navigate('/dashboard')
+      
     } catch (err) {
       setError('Network error')
     }

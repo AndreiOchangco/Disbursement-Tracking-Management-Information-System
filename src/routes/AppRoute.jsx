@@ -7,11 +7,6 @@ import Dashboard from '../pages/Dashboard'
 import Login from '../pages/Login'
 import NotFound from '../pages/NotFound'
 import PrivateRoute from './PrivateRoute'
-import RoleRoute from './RoleRoute'
-
-import UserDashboard from '../pages/UserDashboard'
-import AdminDashboard from '../pages/AdminDashboard'
-import UserManagement from '../pages/UserManagement'
 
 // 🔐 Layout
 function AppLayout() {
@@ -48,19 +43,13 @@ function AppLayout() {
             <p>Disbursement Tracking MIS</p>
           </div>
           <nav className="sidebar-nav">
-            <Link to={user?.is_admin ? "/admin-dashboard" : "/dashboard"}>
+            <Link to="/dashboard">
               Dashboard
             </Link>
 
-            {/* ONLY normal users */}
-            {!user?.is_admin && (
-              <Link to="/disbursements">Voucher Entry</Link>
-            )}
-
-            {/* ONLY admin */}
-            {user?.is_admin && (
-              <Link to="/users">User Management</Link>
-            )}
+            <Link to="/disbursements">
+            Voucher Entry
+            </Link>
 
             <button onClick={logout}>Logout</button>
           </nav>
@@ -100,21 +89,7 @@ export const router = createBrowserRouter([
         path: 'dashboard',
         element: (
           <PrivateRoute>
-            <RoleRoute allowAdmin={false}>
-              <UserDashboard />
-            </RoleRoute>
-          </PrivateRoute>
-        ),
-      },
-
-      // ADMIN DASHBOARD
-      {
-        path: 'admin-dashboard',
-        element: (
-          <PrivateRoute>
-            <RoleRoute allowAdmin={true}>
-              <AdminDashboard />
-            </RoleRoute>
+            <Dashboard />
           </PrivateRoute>
         ),
       },
@@ -124,9 +99,7 @@ export const router = createBrowserRouter([
         path: 'disbursements',
         element: (
           <PrivateRoute>
-            <RoleRoute allowAdmin={false}>
-              <Disbursements />
-            </RoleRoute>
+            <Disbursements />
           </PrivateRoute>
         ),
       },
@@ -135,9 +108,7 @@ export const router = createBrowserRouter([
         path: 'disbursements/:id',
         element: (
           <PrivateRoute>
-            <RoleRoute allowAdmin={false}>
-              <DisbursementDetail />
-            </RoleRoute>
+            <DisbursementDetail />
           </PrivateRoute>
         ),
       },
@@ -146,21 +117,7 @@ export const router = createBrowserRouter([
         path: 'disbursements/archived',
         element: (
           <PrivateRoute>
-            <RoleRoute allowAdmin={false}>
-              <ArchivedDisbursements />
-            </RoleRoute>
-          </PrivateRoute>
-        ),
-      },
-
-      // ADMIN ONLY
-      {
-        path: 'users',
-        element: (
-          <PrivateRoute>
-            <RoleRoute allowAdmin={true}>
-              <UserManagement />
-            </RoleRoute>
+            <ArchivedDisbursements />
           </PrivateRoute>
         ),
       },
