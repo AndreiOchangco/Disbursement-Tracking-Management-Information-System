@@ -8,12 +8,13 @@ import ArchivedDisbursements from '../pages/ArchivedDisbursements'
 import Journals from '../pages/Journals'
 import NotFound from '../pages/NotFound'
 import PrivateRoute from './PrivateRoute'
-import { getCurrentUser } from '../api'
+import { getCurrentUser, clearCurrentUser } from '../api'
 
 // 🔐 Layout
 function AppLayout() {
 
   const logout = () => {
+    clearCurrentUser()
     localStorage.removeItem("token")
     localStorage.removeItem("user")
     window.location.href = "/login"
@@ -49,7 +50,7 @@ function AppLayout() {
             </Link>
 
             <Link to="/journals">
-            Journal Entries
+            Journal Entry
             </Link>
 
           </nav>
