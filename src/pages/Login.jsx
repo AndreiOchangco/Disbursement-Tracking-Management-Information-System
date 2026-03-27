@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 import { apiRequest } from '../api'
 
 export default function Login() {
-  const [username, setUsername] = useState('')
+  const [fullname, setFullname] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -16,8 +16,8 @@ export default function Login() {
     e.preventDefault()
     setError('')
 
-    if (!username.trim() || !password) {
-      setError('Please enter username and password')
+    if (!fullname.trim() || !password) {
+      setError('Please enter your email and password')
       return
     }
 
@@ -28,7 +28,7 @@ export default function Login() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username,
+          fullname,
           password,
         }),
       })
@@ -48,12 +48,7 @@ export default function Login() {
       // store user
       localStorage.setItem('user', JSON.stringify(me))
 
-      // route based on role
-      if (me.is_admin) {
-        navigate('/admin-dashboard')
-      } else {
-        navigate('/dashboard')
-      }
+      navigate('/dashboard')
     } catch (err) {
       console.error(err)
       setError("Cannot connect to server")
