@@ -1,16 +1,17 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createBrowserRouter, Link, Outlet, Navigate } from 'react-router-dom'
+import Login from '../pages/Login'
+import Dashboard from '../pages/Dashboard'
 import Disbursements from '../pages/Disbursements'
 import DisbursementDetail from '../pages/DisbursementDetail'
 import ArchivedDisbursements from '../pages/ArchivedDisbursements'
-import Dashboard from '../pages/Dashboard'
-import Login from '../pages/Login'
+import Journals from '../pages/Journals'
 import NotFound from '../pages/NotFound'
 import PrivateRoute from './PrivateRoute'
+import { getCurrentUser } from '../api'
 
 // 🔐 Layout
 function AppLayout() {
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
 
   const logout = () => {
     localStorage.removeItem("token")
@@ -29,7 +30,7 @@ function AppLayout() {
           </div>
         </div>
         <div className="header-actions">
-          <span>{user?.name || 'Guest'}</span>
+          <span>{getCurrentUser()?.fullname || 'Guest'}</span>
           <button type="button" onClick={logout} className="btn-danger">
             Logout
           </button>
@@ -51,7 +52,10 @@ function AppLayout() {
             Voucher Entry
             </Link>
 
-            <button onClick={logout}>Logout</button>
+            <Link to="/journals">
+            Journal Entries
+            </Link>
+
           </nav>
         </aside>
 
@@ -117,6 +121,15 @@ export const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <ArchivedDisbursements />
+          </PrivateRoute>
+        ),
+      },
+
+      {
+        path: 'journals',
+        element: (
+          <PrivateRoute>
+            <Journals />
           </PrivateRoute>
         ),
       },
