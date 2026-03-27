@@ -70,7 +70,6 @@ function AppLayout() {
 export const router = createBrowserRouter([
   // 🔓 Public
   { path: '/login', element: <Login /> },
-  { path: '/register', element: <Register /> },
 
   // 🚨 Force root → login
   { path: '/', element: <Navigate to="/login" replace /> },
