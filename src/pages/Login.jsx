@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { setToken, setCurrentUser, apiRequest } from '../api'
-import logo from '../components/MuniLuna.png'
+import logo from '/MuniLuna.png'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -28,7 +28,7 @@ export default function Login() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email.trim(), // ✅ FIXED (NOT email)
+          email,
           password,
         }),
       })
@@ -44,7 +44,7 @@ export default function Login() {
       setToken(data.access_token)
 
       // 🔥 GET USER INFO FROM BACKEND
-      const me = await apiRequest('/me/')
+      const me = await apiRequest('/auth/me/')
 
       // 🔥 SAVE USER
       setCurrentUser(me)
