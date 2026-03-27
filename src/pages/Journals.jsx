@@ -1,8 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getCurrentUser } from '../auth'
-import { apiRequest } from '../api'
+import { apiRequest, getCurrentUser } from '../api'
 
 const user = JSON.parse(localStorage.getItem("user"))
 const statusOptions = ['Pending', 'Approved', 'Rejected']
