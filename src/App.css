@@ -1,39 +1,48 @@
 @import "tailwindcss";
+
 :root {
+  --sidebar-width: 260px;
+  --footer-height: 42px;
+  --header-height: 64px;
+  --mobile-header-height: 64px;
   color-scheme: light;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
-:root {
-  --sidebar-width: 240px;
-  --footer-height: 56px;
-  --mobile-header-height: 64px;
+* {
+  box-sizing: border-box;
 }
 
-#root {
-  min-height: 100vh;
+html, body, #root {
+  min-height: 100%;
   margin: 0;
   padding: 0;
 }
+
+body {
+  @apply bg-slate-50 text-slate-900;
+}
+
+a {
+  @apply text-blue-700;
+}
+
+button {
+  @apply font-medium;
+}
+
+/* Legacy class warnings removed in favor of declarative Tailwind utilities. */
 
 .app-shell {
-  width: 100%;
-  max-width: none;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  border-radius: 0;
-  background: #f8fbff;
-  box-shadow: none;
-  box-sizing: border-box;
   display: flex;
-  flex-direction: row;
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
+  margin-top: var(--header-height);
 }
 
 .app-sidebar {
   width: var(--sidebar-width);
   position: fixed;
-  top: 0;
+  top: var(--header-height);
   left: 0;
   bottom: var(--footer-height);
   padding: 1.25rem 1rem;
@@ -41,7 +50,7 @@
   background: #f8fbff;
   box-sizing: border-box;
   overflow: auto;
-  z-index: 20;
+  z-index: 30;
 }
 
 .sidebar-brand h1 {
@@ -81,23 +90,52 @@
 
 .app-content {
   flex: 1 1 auto;
-  min-height: 100vh;
   margin-left: var(--sidebar-width);
-  padding: 1rem 1.5rem calc(1rem + var(--footer-height));
+  margin-top: 0;
+  padding: calc(1rem + var(--header-height)) 1.5rem calc(1rem + var(--footer-height));
   box-sizing: border-box;
   color: #142f5b;
-  height: calc(100vh - var(--footer-height));
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
   overflow: auto;
 }
 
 .app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: var(--header-height);
+  background: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1rem;
+  padding: 0 1.5rem;
   border-bottom: 1px solid #dde6f3;
-  padding-bottom: 0.75rem;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-logo {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-actions span {
+  font-weight: 600;
+  color: #1f3f8e;
 }
 
 .app-header h1 {
@@ -123,11 +161,6 @@
   background: #eef4ff;
   border: 1px solid #c4d5ff;
   padding: 0.35rem 0.75rem;
-  border-radius: 6px;
-}
-
-.app-header nav a:hover {
-  background: #dde7ff;
 }
 
 .app-main {
@@ -186,7 +219,6 @@
 .form-grid input,
 .form-grid select {
   border: 1px solid #c8d5ec;
-  border-radius: 6px;
   padding: 0.45rem 0.55rem;
   font-size: 0.9rem;
   background: #fff;
@@ -197,7 +229,6 @@
   background: #2c5dff;
   color: #fff;
   font-weight: 700;
-  border-radius: 6px;
   cursor: pointer;
   padding: 0.55rem 0.9rem;
   margin-top: 0.25rem;
@@ -209,22 +240,18 @@
   background: #e11d48; /* red */
   color: #fff;
   font-weight: 700;
-  border-radius: 6px;
   cursor: pointer;
   padding: 0.45rem 0.75rem;
 }
-.btn-danger:hover { background: #be1238; }
 
 .btn-archive {
   border: none;
   background: #7c3aed; /* purple */
   color: #fff;
   font-weight: 700;
-  border-radius: 6px;
   cursor: pointer;
   padding: 0.45rem 0.75rem;
 }
-.btn-archive:hover { background: #5b21b6; }
 
 .table-toolbar {
   display: flex;
@@ -245,7 +272,6 @@
 
 .search {
   border: 1px solid #c8d5ec;
-  border-radius: 6px;
   padding: 0.35rem 0.45rem;
   width: 240px;
 }
@@ -265,10 +291,6 @@ table {
   text-decoration: none;
   color: #1f3f8e;
   font-weight: 700;
-}
-
-.small-link:hover {
-  text-decoration: underline;
 }
 
 
@@ -365,10 +387,19 @@ th {
   max-width: 480px;
 }
 .auth-panel {
-  border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 8px 30px rgba(11,30,59,0.08);
   background: #fff;
+}
+
+.auth-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-logo img {
+  max-width: 120px;
+  height: auto;
 }
 
 .auth-wrapper .page-header {

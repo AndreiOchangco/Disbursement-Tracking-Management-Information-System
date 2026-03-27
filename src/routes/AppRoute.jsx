@@ -3,8 +3,8 @@ import { createBrowserRouter, Link, Outlet, Navigate } from 'react-router-dom'
 import Disbursements from '../pages/Disbursements'
 import DisbursementDetail from '../pages/DisbursementDetail'
 import ArchivedDisbursements from '../pages/ArchivedDisbursements'
+import Dashboard from '../pages/Dashboard'
 import Login from '../pages/Login'
-import Register from '../pages/Register'
 import NotFound from '../pages/NotFound'
 import PrivateRoute from './PrivateRoute'
 import RoleRoute from './RoleRoute'
@@ -24,14 +24,29 @@ function AppLayout() {
   }
 
   return (
-    <>
+    <div className="app-layout">
+      <header className="app-header">
+        <div className="header-brand">
+          <img src="/logo.png" alt="DTMIS Logo" className="header-logo" />
+          <div>
+            <h1>DTMIS</h1>
+            <p>Disbursement Tracking Management Information System</p>
+          </div>
+        </div>
+        <div className="header-actions">
+          <span>{user?.name || 'Guest'}</span>
+          <button type="button" onClick={logout} className="btn-danger">
+            Logout
+          </button>
+        </div>
+      </header>
+
       <div className="app-shell">
         <aside className="app-sidebar">
           <div className="sidebar-brand">
             <img src="/logo.png" alt="DTMIS Logo" />
             <p>Disbursement Tracking MIS</p>
           </div>
-
           <nav className="sidebar-nav">
             <Link to={user?.is_admin ? "/admin-dashboard" : "/dashboard"}>
               Dashboard
@@ -59,16 +74,19 @@ function AppLayout() {
       </div>
 
       <footer className="app-footer">© 2026 DTMIS</footer>
-    </>
+    </div>
   )
 }
 
 export const router = createBrowserRouter([
+  // 🔓 Public
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
 
+  // 🚨 Force root → login
   { path: '/', element: <Navigate to="/login" replace /> },
 
+  // 🔐 Protected routes
   {
     path: '/',
     element: (

@@ -103,136 +103,183 @@ export default function Disbursements() {
       <div className="page-header">
         <div>
           <h2>Disbursement Tracking</h2>
-          <p>Track requests, approvals, and release statuses.</p>
+          <p>
+            Track requests, approvals, and release statuses in Disbursement MIS.
+          </p>
         </div>
       </div>
 
-      {/* ➕ CREATE FORM */}
-      {(user?.role === 'accountant' || user?.is_admin) && (
-        <section className="panel">
-          <h3>New Disbursement</h3>
+      <section className="panel">
+        <h3>New Disbursement Voucher Entry</h3>
+        <form className="form-grid" onSubmit={addDisbursement}>
+          <label>
+            Tracking Number
+            <input
+              type="number"
+              value={trackingno}
+              onChange={(e) => setTrackingNo(e.target.value)}
+              placeholder="Tracking number"
+            />
+          </label>
+          <label>
+            DV Number
+            <input
+              type="number"
+              value={dvno}
+              onChange={(e) => setDVno(e.target.value)}
+              placeholder="DV Number"
+            />
+          </label>
+          <label>
+            Role
+            <input
+              value={officer}
+              onChange={(e) => setOfficer(e.target.value)}
+              placeholder="Role"
+            />
+          </label>
+          <label>
+            Status
+            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+              {statusOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="submit" className="btn-primary">
+            Add Voucher Entry
+          </button>
+        </form>
+      </section>
 
-          <form className="form-grid" onSubmit={addDisbursement}>
-            <label>
-              Tracking Number
-              <input
-                value={trackingno}
-                onChange={(e) => setTrackingNo(e.target.value)}
-              />
-            </label>
-
-            <label>
-              DV Number
-              <input
-                type="number"
-                value={dvno}
-                onChange={(e) => setDVno(e.target.value)}
-              />
-            </label>
-
-            <label>
-              Officer
-              <input
-                value={officer}
-                onChange={(e) => setOfficer(e.target.value)}
-              />
-            </label>
-
-            <label>
-              Status
-              <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                {statusOptions.map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            </label>
-
-            <button className="btn-primary">Add</button>
-          </form>
-        </section>
-      )}
-
-      {/* 📊 TABLE */}
       <section className="panel">
         <div className="table-toolbar">
-          <h3>Disbursements ({filtered.length})</h3>
-
+          <div>
+            <h3>Open Disbursement Voucher Entry Requests</h3>
+            <p>{filtered.length} records</p>
+          </div>
+          <div>
+            <Link to="/disbursements/archived" className="btn-secondary">
+              Archived Voucher Entry
+            </Link>
+          </div>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search..."
+            placeholder="Search by tracking number, status, or officer"
+            className="search"
           />
         </div>
 
-        <div className="table-wrap">
-          <table>
-            <thead>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-100 text-slate-700">
               <tr>
-                <th>Tracking #</th>
-                <th>DV #</th>
+                <th>Tracking Number</th>
+                <th>DV Number</th>
                 <th>Status</th>
-                <th>Officer</th>
+                <th>Request Date</th>
+                <th>Role</th>
                 <th>Actions</th>
               </tr>
             </thead>
-
             <tbody>
               {filtered.map((d) => (
                 <tr key={d.id}>
-                  <td>{d.trackingno}</td>
-                  <td>{d.dvno}</td>
-
+                  <td>{d.trackingno ?? d.project}</td>
                   <td>
-                    <span className={'status-badge status-' + (d.status || '').toLowerCase()}>
+                    {d.dvno !== undefined && d.dvno !== null && d.dvno !== ''
+                      ? Number(d.dvno).toString()
+                      : ''}
+                  </td>
+                  <td>
+                    <span
+                      className={
+                        'status-badge status-' +
+                        String(d.status || '')
+                          .toLowerCase()
+                          .replace(/\s+/g, '-')
+                      }
+                    >
                       {d.status}
                     </span>
                   </td>
-
+                  <td>{d.date}</td>
                   <td>{d.officer}</td>
-
                   <td>
-                    {/* ONLY budget officer or admin can approve/reject */}
-                    {(user?.role === 'budget_officer' || user?.is_admin) && d.status === 'Pending' && (
-                      <>
-                        <button
-                          className="btn-primary"
-                          onClick={() => updateStatus(d, 'Approved')}
-                        >
-                          Approve
-                        </button>
-
-                        <button
-                          className="btn-danger"
-                          style={{ marginLeft: 8 }}
-                          onClick={() => updateStatus(d, 'Rejected')}
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-
-                    {/* show status if already processed */}
-                    {d.status !== 'Pending' && <span>{d.status}</span>}
-
-                    {/* ONLY admin can delete */}
-                    {user?.is_admin && (
-                      <button
-                        className="btn-danger"
-                        onClick={() => deleteItem(d.id)}
-                        style={{ marginLeft: 8 }}
+                    <button className="btn-primary" onClick={() => updateStatus(d.id)}>
+                      {d.status === 'Pending' && 'Approve'}
+                      {d.status === 'Approved' && 'Release'}
+                      {d.status === 'Released' && 'Lock'}
+                      {d.status === 'Locked' && 'Reopen'}
+                      {d.status === 'Rejected' && 'Rejected'}
+                    </button>
+                    <button
+                      className="btn-danger"
+                      style={{ marginLeft: 8 }}
+                      onClick={async () => {
+                        if (!confirm('Delete this disbursement?')) return
+                        try {
+                          const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}`, { method: 'DELETE' })
+                          const json = await res.json()
+                          if (res.ok && json.success) {
+                            // reload from backend to ensure DB/UI sync
+                            try {
+                              console.log('Deleted', d.id)
+                              const r = await fetch('http://localhost:5000/api/disbursements')
+                              const j = await r.json()
+                              if (j && j.success) setDisbursements(j.disbursements || [])
+                              alert('Disbursement deleted')
+                            } catch (e) {
+                              // fallback to local filter
+                              setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
+                              alert('Deleted locally (could not reload)')
+                            }
+                            } else {
+                              console.error('Delete failed', json)
+                            }
+                            } catch (e) {
+                              console.error('Delete error', e)
+                            }
+                        }}
                       >
                         Delete
                       </button>
-                    )}
+                    <button
+                      className="btn-archive"
+                      style={{ marginLeft: 8 }}
+                      onClick={async () => {
+                        if (!confirm('Archive this disbursement?')) return
+                        try {
+                          const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}/archive`, { method: 'POST' })
+                          const json = await res.json()
+                          if (res.ok && json.success) {
+                            // reload list from backend
+                            try {
+                              const r = await fetch('http://localhost:5000/api/disbursements')
+                              const j = await r.json()
+                              if (j && j.success) setDisbursements(j.disbursements || [])
+                            } catch (e) {
+                              setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
+                            }
+                          } else {
+                            console.error('Archive failed', json)
+                          }
+                        } catch (e) {
+                          console.error('Archive error', e)
+                        }
+                      }}
+                    >
+                      Archive
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-
-          {filtered.length === 0 && (
-            <p className="empty">No records found.</p>
-          )}
+          {filtered.length === 0 && <p className="empty">No disbursements found.</p>}
         </div>
       </section>
     </div>

@@ -21,32 +21,30 @@ export default function DisbursementDetail() {
 
   if (!disbursement) {
     return (
-      <div>
-        <h2>Disbursement Voucher Entry Request not found</h2>
-        <p>The requested disbursement voucher entry does not exist.</p>
-        <button onClick={() => navigate('/disbursements')} className="btn-primary">
-          Back to list
-        </button>
+      <div className="space-y-3 border border-slate-200 bg-white p-4">
+        <h2 className="text-xl font-bold text-slate-800">Disbursement Voucher Entry Request not found</h2>
+        <p className="text-sm text-slate-600">The requested disbursement voucher entry does not exist.</p>
+        <button onClick={() => navigate('/disbursements')} className="border border-blue-600 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">Back to list</button>
       </div>
     )
   }
 
   return (
-    <div>
-      <div className="page-header">
-        <h2>Disbursement Voucher Entry Request #{disbursement.id}</h2>
-        <p>Details for {disbursement.trackingno}</p>
+    <div className="space-y-4">
+      <div className="border-b border-slate-200 pb-3">
+        <h2 className="text-2xl font-bold text-slate-800">Disbursement Voucher Entry Request #{disbursement.id}</h2>
+        <p className="text-sm text-slate-700">Details for {disbursement.trackingno}</p>
       </div>
-      <section className="panel">
-        <div>
-          <p><strong>Tracking Number:</strong> {disbursement.trackingno}</p>
-          <p><strong>DV Number:</strong> {disbursement.dvno.toLocaleString()}</p>
-          <p><strong>Status:</strong> {disbursement.status}</p>
-          <p><strong>Request Date:</strong> {disbursement.date}</p>
-          <p><strong>Officer:</strong> {disbursement.officer}</p>
-        </div>
+
+      <section className="border border-slate-200 bg-white p-4 text-sm text-slate-700">
+        <p><span className="font-semibold text-slate-800">Tracking Number:</span> {disbursement.trackingno}</p>
+        <p><span className="font-semibold text-slate-800">DV Number:</span> {disbursement.dvno.toLocaleString()}</p>
+        <p><span className="font-semibold text-slate-800">Status:</span> {disbursement.status}</p>
+        <p><span className="font-semibold text-slate-800">Request Date:</span> {disbursement.date}</p>
+        <p><span className="font-semibold text-slate-800">Officer:</span> {disbursement.officer}</p>
       </section>
-      <Link to="/disbursements" className="btn-primary">Back to Voucher Entry List</Link>
+
+      <Link to="/disbursements" className="inline-block border border-blue-600 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">Back to Voucher Entry List</Link>
     </div>
   )
 }

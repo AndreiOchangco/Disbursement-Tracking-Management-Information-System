@@ -1,13 +1,13 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
-import { apiRequest } from '../api'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { setCurrentUser } from '../auth'
+import logo from '../components/MuniLuna.png'
 
 export default function Login() {
-  const [username, setUsername] = useState('')
+  const [fullname, setFullname] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -17,18 +17,18 @@ export default function Login() {
     setError('')
 
     if (!username.trim() || !password) {
-      setError('Please enter username and password')
+      setError('Please enter email address/username and password')
       return
     }
 
     try {
-      const res = await fetch('http://localhost:8000/api/login/', {
+      const res = await fetch('http://localhost:8000/api/auth/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username,
+          email: username.trim(),
           password,
         }),
       })
@@ -40,67 +40,80 @@ export default function Login() {
         return
       }
 
-      localStorage.setItem('token', data.access)
+      localStorage.setItem('token', data.access_token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      setCurrentUser(data.user)
 
-      // 🔥 GET USER INFO
-      const me = await apiRequest('/me/')
-
-      // store user
-      localStorage.setItem('user', JSON.stringify(me))
-
-      // route based on role
-      if (me.is_admin) {
+      if (data.user.department === 'admin') {
         navigate('/admin-dashboard')
       } else {
         navigate('/dashboard')
       }
     } catch (err) {
-      console.error(err)
-      setError("Cannot connect to server")
+      setError('Network error')
     }
   }
 
   useEffect(() => {
-    // clear password on mount for safety
     setPassword('')
   }, [])
 
+
   return (
-    <div className="auth-wrapper">
-      <div className="auth-inner">
-        <div className="page-header">
-        <h2>Login to DTMIS</h2>
-        <p>Select your role and continue to your dashboard.</p>
-      </div>
-        <section className="panel auth-panel">
-        <form className="form-grid" onSubmit={onSubmit}>
-          <label>
-            Username
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="bg-white p-8 w-full max-w-md border border-gray-300">
+
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <img src={logo} alt="Logo" className="w-32 h-32" />
+        </div>
+
+        
+          <h2 className="text-1xl font-bold text-yellow-500 text-center mb-2">
+            Disbursement Tracking System
+          </h2>
+          
+        
+
+        {/* Form */}
+        <form onSubmit={onSubmit} className="space-y-4">
+          
+          {/* Username */}
+          <div>
+            <label className="block text-black mb-1">
+              E-mail Address or Username
+            </label>
             <input
+              className="w-full border border-gray-300 text-black p-2"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
+              placeholder="E-mail Address or Username"
             />
-          </label>
-          <label>
-            Password
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-black mb-1">
+              Password
+            </label>
             <input
               type="password"
+              className="w-full border border-gray-300 text-black p-2 focus:outline-none focus:ring-0"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder="Password"
             />
-          </label>
-          {/* role is determined by registration/back-end; login only needs username/password */}
-          <button type="submit" className="btn-primary">
-            Login
+          </div>
+
+          {/* Button */}
+          <button
+            type="submit"
+            className="w-full bg-blue-100 text-white font-semibold p-2 border border-blue-500"
+          >
+            Sign in
           </button>
         </form>
-        <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
-          <a href="/register">Create an account</a>
-        </div>
         {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
-        </section>
       </div>
     </div>
   )
