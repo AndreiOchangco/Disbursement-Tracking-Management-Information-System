@@ -1,4 +1,4 @@
-const BASE_URL = 'http://127.0.0.1:8000/api'
+const BASE_URL = 'http://localhost:8000/api'
 
 export async function apiRequest(endpoint, method = 'GET', body = null) {
   const token = localStorage.getItem('token')
@@ -7,7 +7,7 @@ export async function apiRequest(endpoint, method = 'GET', body = null) {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...(token && { Authorization: `Token ${token}` }), // ✅ FIX HERE
     },
     ...(body && { body: JSON.stringify(body) }),
   })
@@ -16,7 +16,7 @@ export async function apiRequest(endpoint, method = 'GET', body = null) {
 
   if (!res.ok) {
     console.error("API ERROR:", data)
-    throw new Error(data?.detail || data?.error || 'API error')
+    throw new Error(data?.detail || JSON.stringify(data) || 'API error')
   }
 
   return data

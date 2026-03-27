@@ -93,6 +93,12 @@ def register(request):
 @permission_classes([IsAuthenticated])
 def user_list(request):
     """List all users."""
+    if request.user.department != 'admin':
+        return Response(
+            {'error': 'You do not have permission to view the user list.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+        
     users = User.objects.all().order_by('full_name')
     return Response(UserSerializer(users, many=True).data)
 
@@ -102,6 +108,13 @@ def user_list(request):
 @permission_classes([IsAuthenticated])
 def user_detail(request, pk):
     """Retrieve or update a user (e.g., changing status to inactive)."""
+    
+    if request.user.department != 'admin':
+        return Response(
+            {'error': 'Only System Administrators have permission to view or edit user details.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
     try:
         user_obj = User.objects.get(pk=pk)
     except User.DoesNotExist:
@@ -123,6 +136,12 @@ def user_detail(request, pk):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def dv_list(request):
+    if request.user.department == 'admin':
+        return Response(
+            {'error': 'System Administrators do not have access to Disbursement Vouchers.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
     if request.method == 'GET':
         search = request.query_params.get('search', '').strip()
         status_filter = request.query_params.get('status', '').strip()
@@ -178,6 +197,12 @@ def dv_list(request):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def dv_detail(request, pk):
+    if request.user.department == 'admin':
+        return Response(
+            {'error': 'System Administrators do not have access to Disbursement Vouchers.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
     try:
         dv = DV.objects.get(pk=pk)
     except DV.DoesNotExist:
@@ -392,6 +417,12 @@ def dv_archive(request, pk):
 @permission_classes([IsAuthenticated])
 def dashboard_stats(request):
     user = request.user
+
+    if user.department == 'admin':
+        return Response(
+            {'error': 'System Administrators do not have access to Disbursement Voucher statistics.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     if user.department == 'accounting':
         stats = {

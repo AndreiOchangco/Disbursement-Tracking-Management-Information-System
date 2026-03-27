@@ -113,11 +113,6 @@ export default function Login() {
             Sign in
           </button>
         </form>
-        <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
-          <Link to="/register" className="text-blue-500">
-            Create an account
-          </Link>
-        </div>
         {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
       </div>
     </div>
