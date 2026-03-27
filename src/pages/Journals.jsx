@@ -10,13 +10,6 @@ const statusOptions = ['Pending', 'Approved', 'Rejected']
 export default function Journals() {
   const [journals, setJournals] = useState([])
   const [search, setSearch] = useState('')
-  const [trackingno, setTrackingNo] = useState('')
-  const [dvno, setDVno] = useState('')
-  const [status, setStatus] = useState('Pending')
-  const [officer, setOfficer] = useState(() => {
-    const u = getCurrentUser()
-    return (u && u.name) || ''
-  })
 
   // 🔥 Load data from Django backend
   useEffect(() => {
@@ -109,7 +102,7 @@ export default function Journals() {
               {filtered.map((j) => (
                 <tr key={j.id}>
                   <td>{j.trackingno}</td>
-                  <td>{j.dvno}</td>
+                  <td>{j.jeno}</td>
 
                   <td>
                     <span className={'status-badge status-' + (j.status || '').toLowerCase()}>
@@ -118,42 +111,6 @@ export default function Journals() {
                   </td>
 
                   <td>{j.officer}</td>
-
-                  <td>
-                    {/* ONLY budget officer or admin can approve/reject */}
-                    {(user?.role === 'budget_officer' || user?.is_admin) && j.status === 'Pending' && (
-                      <>
-                        <button
-                          className="btn-primary"
-                          onClick={() => updateStatus(j, 'Approved')}
-                        >
-                          Approve
-                        </button>
-
-                        <button
-                          className="btn-danger"
-                          style={{ marginLeft: 8 }}
-                          onClick={() => updateStatus(j, 'Rejected')}
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-
-                    {/* show status if already processed */}
-                    {j.status !== 'Pending' && <span>{j.status}</span>}
-
-                    {/* ONLY admin can delete */}
-                    {user?.is_admin && (
-                      <button
-                        className="btn-danger"
-                        onClick={() => deleteItem(j.id)}
-                        style={{ marginLeft: 8 }}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </td>
                 </tr>
               ))}
             </tbody>
