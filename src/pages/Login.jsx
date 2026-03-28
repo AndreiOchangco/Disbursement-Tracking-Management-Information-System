@@ -63,16 +63,16 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="bg-white p-8 w-full max-w-md border border-gray-300">
+      <div className="bg-transparent p-8 w-full max-w-md border border-gray-300 rounded-lg shadow-lg">
 
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src={logo} alt="Logo" className="w-32 h-32" />
+          <img src={logo} alt="Logo" className="w-35 h-35" />
         </div>
 
         {/* Title */}
-        <h2 className="text-xl font-bold text-yellow-500 text-center mb-4">
-          Disbursement Tracking Management Information System
+        <h2 className="text-xl font-bold text-yellow-500 text-center mb-4 text-shadow-sm">
+          Disbursement Tracking Management Information System (DTMIS)
         </h2>
 
         {/* Form */}
@@ -80,7 +80,7 @@ export default function Login() {
 
           {/* Email */}
           <div>
-            <label className="block text-black mb-1">
+            <label className="block text-black mb-1 font-semibold">
               Email
             </label>
             <input
@@ -93,7 +93,7 @@ export default function Login() {
 
           {/* Password */}
           <div>
-            <label className="block text-black mb-1">
+            <label className="block text-black mb-1 font-semibold">
               Password
             </label>
             <input
@@ -108,7 +108,7 @@ export default function Login() {
           {/* Button */}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white font-semibold p-2"
+            className="w-full bg-yellow-500 text-white font-semibold p-2 hover:bg-yellow-600 transition-colors"
           >
             Sign in
           </button>
