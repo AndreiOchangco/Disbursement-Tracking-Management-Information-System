@@ -215,6 +215,11 @@ def user_detail(request, pk):
         return Response(UserSerializer(user_obj).data)
 
     elif request.method in ['PUT', 'PATCH']:
+        if user_obj.id == request.user.id and request.data.get('status') == 'inactive':
+            return Response(
+                {'error': 'You cannot deactivate your own admin account.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+        )
         serializer = UserCreateUpdateSerializer(user_obj, data=request.data, partial=True)
         if serializer.is_valid():
             updated_user = serializer.save()
