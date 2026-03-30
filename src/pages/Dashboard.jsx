@@ -2,32 +2,9 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react'
 import { apiRequest } from '../api'
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend,
-} from 'chart.js'
+import '../chart.js'
 
 import { Bar, Pie, Line } from 'react-chartjs-2'
-
-// 🔥 REGISTER CHART COMPONENTS
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-)
 
 export default function Dashboard() {
   const [data, setData] = useState([])
