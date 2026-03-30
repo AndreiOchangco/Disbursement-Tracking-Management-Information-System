@@ -24,15 +24,15 @@ function AppLayout() {
     <div className="app-layout">
       <header className="app-header">
         <div className="header-brand">
-          <img src="/logo.png" alt="DTMIS Logo" className="header-logo" />
+          <img src="/MuniLuna.png" alt="DTMIS Logo" className="header-logo" />
           <div>
-            <h1>DTMIS</h1>
-            <p>Disbursement Tracking Management Information System</p>
+            <h1 className="text-xl font-bold">DTMIS</h1>
+            <p className="text-sm text-gray-600">Disbursement Tracking Management Information System</p>
           </div>
         </div>
         <div className="header-actions">
           <span>{getCurrentUser()?.fullname || 'Guest'}</span>
-          <button type="button" onClick={logout} className="btn-danger">
+          <button type="button" onClick={logout} className="bg-red-500 text-white font-semibold p-2 hover:bg-red-800 transition-colors">
             Logout
           </button>
         </div>
@@ -41,15 +41,15 @@ function AppLayout() {
       <div className="app-shell">
         <aside className="app-sidebar">
           <nav className="sidebar-nav">
-            <Link to="/dashboard">
+            <Link className="bg-yellow-500 text-white font-semibold p-2 hover:bg-yellow-600 transition-colors" to="/dashboard">
               Dashboard
             </Link>
 
-            <Link to="/disbursements">
+            <Link className="bg-yellow-500 text-white font-semibold p-2 hover:bg-yellow-600 transition-colors" to="/disbursements">
             Voucher Entry
             </Link>
 
-            <Link to="/journals">
+            <Link className="bg-yellow-500 text-white font-semibold p-2 hover:bg-yellow-600 transition-colors" to="/journals">
             Journal Entry
             </Link>
 
@@ -63,7 +63,7 @@ function AppLayout() {
         </div>
       </div>
 
-      <footer className="app-footer">© 2026 DTMIS</footer>
+      <footer className="app-footer font-semibold p-2">© 2026 DTMIS</footer>
     </div>
   )
 }

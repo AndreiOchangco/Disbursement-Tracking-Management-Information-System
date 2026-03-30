@@ -72,9 +72,9 @@ button {
 
 .sidebar-nav a {
   text-decoration: none;
-  color: #1f3f8e;
+  color: black;
   font-weight: 600;
-  background: #eef4ff;
+  background: yellow-100;
   border: 1px solid #c4d5ff;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
@@ -107,7 +107,7 @@ button {
   right: 0;
   z-index: 40;
   height: var(--header-height);
-  background: #fff;
+  background: #f8fbff;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -123,8 +123,9 @@ button {
 }
 
 .header-logo {
-  width: 34px;
-  height: 34px;
+  margin-left: -5px;
+  width: 45px;
+  height: 45px;
   object-fit: cover;
 }
 
