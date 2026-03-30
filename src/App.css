@@ -335,9 +335,9 @@ th {
 }
 .status-pending { background: #f59e0b; } /* amber */
 .status-approved { background: #2563eb; } /* blue */
-.status-released { background: #16a34a; } /* green */
-.status-locked { background: #dc2626; } /* red */
-.status-rejected { background: #6b7280; } /* gray */
+.status-completed { background: #16a34a; } /* green */
+.status-rejected { background: #dc2626; } /* red */
+.status-draft { background: #6b7280; } /* gray */
 
 @media (max-width: 800px) {
   .form-grid {

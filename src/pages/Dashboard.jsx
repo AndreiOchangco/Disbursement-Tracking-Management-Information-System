@@ -22,7 +22,7 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const res = await apiRequest('/disbursements/')
+      const res = await apiRequest('/dv/')
       setData(res)
 
       const approved = res.filter(d => d.status === 'approved').length

@@ -6,6 +6,13 @@ import { apiRequest, getCurrentUser } from '../api'
 const user = JSON.parse(localStorage.getItem("user"))
 const statusOptions = ['Pending', 'Approved', 'Rejected']
 
+const formatDateMMDDYYYY = (date) => {
+   const inputDate = date;
+   const parts = inputDate.split('-');
+   const formattedDate = `${parts[1]}-${parts[2]}-${parts[0]}`;
+   return formattedDate;
+}
+
 export default function Disbursements() {
   const [disbursements, setDisbursements] = useState([])
   const [search, setSearch] = useState('')
@@ -20,7 +27,7 @@ export default function Disbursements() {
   // 🔥 Load data from Django backend
   useEffect(() => {
     async function load() {
-      const data = await apiRequest('/disbursements/')
+      const data = await apiRequest('/dv/')
       if (data) setDisbursements(data)
     }
     load()
@@ -49,7 +56,7 @@ export default function Disbursements() {
     if (!trackingno || !dvno || !officer) return
 
     try {
-      const newItem = await apiRequest('/disbursements/', 'POST', {
+      const newItem = await apiRequest('/dv/', 'POST', {
         trackingno,
         dvno: Number(dvno),
         status,
@@ -71,7 +78,7 @@ export default function Disbursements() {
   // 🔄 Update Status (persisted)
   const updateStatus = async (item, newStatus) => {
   try {
-    const updated = await apiRequest(`/disbursements/${item.id}/`, 'PUT', {
+    const updated = await apiRequest(`/dv/${item.id}/`, 'PUT', {
       ...item,
       status: newStatus,
     })
@@ -90,7 +97,7 @@ export default function Disbursements() {
     if (!confirm('Delete this disbursement?')) return
 
     try {
-      await apiRequest(`/disbursements/${id}/`, 'DELETE')
+      await apiRequest(`/dv/${id}/`, 'DELETE')
       setDisbursements((prev) => prev.filter((d) => d.id !== id))
     } catch (err) {
       console.error('Delete failed', err)
@@ -180,17 +187,17 @@ export default function Disbursements() {
                 <th>DV Number</th>
                 <th>Status</th>
                 <th>Request Date</th>
-                <th>Role</th>
+                <th>Created By</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((d) => (
                 <tr key={d.id}>
-                  <td>{d.trackingno ?? d.project}</td>
+                  <td>{d.tracking_no}</td>
                   <td>
-                    {d.dvno !== undefined && d.dvno !== null && d.dvno !== ''
-                      ? Number(d.dvno).toString()
+                    {d.dv_no !== undefined && d.dv_no !== null && d.dv_no !== ''
+                      ? Number(d.dv_no).toString()
                       : ''}
                   </td>
                   <td>
@@ -205,14 +212,14 @@ export default function Disbursements() {
                       {d.status}
                     </span>
                   </td>
-                  <td>{d.date}</td>
-                  <td>{d.officer}</td>
+                  <td>{formatDateMMDDYYYY(d.created_date)}</td>
+                  <td>{d.accounting_name}</td>
                   <td>
                     <button className="btn-primary" onClick={() => updateStatus(d.id)}>
                       {d.status === 'Pending' && 'Approve'}
                       {d.status === 'Approved' && 'Release'}
-                      {d.status === 'Released' && 'Lock'}
-                      {d.status === 'Locked' && 'Reopen'}
+                      {d.status === 'Completed' && 'Lock'}
+                      {d.status === 'Draft' && 'Reopen'}
                       {d.status === 'Rejected' && 'Rejected'}
                     </button>
                     <button
