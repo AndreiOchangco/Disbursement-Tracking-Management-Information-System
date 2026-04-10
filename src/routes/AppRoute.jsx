@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createBrowserRouter, Link, Outlet, Navigate } from 'react-router-dom'
+import { createBrowserRouter, Link, Outlet, Navigate, useLocation } from 'react-router-dom'
 import Login from '../pages/Login'
 import Dashboard from '../pages/Dashboard'
 import Disbursements from '../pages/Disbursements'
@@ -12,6 +12,7 @@ import { getCurrentUser, clearCurrentUser } from '../api'
 
 // 🔐 Layout
 function AppLayout() {
+  const location = useLocation()
 
   const logout = () => {
     clearCurrentUser()
@@ -19,6 +20,8 @@ function AppLayout() {
     localStorage.removeItem("user")
     window.location.href = "/login"
   }
+
+  const isActive = (path) => location.pathname === path
 
   return (
     <div className="app-layout">
@@ -32,8 +35,8 @@ function AppLayout() {
         </div>
         <div className="header-actions">
           <span>{getCurrentUser()?.fullname || 'Guest'}</span>
-          <button type="button" onClick={logout} className="bg-red-500 text-white font-semibold p-2 hover:bg-red-800 transition-colors">
-            Logout
+          <button type="button" onClick={logout} className="btn-logout">
+            🚪 Logout
           </button>
         </div>
       </header>
@@ -41,19 +44,37 @@ function AppLayout() {
       <div className="app-shell">
         <aside className="app-sidebar">
           <nav className="sidebar-nav">
-            <Link className="bg-yellow-500 text-white font-semibold p-2 hover:bg-yellow-600 transition-colors" to="/dashboard">
-              Dashboard
+            <Link 
+              className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}
+              to="/dashboard"
+              title="View Dashboard"
+            >
+              <span className="nav-icon">📈</span>
+              <span className="nav-text">Dashboard</span>
             </Link>
 
-            <Link className="bg-yellow-500 text-white font-semibold p-2 hover:bg-yellow-600 transition-colors" to="/disbursements">
-            Voucher Entry
+            <Link 
+              className={`nav-link ${isActive('/disbursements') ? 'active' : ''}`}
+              to="/disbursements"
+              title="Manage Vouchers"
+            >
+              <span className="nav-icon">📋</span>
+              <span className="nav-text">Voucher Entry</span>
             </Link>
 
-            <Link className="bg-yellow-500 text-white font-semibold p-2 hover:bg-yellow-600 transition-colors" to="/journals">
-            Journal Entry
+            <Link 
+              className={`nav-link ${isActive('/journals') ? 'active' : ''}`}
+              to="/journals"
+              title="Manage Journals"
+            >
+              <span className="nav-icon">📔</span>
+              <span className="nav-text">Journal Entry</span>
             </Link>
-
           </nav>
+
+          <div className="sidebar-footer">
+            <p>Disbursement Tracking<br />Management Information System</p>
+          </div>
         </aside>
 
         <div className="app-content">
@@ -63,7 +84,7 @@ function AppLayout() {
         </div>
       </div>
 
-      <footer className="app-footer font-semibold p-2">© 2026 DTMIS</footer>
+      <footer className="app-footer">© 2026 DTMIS - Powered by Municipal Innovation</footer>
     </div>
   )
 }

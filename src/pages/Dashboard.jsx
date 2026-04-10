@@ -74,21 +74,57 @@ export default function Dashboard() {
   return (
     <div>
       <div className="page-header">
-        <h2 className="text-2xl font-bold text-slate-800">Dashboard Analytics</h2>
-        <p>Disbursement Voucher Insights</p>
+        <div>
+          <h2>Dashboard Analytics</h2>
+          <p>Disbursement Voucher Insights & Performance Metrics</p>
+        </div>
       </div>
 
       {/* 🔥 KPI CARDS */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '20px' }}>
-        <div className="panel">Total: {stats.total}</div>
-        <div className="panel">Approved: {stats.approved}</div>
-        <div className="panel">Pending: {stats.pending}</div>
-        <div className="panel">Rejected: {stats.rejected}</div>
-        <div className="panel">₱ {stats.totalAmount.toLocaleString()}</div>
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon">📊</div>
+          <div className="stat-content">
+            <p className="stat-label">Total Entries</p>
+            <h3 className="stat-value">{stats.total}</h3>
+          </div>
+        </div>
+
+        <div className="stat-card stat-approved">
+          <div className="stat-icon">✅</div>
+          <div className="stat-content">
+            <p className="stat-label">Approved</p>
+            <h3 className="stat-value">{stats.approved}</h3>
+          </div>
+        </div>
+
+        <div className="stat-card stat-pending">
+          <div className="stat-icon">⏳</div>
+          <div className="stat-content">
+            <p className="stat-label">Pending</p>
+            <h3 className="stat-value">{stats.pending}</h3>
+          </div>
+        </div>
+
+        <div className="stat-card stat-rejected">
+          <div className="stat-icon">❌</div>
+          <div className="stat-content">
+            <p className="stat-label">Rejected</p>
+            <h3 className="stat-value">{stats.rejected}</h3>
+          </div>
+        </div>
+
+        <div className="stat-card stat-amount">
+          <div className="stat-icon">💰</div>
+          <div className="stat-content">
+            <p className="stat-label">Total Amount</p>
+            <h3 className="stat-value">₱{(stats.totalAmount / 1000).toFixed(1)}K</h3>
+          </div>
+        </div>
       </div>
 
       {/* 📊 CHARTS */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className="charts-grid">
 
         {/* 📊 BAR */}
         <div className="panel">
