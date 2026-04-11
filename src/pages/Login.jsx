@@ -89,18 +89,7 @@ export default function Login() {
 
         {/* Header */}
         <div className="flex justify-center mb-6">
-          <div style={{ 
-            width: '100px', 
-            height: '100px', 
-            background: 'linear-gradient(135deg, #0052CC, #FFD700)',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            animation: 'fadeInScale 0.6s ease-out'
-          }}>
-            <img src={logo} alt="DTMIS Logo" className="w-20 h-20" />
-          </div>
+          <img src={logo} alt="DTMIS Logo" className="w-30 h-30" />
         </div>
 
         <h1 className="text-3xl font-bold text-center mb-1" style={{ color: '#0052CC' }}>
