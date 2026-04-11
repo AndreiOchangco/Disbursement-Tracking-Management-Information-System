@@ -11,7 +11,7 @@ import NotFound from '../pages/NotFound'
 import AdminDisbursements from '../pages/AdminDisbursements'
 import ReportGeneration from '../pages/ReportGeneration'
 import PrivateRoute from './PrivateRoute'
-import { getCurrentUser, clearCurrentUser, ssoLogin } from '../api'
+import { getCurrentUser, clearCurrentUser, ssoLogin, API_ORIGIN } from '../api'
 
 // 🔐 Layout
 function AppLayout() {
@@ -28,7 +28,7 @@ function AppLayout() {
   const openDjangoAdmin = async () => {
     try {
       const res = await ssoLogin()
-      const base = 'http://localhost:8000'
+      const base = API_ORIGIN
       const next = res?.next || '/admin/'
       window.open(base + next, '_blank')
     } catch (err) {

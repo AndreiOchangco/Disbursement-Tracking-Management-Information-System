@@ -199,25 +199,36 @@ def sso_login(request):
     if getattr(user, 'department', '') != 'admin':
         return Response({'error': 'Only system administrators can access Django admin.'}, status=status.HTTP_403_FORBIDDEN)
 
-    # Use the underlying Django request to establish a session
-    dj_request = request._request
-    django_login(dj_request, user)
-    # Ensure session is saved so we can set cookie
-    dj_request.session.save()
+    try:
+        # Find corresponding Django auth user (required for admin session)
+        try:
+            dj_user = DjangoUser.objects.get(email__iexact=user.email)
+        except DjangoUser.DoesNotExist:
+            return Response({'error': 'No Django admin account found for this user.'}, status=status.HTTP_404_NOT_FOUND)
 
-    session_key = dj_request.session.session_key
-    response = Response({'next': '/admin/'})
+        if not dj_user.is_active:
+            return Response({'error': 'Django admin account is inactive.'}, status=status.HTTP_403_FORBIDDEN)
 
-    # Set the session cookie explicitly so browser receives it (works with credentials: 'include')
-    response.set_cookie(
-        key=settings.SESSION_COOKIE_NAME,
-        value=session_key,
-        httponly=True,
-        secure=not settings.DEBUG,
-        samesite=settings.CSRF_COOKIE_SAMESITE or 'Lax'
-    )
+        # Establish Django session using the Django auth user
+        dj_request = request._request
+        django_login(dj_request, dj_user)
+        dj_request.session.save()
 
-    return response
+        session_key = dj_request.session.session_key
+        response = Response({'next': '/admin/'})
+
+        response.set_cookie(
+            key=settings.SESSION_COOKIE_NAME,
+            value=session_key,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite=getattr(settings, 'CSRF_COOKIE_SAMESITE', 'Lax') or 'Lax'
+        )
+
+        return response
+    except Exception as e:
+        # Return JSON error instead of 500 to help debugging from frontend
+        return Response({'error': 'SSO failed', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # ─────────────────── USER LISTS REGISTRATION, UPDATE ───────────────────
