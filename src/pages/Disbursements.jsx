@@ -218,7 +218,13 @@ export default function Disbursements() {
                   <td>{formatDateMMDDYYYY(d.created_date)}</td>
                   <td>{d.accounting_name}</td>
                   <td>
-                    <button className="btn-primary" onClick={() => updateStatus(d.id)}>
+                    <button className="btn-primary" onClick={() => {
+                      let newStatus = d.status
+                      if (d.status === 'Pending') newStatus = 'Approved'
+                      else if (d.status === 'Approved') newStatus = 'Completed'
+                      else if (d.status === 'Draft') newStatus = 'Pending'
+                      updateStatus(d, newStatus)
+                    }}>
                       {d.status === 'Pending' && 'Approve'}
                       {d.status === 'Approved' && 'Release'}
                       {d.status === 'Completed' && 'Lock'}
