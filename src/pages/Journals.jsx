@@ -68,7 +68,7 @@ export default function Journals() {
     <div>
       <div className="page-header">
         <div>
-          <h2>📖 Journal Entry Management</h2>
+          <h2><ion-icon name="book"></ion-icon> Journal Entry Management</h2>
           <p>Track journal entries, approvals, and posting statuses.</p>
         </div>
       </div>
@@ -77,13 +77,13 @@ export default function Journals() {
       <section className="panel">
         <div className="table-toolbar">
           <div>
-            <h3 style={{ color: '#2c5dff' }}>📋 All Journal Entries</h3>
+            <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> All Journal Entries</h3>
             <p style={{ color: '#4b5563', marginTop: '0.3rem' }}>{filtered.length} records found</p>
           </div>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="🔍 Search by tracking #, JE #, status, or officer..."
+            placeholder="Search by tracking #, JE #, status, or officer..."
             className="search"
           />
         </div>
@@ -92,11 +92,11 @@ export default function Journals() {
           <table>
             <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
               <tr>
-                <th style={{ color: '#2c5dff' }}>📌 Tracking #</th>
-                <th style={{ color: '#2c5dff' }}>🔖 Journal Entry #</th>
-                <th style={{ color: '#2c5dff' }}>📊 Status</th>
-                <th style={{ color: '#2c5dff' }}>👤 Officer</th>
-                <th style={{ color: '#2c5dff' }}>⚙️ Actions</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> Journal Entry #</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Officer</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
               </tr>
             </thead>
 
@@ -148,7 +148,7 @@ export default function Journals() {
 
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1.2rem' }}>👤</span>
+                      <span style={{ fontSize: '1.2rem' }}><ion-icon name="person"></ion-icon></span>
                       <span style={{ fontWeight: '500' }}>{j.officer}</span>
                     </div>
                   </td>
@@ -165,18 +165,18 @@ export default function Journals() {
                         updateStatus(j, newStatus)
                       }}
                     >
-                      {j.status === 'Pending' && '✅ Approve'}
-                      {j.status === 'Approved' && '🚀 Post'}
-                      {j.status === 'Posted' && '✔️ Complete'}
-                      {j.status === 'Completed' && '🔒 Lock'}
-                      {j.status === 'Rejected' && '❌ Rejected'}
+                      {j.status === 'Pending' && <><ion-icon name="checkmark-circle"></ion-icon> Approve</> }
+                      {j.status === 'Approved' && <><ion-icon name="airplane"></ion-icon> Post</> }
+                      {j.status === 'Posted' && <><ion-icon name="checkmark"></ion-icon> Complete</> }
+                      {j.status === 'Completed' && <><ion-icon name="lock-closed"></ion-icon> Lock</> }
+                      {j.status === 'Rejected' && <><ion-icon name="close-circle"></ion-icon> Rejected</> }
                     </button>
                     <button
                       className="btn-danger"
                       style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
                       onClick={() => deleteItem(j.id)}
                     >
-                      🗑️ Delete
+                      <ion-icon name="trash"></ion-icon> Delete
                     </button>
                   </td>
                 </tr>
@@ -186,7 +186,7 @@ export default function Journals() {
 
           {filtered.length === 0 && (
             <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#4b5563' }}>
-              <p style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>📭</p>
+              <p style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}><ion-icon name="mail-unread"></ion-icon></p>
               <p style={{ margin: 0, fontStyle: 'italic' }}>No journal entries found.</p>
               <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem' }}>Try adjusting your search filters.</p>
             </div>

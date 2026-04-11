@@ -146,7 +146,7 @@ export default function Login() {
 
         {/* Welcome Message */}
         <div className="mb-6 p-3 rounded-lg flex items-start gap-3" style={{ backgroundColor: '#F0F7FF', borderLeft: '4px solid #0052CC' }}>
-          <span style={{ fontSize: '1.3rem' }}>👋</span>
+          <span style={{ fontSize: '1.3rem' }}><ion-icon name="hand"></ion-icon></span>
           <div>
             <p style={{ color: '#0052CC', fontSize: '0.9rem', fontWeight: '500' }}>
               Welcome back!
@@ -163,7 +163,7 @@ export default function Login() {
             backgroundColor: '#FEE2E2',
             borderColor: '#DC2626'
           }}>
-            <span style={{ color: '#DC2626', fontSize: '1.2rem', flexShrink: 0 }}>⚠️</span>
+            <span style={{ color: '#DC2626', fontSize: '1.2rem', flexShrink: 0 }}><ion-icon name="warning"></ion-icon></span>
             <div>
               <p className="font-semibold" style={{ color: '#991B1B' }}>Oops! Sign in failed</p>
               <p style={{ color: '#7F1D1D', fontSize: '0.9rem' }}>{error}</p>
@@ -177,7 +177,7 @@ export default function Login() {
           {/* Email Field */}
           <div>
             <label className="block font-semibold mb-2 flex items-center gap-2 text-sm" style={{ color: '#0052CC' }}>
-              <span>📧</span> Email Address
+              <span><ion-icon name="mail"></ion-icon></span> Email Address
               {isEmailValid && email && <span style={{ color: '#16A34A', fontSize: '0.75rem', fontWeight: 'bold' }}>✓ Valid</span>}
             </label>
             <input
@@ -209,12 +209,12 @@ export default function Login() {
             />
             {showEmailError && (
               <p style={{ color: '#DC2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-                ✗ Invalid email format (use: name@domain.com)
+                <ion-icon name="close"></ion-icon> Invalid email format (use: name@domain.com)
               </p>
             )}
             {touched.email && isEmailValid && (
               <p style={{ color: '#16A34A', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-                ✓ Email is valid
+                <ion-icon name="checkmark"></ion-icon> Email is valid
               </p>
             )}
           </div>
@@ -223,7 +223,7 @@ export default function Login() {
           <div>
             <label className="block font-semibold mb-2 flex items-center justify-between text-sm" style={{ color: '#0052CC' }}>
               <span className="flex items-center gap-2">
-                <span>🔐</span> Password
+                <span><ion-icon name="lock-closed"></ion-icon></span> Password
                 {isPasswordValid && password && (
                   <span style={{ 
                     color: passwordStrength === 'strong' ? '#16A34A' : passwordStrength === 'medium' ? '#F59E0B' : '#DC2626', 
@@ -233,7 +233,7 @@ export default function Login() {
                     borderRadius: '4px',
                     backgroundColor: passwordStrength === 'strong' ? '#DCFCE7' : passwordStrength === 'medium' ? '#FEF3C7' : '#FEE2E2'
                   }}>
-                    {passwordStrength === 'strong' ? '💪 Strong' : passwordStrength === 'medium' ? '👍 Medium' : '⚠️ Weak'}
+                    {passwordStrength === 'strong' ? <ion-icon name="fitness"></ion-icon> + ' Strong' : passwordStrength === 'medium' ? <ion-icon name="thumbs-up"></ion-icon> + ' Medium' : <ion-icon name="warning"></ion-icon> + ' Weak'}
                   </span>
                 )}
               </span>
@@ -276,27 +276,27 @@ export default function Login() {
                 title={showPassword ? 'Hide password' : 'Show password'}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <ion-icon name="eye-off"></ion-icon> : <ion-icon name="eye"></ion-icon>}
               </button>
             </div>
 
             {/* Caps Lock Warning */}
             {capsLockOn && (
               <p style={{ color: '#F59E0B', fontSize: '0.85rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                ⚠️ Caps Lock is ON
+                <ion-icon name="warning"></ion-icon> Caps Lock is ON
               </p>
             )}
 
             {/* Password Validation Messages */}
             {showPasswordError && (
               <p style={{ color: '#DC2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-                ✗ Password must be at least 6 characters
+                <ion-icon name="close"></ion-icon> Password must be at least 6 characters
               </p>
             )}
             {touched.password && isPasswordValid && (
               <div style={{ marginTop: '0.5rem' }}>
                 <p style={{ color: '#16A34A', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  ✓ Password strength: <strong>{passwordStrength}</strong>
+                  <ion-icon name="checkmark"></ion-icon> Password strength: <strong>{passwordStrength}</strong>
                 </p>
               </div>
             )}
@@ -345,7 +345,7 @@ export default function Login() {
               aria-label="Remember email address"
             />
             <label htmlFor="rememberEmail" style={{ color: '#666', fontSize: '0.9rem', cursor: 'pointer', userSelect: 'none' }}>
-              Remember my email ✨
+              Remember my email <ion-icon name="sparkles"></ion-icon>
             </label>
           </div>
 
@@ -380,19 +380,19 @@ export default function Login() {
           >
             {loading ? (
               <>
-                <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⏳</span>
+                <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><ion-icon name="time"></ion-icon></span>
                 Logging in...
               </>
             ) : (
               <>
-                <span>🚪</span> Login
+                <ion-icon name="enter"></ion-icon> Login
               </>
             )}
           </button>
 
           {/* Keyboard Hint */}
           <p style={{ color: '#999', fontSize: '0.75rem', textAlign: 'center', marginTop: '0.5rem' }}>
-            💡 Press <kbd style={{ padding: '2px 6px', backgroundColor: '#F3F4F6', borderRadius: '3px', fontSize: '0.7rem' }}>Tab</kbd> to navigate • <kbd style={{ padding: '2px 6px', backgroundColor: '#F3F4F6', borderRadius: '3px', fontSize: '0.7rem' }}>Enter</kbd> to submit
+            <ion-icon name="bulb"></ion-icon> Press <kbd style={{ padding: '2px 6px', backgroundColor: '#F3F4F6', borderRadius: '3px', fontSize: '0.7rem' }}>Tab</kbd> to navigate • <kbd style={{ padding: '2px 6px', backgroundColor: '#F3F4F6', borderRadius: '3px', fontSize: '0.7rem' }}>Enter</kbd> to submit
           </p>
         </form>
 

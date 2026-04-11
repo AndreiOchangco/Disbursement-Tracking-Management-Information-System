@@ -11,7 +11,7 @@ import NotFound from '../pages/NotFound'
 import PrivateRoute from './PrivateRoute'
 import { getCurrentUser, clearCurrentUser } from '../api'
 
-// 🔐 Layout
+// <ion-icon name="lock-closed"></ion-icon> Layout
 function AppLayout() {
   const location = useLocation()
   const currentUser = getCurrentUser()
@@ -39,7 +39,7 @@ function AppLayout() {
         <div className="header-actions">
           <span>{currentUser?.full_name || 'Guest'}</span>
           <button type="button" onClick={logout} className="btn-logout">
-            🚪 Logout
+            <ion-icon name="log-out"></ion-icon> Logout
           </button>
         </div>
       </header>
@@ -52,7 +52,7 @@ function AppLayout() {
               to="/dashboard"
               title="View Dashboard"
             >
-              <span className="nav-icon">📈</span>
+              <span className="nav-icon"><ion-icon name="bar-chart"></ion-icon></span>
               <span className="nav-text">Dashboard</span>
             </Link>
 
@@ -62,7 +62,7 @@ function AppLayout() {
                 to="/admin/users"
                 title="Manage Users and Permissions"
               >
-                <span className="nav-icon">👥</span>
+                <span className="nav-icon"><ion-icon name="people"></ion-icon></span>
                 <span className="nav-text">User Management</span>
               </Link>
             )}
@@ -72,7 +72,7 @@ function AppLayout() {
               to="/disbursements"
               title="Manage Vouchers"
             >
-              <span className="nav-icon">📋</span>
+              <span className="nav-icon"><ion-icon name="clipboard"></ion-icon></span>
               <span className="nav-text">Voucher Entry</span>
             </Link>
 
@@ -81,7 +81,7 @@ function AppLayout() {
               to="/journals"
               title="Manage Journals"
             >
-              <span className="nav-icon">📔</span>
+              <span className="nav-icon"><ion-icon name="book"></ion-icon></span>
               <span className="nav-text">Journal Entry</span>
             </Link>
           </nav>
@@ -104,13 +104,13 @@ function AppLayout() {
 }
 
 export const router = createBrowserRouter([
-  // 🔓 Public
+  // <ion-icon name="lock-open"></ion-icon> Public
   { path: '/login', element: <Login /> },
 
-  // 🚨 Force root → login
+  // <ion-icon name="alert"></ion-icon> Force root → login
   { path: '/', element: <Navigate to="/login" replace /> },
 
-  // 🔐 Protected routes
+  // <ion-icon name="lock-closed"></ion-icon> Protected routes
   {
     path: '/',
     element: (

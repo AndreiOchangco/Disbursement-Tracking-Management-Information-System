@@ -26,12 +26,12 @@ export default function UserManagement() {
   })
 
   const departmentChoices = [
-    { value: 'admin', label: '👑 System Administrator' },
-    { value: 'accounting', label: '📊 Accounting' },
-    { value: 'budget', label: '💰 Budget' },
-    { value: 'treasurer', label: '🏦 Treasurer' },
-    { value: 'bac_gso', label: '📋 BAC/GSO' },
-    { value: 'mayors_office', label: '🏛️ Mayor\'s Office' },
+    { value: 'admin', label: 'System Administrator', icon: 'crown' },
+    { value: 'accounting', label: 'Accounting', icon: 'bar-chart' },
+    { value: 'budget', label: 'Budget', icon: 'cash' },
+    { value: 'treasurer', label: 'Treasurer', icon: 'business' },
+    { value: 'bac_gso', label: 'BAC/GSO', icon: 'clipboard' },
+    { value: 'mayors_office', label: 'Mayor\'s Office', icon: 'business' },
   ]
 
   // Load users
@@ -201,7 +201,7 @@ export default function UserManagement() {
     <div>
       <div className="page-header">
         <div>
-          <h2>� User Management</h2>
+          <h2><ion-icon name="people"></ion-icon> User Management</h2>
           <p>Create, edit, archive and manage system users</p>
         </div>
       </div>
@@ -209,7 +209,7 @@ export default function UserManagement() {
       {/* 📊 STATS CARDS */}
       <div className="stats-grid">
         <div className="stat-card" style={{ borderColor: '#2c5dff', background: '#f0f7ff' }}>
-          <div className="stat-icon">👥</div>
+          <div className="stat-icon"><ion-icon name="people"></ion-icon></div>
           <div className="stat-content">
             <p className="stat-label">Total Users</p>
             <h3 className="stat-value" style={{ color: '#2c5dff' }}>{stats.totalUsers}</h3>
@@ -217,7 +217,7 @@ export default function UserManagement() {
         </div>
 
         <div className="stat-card" style={{ borderColor: '#059669', background: '#f0fdf4' }}>
-          <div className="stat-icon">✅</div>
+          <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
           <div className="stat-content">
             <p className="stat-label">Active Users</p>
             <h3 className="stat-value" style={{ color: '#059669' }}>{stats.activeUsers}</h3>
@@ -225,7 +225,7 @@ export default function UserManagement() {
         </div>
 
         <div className="stat-card" style={{ borderColor: '#fbbf24', background: '#fffbeb' }}>
-          <div className="stat-icon">👑</div>
+          <div className="stat-icon"><ion-icon name="crown"></ion-icon></div>
           <div className="stat-content">
             <p className="stat-label">System Administrators</p>
             <h3 className="stat-value" style={{ color: '#d97706' }}>{stats.adminUsers}</h3>
@@ -233,7 +233,7 @@ export default function UserManagement() {
         </div>
 
         <div className="stat-card" style={{ borderColor: '#2563eb', background: '#eff6ff' }}>
-          <div className="stat-icon">📋</div>
+          <div className="stat-icon"><ion-icon name="clipboard"></ion-icon></div>
           <div className="stat-content">
             <p className="stat-label">Staff Members</p>
             <h3 className="stat-value" style={{ color: '#2563eb' }}>{stats.staffUsers}</h3>
@@ -246,7 +246,7 @@ export default function UserManagement() {
         <section className="panel" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', borderLeft: '4px solid #fbbf24' }}>
           <div style={{ marginBottom: '1.5rem' }}>
             <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}>
-              {editingUser ? '✏️ Edit User' : '➕ Add New User'}
+              {editingUser ? <><ion-icon name="pencil"></ion-icon> Edit User</> : <><ion-icon name="add"></ion-icon> Add New User</>}
             </h3>
             <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>
               {editingUser ? 'Update user information' : 'Create a new user account'}
@@ -298,7 +298,7 @@ export default function UserManagement() {
               <select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })}>
                 {departmentChoices.map(dept => (
                   <option key={dept.value} value={dept.value}>
-                    {dept.label.replace(/[👑📊💰🏦📋🏛️]/g, '').trim()}
+                    {dept.label}
                   </option>
                 ))}
               </select>
@@ -314,7 +314,7 @@ export default function UserManagement() {
                     onChange={() => setFormData({ ...formData, status: 'active' })}
                     style={{ cursor: 'pointer', width: '18px', height: '18px' }}
                   />
-                  <span style={{ color: '#059669' }}>✅ Active</span>
+                  <span style={{ color: '#059669' }}><ion-icon name="checkmark-circle"></ion-icon> Active</span>
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: '500' }}>
                   <input
@@ -324,16 +324,16 @@ export default function UserManagement() {
                     onChange={() => setFormData({ ...formData, status: 'inactive' })}
                     style={{ cursor: 'pointer', width: '18px', height: '18px' }}
                   />
-                  <span style={{ color: '#dc2626' }}>❌ Inactive</span>
+                  <span style={{ color: '#dc2626' }}><ion-icon name="close-circle"></ion-icon> Inactive</span>
                 </label>
               </div>
             </label>
             <div style={{ gridColumn: 'span 2', display: 'flex', gap: '0.75rem' }}>
               <button type="submit" className="btn-primary" disabled={loading}>
-                {editingUser ? '💾 Update User' : '➕ Add User'}
+                {editingUser ? <><ion-icon name="save"></ion-icon> Update User</> : <><ion-icon name="add"></ion-icon> Add User</>}
               </button>
               <button type="button" className="btn-danger" onClick={resetForm} style={{ marginTop: 0 }}>
-                ❌ Cancel
+                <ion-icon name="close-circle"></ion-icon> Cancel
               </button>
             </div>
           </form>
@@ -344,7 +344,7 @@ export default function UserManagement() {
       <section className="panel">
         <div className="table-toolbar">
           <div>
-            <h3 style={{ color: '#2c5dff' }}>📋 User Accounts</h3>
+            <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> User Accounts</h3>
             <p style={{ color: '#4b5563', marginTop: '0.3rem' }}>{filtered.length} users found</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -370,7 +370,7 @@ export default function UserManagement() {
                 e.currentTarget.style.boxShadow = 'none'
               }}
             >
-              {showArchived ? '🗂️ Show Active' : '📦 Show Archived'}
+              {showArchived ? <><ion-icon name="folder-open"></ion-icon> Show Active</> : <><ion-icon name="archive"></ion-icon> Show Archived</>}
             </button>
             {!showForm && (
               <button 
@@ -378,13 +378,13 @@ export default function UserManagement() {
                 onClick={() => setShowForm(true)}
                 style={{ fontSize: '0.9rem', padding: '0.65rem 1rem' }}
               >
-                ➕ Add New User
+                <ion-icon name="add"></ion-icon> Add New User
               </button>
             )}
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="🔍 Search users by name, email, username..."
+              placeholder="Search users by name, email, username..."
               className="search"
             />
           </div>
@@ -395,10 +395,10 @@ export default function UserManagement() {
             <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
               <tr>
                 <th style={{ color: '#2c5dff' }}> Full Name</th>
-                <th style={{ color: '#2c5dff' }}>📧 Email</th>
-                <th style={{ color: '#2c5dff' }}>🏢 Department/Role</th>
-                <th style={{ color: '#2c5dff' }}>📊 Status</th>
-                <th style={{ color: '#2c5dff' }}>⚙️ Actions</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department/Role</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -436,8 +436,8 @@ export default function UserManagement() {
                       background: user.department === 'admin' ? 'rgba(251, 191, 36, 0.2)' : 'rgba(44, 93, 255, 0.1)',
                       color: user.department === 'admin' ? '#d97706' : '#2c5dff'
                     }}>
-                      {user.department === 'admin' && '👑 '}
-                      {departmentChoices.find(d => d.value === user.department)?.label.replace(/[👑📊💰🏦📋🏛️]/g, '').trim() || user.department}
+                      {user.department === 'admin' && <ion-icon name="crown"></ion-icon>}
+                      {departmentChoices.find(d => d.value === user.department)?.label || user.department}
                     </span>
                   </td>
                   <td>
@@ -459,7 +459,7 @@ export default function UserManagement() {
                         cursor: 'default'
                       }}
                     >
-                      <span style={{ fontSize: '1rem' }}>{user.status === 'active' ? '🟢' : user.status === 'archived' ? '📦' : '🔴'}</span>
+                      <span style={{ fontSize: '1rem' }}>{user.status === 'active' ? <ion-icon name="ellipse" style={{color: 'green'}}></ion-icon> : user.status === 'archived' ? <ion-icon name="archive"></ion-icon> : <ion-icon name="ellipse" style={{color: 'red'}}></ion-icon>}</span>
                       {user.status === 'active' ? 'Active' : user.status === 'archived' ? 'Archived' : 'Inactive'}
                     </span>
                   </td>
@@ -469,7 +469,7 @@ export default function UserManagement() {
                       style={{ fontSize: '0.8rem', padding: '0.45rem 0.75rem', marginRight: '0.4rem' }}
                       onClick={() => handleEdit(user)}
                     >
-                      ✏️ Edit
+                      <ion-icon name="pencil"></ion-icon> Edit
                     </button>
                     {!showArchived && (
                       <>
@@ -498,14 +498,14 @@ export default function UserManagement() {
                           }}
                           onClick={() => toggleUserStatus(user)}
                         >
-                          {user.status === 'active' ? '🔒 Lock' : '🔓 Unlock'}
+                          {user.status === 'active' ? <><ion-icon name="lock-closed"></ion-icon> Lock</> : <><ion-icon name="lock-open"></ion-icon> Unlock</>}
                         </button>
                         <button
                           className="btn-danger"
                           style={{ fontSize: '0.8rem', padding: '0.45rem 0.75rem' }}
                           onClick={() => handleDelete(user.id)}
                         >
-                          📦 Archive
+                          <ion-icon name="archive"></ion-icon> Archive
                         </button>
                       </>
                     )}
@@ -532,7 +532,7 @@ export default function UserManagement() {
                         }}
                         onClick={() => handleRestore(user.id)}
                       >
-                        ↩️ Restore
+                        <ion-icon name="return-up-back"></ion-icon> Restore
                       </button>
                     )}
                   </td>
@@ -542,7 +542,7 @@ export default function UserManagement() {
           </table>
           {filtered.length === 0 && (
             <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#4b5563' }}>
-              <p style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>👤</p>
+              <p style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}><ion-icon name="person"></ion-icon></p>
               <p style={{ margin: 0, fontStyle: 'italic' }}>No users found.</p>
             </div>
           )}
