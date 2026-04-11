@@ -13,17 +13,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [touched, setTouched] = useState({ email: false, password: false })
   const [capsLockOn, setCapsLockOn] = useState(false)
-  const [rememberEmail, setRememberEmail] = useState(false)
   const emailRef = useRef(null)
   const navigate = useNavigate()
-
-  // Validation
-  const isEmailValid = email.includes('@') && email.includes('.')
-  const isPasswordValid = password.length >= 6
-  const passwordStrength = password.length >= 12 ? 'strong' : password.length >= 8 ? 'medium' : 'weak'
-  const isFormValid = email.trim() && password && isEmailValid && isPasswordValid
-  const showEmailError = touched.email && email.trim() && !isEmailValid
-  const showPasswordError = touched.password && password && !isPasswordValid
 
   const onSubmit = async (e) => {
     e.preventDefault()
@@ -31,11 +22,6 @@ export default function Login() {
 
     if (!email.trim() || !password) {
       setError('Please enter email and password')
-      return
-    }
-
-    if (!isFormValid) {
-      setError('Please check your email and password')
       return
     }
 
@@ -71,13 +57,6 @@ export default function Login() {
       // 🔥 SAVE USER
       setCurrentUser(me)
 
-      // Save email if remember me is checked
-      if (rememberEmail) {
-        localStorage.setItem('rememberedEmail', email)
-      } else {
-        localStorage.removeItem('rememberedEmail')
-      }
-
       navigate('/dashboard')
 
     } catch (err) {
@@ -99,19 +78,6 @@ export default function Login() {
   const handlePasswordChange = (e) => {
     setPassword(e.target.value)
   }
-
-  // Load remembered email on mount
-  useEffect(() => {
-    const remembered = localStorage.getItem('rememberedEmail')
-    if (remembered) {
-      setEmail(remembered)
-      setRememberEmail(true)
-    }
-    // Auto-focus email field
-    if (emailRef.current) {
-      emailRef.current.focus()
-    }
-  }, [])
 
   useEffect(() => {
     setPassword('')
@@ -178,7 +144,6 @@ export default function Login() {
           <div>
             <label className="block font-semibold mb-2 flex items-center gap-2 text-sm" style={{ color: '#0052CC' }}>
               <span>📧</span> Email Address
-              {isEmailValid && email && <span style={{ color: '#16A34A', fontSize: '0.75rem', fontWeight: 'bold' }}>✓ Valid</span>}
             </label>
             <input
               ref={emailRef}
@@ -186,7 +151,6 @@ export default function Login() {
               autoComplete="email"
               className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium"
               style={{ 
-                borderColor: showEmailError ? '#DC2626' : touched.email && isEmailValid ? '#16A34A' : '#0052CC',
                 backgroundColor: '#F9FAFB'
               }}
               onFocus={(e) => {
@@ -196,7 +160,6 @@ export default function Login() {
               }}
               onBlur={(e) => {
                 handleFieldTouched('email')
-                e.target.style.borderColor = showEmailError ? '#DC2626' : '#0052CC'
                 e.target.style.boxShadow = 'none'
                 e.target.style.backgroundColor = '#F9FAFB'
               }}
@@ -205,18 +168,7 @@ export default function Login() {
               placeholder="your.email@luna.gov.ph"
               aria-label="Email address"
               aria-required="true"
-              aria-invalid={showEmailError}
             />
-            {showEmailError && (
-              <p style={{ color: '#DC2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-                ✗ Invalid email format (use: name@domain.com)
-              </p>
-            )}
-            {touched.email && isEmailValid && (
-              <p style={{ color: '#16A34A', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-                ✓ Email is valid
-              </p>
-            )}
           </div>
 
           {/* Password Field */}
@@ -224,18 +176,6 @@ export default function Login() {
             <label className="block font-semibold mb-2 flex items-center justify-between text-sm" style={{ color: '#0052CC' }}>
               <span className="flex items-center gap-2">
                 <span>🔐</span> Password
-                {isPasswordValid && password && (
-                  <span style={{ 
-                    color: passwordStrength === 'strong' ? '#16A34A' : passwordStrength === 'medium' ? '#F59E0B' : '#DC2626', 
-                    fontSize: '0.75rem',
-                    fontWeight: 'bold',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    backgroundColor: passwordStrength === 'strong' ? '#DCFCE7' : passwordStrength === 'medium' ? '#FEF3C7' : '#FEE2E2'
-                  }}>
-                    {passwordStrength === 'strong' ? '💪 Strong' : passwordStrength === 'medium' ? '👍 Medium' : '⚠️ Weak'}
-                  </span>
-                )}
               </span>
             </label>
             <div className="relative">
@@ -244,7 +184,6 @@ export default function Login() {
                 autoComplete="current-password"
                 className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium pr-10"
                 style={{ 
-                  borderColor: showPasswordError ? '#DC2626' : touched.password && isPasswordValid ? '#16A34A' : '#0052CC',
                   backgroundColor: '#F9FAFB'
                 }}
                 onFocus={(e) => {
@@ -254,7 +193,6 @@ export default function Login() {
                 }}
                 onBlur={(e) => {
                   handleFieldTouched('password')
-                  e.target.style.borderColor = showPasswordError ? '#DC2626' : '#0052CC'
                   e.target.style.boxShadow = 'none'
                   e.target.style.backgroundColor = '#F9FAFB'
                   setCapsLockOn(false)
@@ -266,7 +204,6 @@ export default function Login() {
                 placeholder="Min. 6 characters"
                 aria-label="Password"
                 aria-required="true"
-                aria-invalid={showPasswordError}
               />
               <button
                 type="button"
@@ -286,84 +223,22 @@ export default function Login() {
                 ⚠️ Caps Lock is ON
               </p>
             )}
-
-            {/* Password Validation Messages */}
-            {showPasswordError && (
-              <p style={{ color: '#DC2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-                ✗ Password must be at least 6 characters
-              </p>
-            )}
-            {touched.password && isPasswordValid && (
-              <div style={{ marginTop: '0.5rem' }}>
-                <p style={{ color: '#16A34A', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  ✓ Password strength: <strong>{passwordStrength}</strong>
-                </p>
-              </div>
-            )}
-
-            {/* Password Strength Bar */}
-            {password && (
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '4px' }}>
-                <div style={{ 
-                  flex: 1, 
-                  height: '4px', 
-                  backgroundColor: password.length >= 6 ? '#16A34A' : '#E5E7EB', 
-                  borderRadius: '2px',
-                  transition: 'backgroundColor 0.3s'
-                }}></div>
-                <div style={{ 
-                  flex: 1, 
-                  height: '4px', 
-                  backgroundColor: password.length >= 8 ? '#F59E0B' : '#E5E7EB', 
-                  borderRadius: '2px',
-                  transition: 'backgroundColor 0.3s'
-                }}></div>
-                <div style={{ 
-                  flex: 1, 
-                  height: '4px', 
-                  backgroundColor: password.length >= 12 ? '#16A34A' : '#E5E7EB', 
-                  borderRadius: '2px',
-                  transition: 'backgroundColor 0.3s'
-                }}></div>
-              </div>
-            )}
-          </div>
-
-          {/* Remember Email Checkbox */}
-          <div className="flex items-center gap-3 py-2">
-            <input
-              type="checkbox"
-              id="rememberEmail"
-              checked={rememberEmail}
-              onChange={(e) => setRememberEmail(e.target.checked)}
-              style={{ 
-                width: '18px',
-                height: '18px',
-                cursor: 'pointer',
-                accentColor: '#0052CC'
-              }}
-              aria-label="Remember email address"
-            />
-            <label htmlFor="rememberEmail" style={{ color: '#666', fontSize: '0.9rem', cursor: 'pointer', userSelect: 'none' }}>
-              Remember my email ✨
-            </label>
           </div>
 
           {/* Sign In Button */}
           <button
             type="submit"
-            disabled={!isFormValid || loading}
+            disabled={loading}
             className="w-full font-bold p-3 rounded-lg transition-all transform text-sm flex items-center justify-center gap-2 duration-200"
             style={{ 
-              backgroundColor: isFormValid && !loading ? '#FFD700' : '#FFE55C',
+              backgroundColor: '#FFE55C',
               color: '#0052CC',
               border: '2px solid #DAA500',
-              cursor: isFormValid && !loading ? 'pointer' : 'not-allowed',
               opacity: loading ? 0.9 : 1,
-              textShadow: isFormValid && !loading ? 'none' : '0 1px 0 rgba(0,0,0,0.05)'
+              textShadow: '0 1px 0 rgba(0,0,0,0.05)'
             }}
             onMouseEnter={(e) => {
-              if (isFormValid && !loading) {
+              if (loading) {
                 e.target.style.backgroundColor = '#DAA500'
                 e.target.style.color = '#FFFFFF'
                 e.target.style.transform = 'translateY(-2px)'
@@ -385,27 +260,12 @@ export default function Login() {
               </>
             ) : (
               <>
-                <span>🚪</span> Login
+                Login
               </>
             )}
           </button>
-
-          {/* Keyboard Hint */}
-          <p style={{ color: '#999', fontSize: '0.75rem', textAlign: 'center', marginTop: '0.5rem' }}>
-            💡 Press <kbd style={{ padding: '2px 6px', backgroundColor: '#F3F4F6', borderRadius: '3px', fontSize: '0.7rem' }}>Tab</kbd> to navigate • <kbd style={{ padding: '2px 6px', backgroundColor: '#F3F4F6', borderRadius: '3px', fontSize: '0.7rem' }}>Enter</kbd> to submit
-          </p>
         </form>
 
-        {/* Helper Text & Footer */}
-        <div className="mt-6 pt-6 border-t-2 text-center" style={{ borderColor: '#FFD700' }}>
-          <p style={{ color: '#666', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
-            🔗 <span style={{ color: '#0052CC', fontWeight: '600' }}>Need help?</span>
-          </p>
-          <p style={{ color: '#999', fontSize: '0.75rem', lineHeight: '1.5' }}>
-            📧 Contact your administrator if you've forgotten your password<br/>
-            🏛️ Luna LGU Emergency Fuel Conservation Measures
-          </p>
-        </div>
       </div>
 
       {/* Global Keyboard Shortcut Hint */}
