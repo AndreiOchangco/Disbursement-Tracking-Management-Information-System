@@ -75,7 +75,7 @@ export default function Dashboard() {
     }
   }
 
-  // 📊 STATUS DATA
+  // <ion-icon name="bar-chart"></ion-icon> STATUS DATA
   const statusData = {
     labels: ['Approved', 'Pending', 'Rejected'],
     datasets: [
@@ -111,17 +111,17 @@ export default function Dashboard() {
         <>
           <div className="page-header">
             <div>
-              <h2>👑 Admin Dashboard</h2>
+              <h2><ion-icon name="crown"></ion-icon> Admin Dashboard</h2>
               <p>Complete system overview with user management and all disbursement analytics</p>
             </div>
           </div>
 
           {/* 📊 USER STATS CARDS */}
           <div style={{ marginBottom: '2rem' }}>
-            <h3 style={{ color: '#2c5dff', marginBottom: '1rem', fontSize: '1.1rem' }}>👥 User Management</h3>
+            <h3 style={{ color: '#2c5dff', marginBottom: '1rem', fontSize: '1.1rem' }}><ion-icon name="people"></ion-icon> User Management</h3>
             <div className="stats-grid">
             <div className="stat-card" style={{ borderColor: '#2c5dff', background: '#f0f7ff' }}>
-              <div className="stat-icon">👥</div>
+              <div className="stat-icon"><ion-icon name="people"></ion-icon></div>
               <div className="stat-content">
                 <p className="stat-label">Total Users</p>
                 <h3 className="stat-value" style={{ color: '#2c5dff' }}>{userStats.totalUsers}</h3>
@@ -129,7 +129,7 @@ export default function Dashboard() {
             </div>
 
             <div className="stat-card" style={{ borderColor: '#059669', background: '#f0fdf4' }}>
-              <div className="stat-icon">✅</div>
+              <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
               <div className="stat-content">
                 <p className="stat-label">Active Users</p>
                 <h3 className="stat-value" style={{ color: '#059669' }}>{userStats.activeUsers}</h3>
@@ -137,7 +137,7 @@ export default function Dashboard() {
             </div>
 
             <div className="stat-card" style={{ borderColor: '#fbbf24', background: '#fffbeb' }}>
-              <div className="stat-icon">👑</div>
+              <div className="stat-icon"><ion-icon name="crown"></ion-icon></div>
               <div className="stat-content">
                 <p className="stat-label">System Administrators</p>
                 <h3 className="stat-value" style={{ color: '#d97706' }}>{userStats.adminUsers}</h3>
@@ -145,7 +145,7 @@ export default function Dashboard() {
             </div>
 
             <div className="stat-card" style={{ borderColor: '#2563eb', background: '#eff6ff' }}>
-              <div className="stat-icon">📋</div>
+              <div className="stat-icon"><ion-icon name="clipboard"></ion-icon></div>
               <div className="stat-content">
                 <p className="stat-label">Staff Members</p>
                 <h3 className="stat-value" style={{ color: '#2563eb' }}>{userStats.staffUsers}</h3>
@@ -155,7 +155,7 @@ export default function Dashboard() {
           {/* 📋 USERS LIST PANEL */}
           <section className="panel" style={{ marginBottom: '2rem' }}>
             <div style={{ marginBottom: '1.5rem' }}>
-              <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}>📋 Recent Users</h3>
+              <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="clipboard"></ion-icon> Recent Users</h3>
               <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Last {Math.min(5, users.length)} users created</p>
             </div>
 
@@ -163,10 +163,10 @@ export default function Dashboard() {
               <table>
                 <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
                   <tr>
-                    <th style={{ color: '#2c5dff' }}>📝 Full Name</th>
-                    <th style={{ color: '#2c5dff' }}>📧 Email</th>
-                    <th style={{ color: '#2c5dff' }}>🏢 Department</th>
-                    <th style={{ color: '#2c5dff' }}>📊 Status</th>
+                    <th style={{ color: '#2c5dff' }}><ion-icon name="pencil"></ion-icon> Full Name</th>
+                    <th style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
+                    <th style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department</th>
+                    <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -185,7 +185,7 @@ export default function Dashboard() {
                           background: user.department === 'admin' ? 'rgba(251, 191, 36, 0.2)' : 'rgba(44, 93, 255, 0.1)',
                           color: user.department === 'admin' ? '#d97706' : '#2c5dff'
                         }}>
-                          {user.department === 'admin' && '👑 '}
+                          {user.department === 'admin' && <ion-icon name="crown"></ion-icon>}
                           {user.department.replace(/_/g, ' ')}
                         </span>
                       </td>
@@ -203,7 +203,7 @@ export default function Dashboard() {
                           color: user.status === 'active' ? '#065f46' : '#991b1b',
                           border: `2px solid ${user.status === 'active' ? '#10b981' : '#dc2626'}`,
                         }}>
-                          {user.status === 'active' ? '🟢' : '🔴'}
+                          {user.status === 'active' ? <ion-icon name="ellipse" style={{color: 'green'}}></ion-icon> : <ion-icon name="ellipse" style={{color: 'red'}}></ion-icon>}
                           {user.status}
                         </span>
                       </td>
@@ -216,10 +216,10 @@ export default function Dashboard() {
 
           {/* 📊 DV ANALYTICS SECTION */}
           <div style={{ marginBottom: '2rem' }}>
-            <h3 style={{ color: '#2c5dff', marginBottom: '1rem', fontSize: '1.1rem' }}>📊 Disbursement Analytics</h3>
+            <h3 style={{ color: '#2c5dff', marginBottom: '1rem', fontSize: '1.1rem' }}><ion-icon name="bar-chart"></ion-icon> Disbursement Analytics</h3>
             <div className="stats-grid">
               <div className="stat-card" style={{ borderColor: '#2c5dff', background: '#f0f7ff' }}>
-                <div className="stat-icon">📊</div>
+                <div className="stat-icon"><ion-icon name="bar-chart"></ion-icon></div>
                 <div className="stat-content">
                   <p className="stat-label">Total Entries</p>
                   <h3 className="stat-value" style={{ color: '#2c5dff' }}>{stats.total}</h3>
@@ -227,7 +227,7 @@ export default function Dashboard() {
               </div>
 
               <div className="stat-card stat-approved">
-                <div className="stat-icon">✅</div>
+                <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
                 <div className="stat-content">
                   <p className="stat-label">Approved</p>
                   <h3 className="stat-value">{stats.approved}</h3>
@@ -235,7 +235,7 @@ export default function Dashboard() {
               </div>
 
               <div className="stat-card stat-pending">
-                <div className="stat-icon">⏳</div>
+                <div className="stat-icon"><ion-icon name="time"></ion-icon></div>
                 <div className="stat-content">
                   <p className="stat-label">Pending</p>
                   <h3 className="stat-value">{stats.pending}</h3>
@@ -243,7 +243,7 @@ export default function Dashboard() {
               </div>
 
               <div className="stat-card stat-rejected">
-                <div className="stat-icon">❌</div>
+                <div className="stat-icon"><ion-icon name="close-circle"></ion-icon></div>
                 <div className="stat-content">
                   <p className="stat-label">Rejected</p>
                   <h3 className="stat-value">{stats.rejected}</h3>
@@ -251,7 +251,7 @@ export default function Dashboard() {
               </div>
 
               <div className="stat-card stat-amount">
-                <div className="stat-icon">💰</div>
+                <div className="stat-icon"><ion-icon name="cash"></ion-icon></div>
                 <div className="stat-content">
                   <p className="stat-label">Total Amount</p>
                   <h3 className="stat-value">₱{(stats.totalAmount / 1000).toFixed(1)}K</h3>
@@ -265,13 +265,13 @@ export default function Dashboard() {
 
             {/* 📊 BAR */}
             <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>📈 Status Overview</h3>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="trending-up"></ion-icon> Status Overview</h3>
               <Bar data={statusData} />
             </div>
 
             {/* 📊 PIE */}
             <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>🥧 Status Distribution</h3>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="pie-chart"></ion-icon> Status Distribution</h3>
               <Pie data={statusData} />
             </div>
 
@@ -290,15 +290,15 @@ export default function Dashboard() {
         <>
           <div className="page-header">
             <div>
-              <h2>📊 Dashboard Analytics</h2>
+              <h2><ion-icon name="bar-chart"></ion-icon> Dashboard Analytics</h2>
               <p>Disbursement Voucher Insights & Performance Metrics</p>
             </div>
           </div>
 
-          {/* 🔥 KPI CARDS */}
+          {/* <ion-icon name="flame"></ion-icon> KPI CARDS */}
           <div className="stats-grid">
             <div className="stat-card" style={{ borderColor: '#2c5dff', background: '#f0f7ff' }}>
-              <div className="stat-icon">📊</div>
+              <div className="stat-icon"><ion-icon name="bar-chart"></ion-icon></div>
               <div className="stat-content">
                 <p className="stat-label">Total Entries</p>
                 <h3 className="stat-value" style={{ color: '#2c5dff' }}>{stats.total}</h3>
@@ -306,7 +306,7 @@ export default function Dashboard() {
             </div>
 
             <div className="stat-card stat-approved">
-              <div className="stat-icon">✅</div>
+              <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
               <div className="stat-content">
                 <p className="stat-label">Approved</p>
                 <h3 className="stat-value">{stats.approved}</h3>
@@ -314,7 +314,7 @@ export default function Dashboard() {
             </div>
 
             <div className="stat-card stat-pending">
-              <div className="stat-icon">⏳</div>
+              <div className="stat-icon"><ion-icon name="time"></ion-icon></div>
               <div className="stat-content">
                 <p className="stat-label">Pending</p>
                 <h3 className="stat-value">{stats.pending}</h3>
@@ -322,7 +322,7 @@ export default function Dashboard() {
             </div>
 
             <div className="stat-card stat-rejected">
-              <div className="stat-icon">❌</div>
+              <div className="stat-icon"><ion-icon name="close-circle"></ion-icon></div>
               <div className="stat-content">
                 <p className="stat-label">Rejected</p>
                 <h3 className="stat-value">{stats.rejected}</h3>
@@ -330,7 +330,7 @@ export default function Dashboard() {
             </div>
 
             <div className="stat-card stat-amount">
-              <div className="stat-icon">💰</div>
+              <div className="stat-icon"><ion-icon name="cash"></ion-icon></div>
               <div className="stat-content">
                 <p className="stat-label">Total Amount</p>
                 <h3 className="stat-value">₱{(stats.totalAmount / 1000).toFixed(1)}K</h3>
@@ -343,19 +343,19 @@ export default function Dashboard() {
 
             {/* 📊 BAR */}
             <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>📈 Status Overview</h3>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="trending-up"></ion-icon> Status Overview</h3>
               <Bar data={statusData} />
             </div>
 
             {/* 📊 PIE */}
             <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>🥧 Status Distribution</h3>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="pie-chart"></ion-icon> Status Distribution</h3>
               <Pie data={statusData} />
             </div>
 
             {/* 📊 LINE */}
             <div className="panel" style={{ gridColumn: 'span 2', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>📅 Monthly Trend</h3>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="calendar"></ion-icon> Monthly Trend</h3>
               <Line data={monthlyData} />
             </div>
 

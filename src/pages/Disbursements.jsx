@@ -111,7 +111,7 @@ export default function Disbursements() {
     <div>
       <div className="page-header">
         <div>
-          <h2>💳 Disbursement Voucher Tracking</h2>
+          <h2><ion-icon name="card"></ion-icon> Disbursement Voucher Tracking</h2>
           <p>Track requests, approvals, and release statuses in Disbursement MIS.</p>
         </div>
       </div>
@@ -119,7 +119,7 @@ export default function Disbursements() {
       {/* ➕ NEW ENTRY FORM */}
       <section className="panel" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', borderLeft: '4px solid #fbbf24' }}>
         <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}>➕ New Disbursement Voucher Entry</h3>
+          <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="add"></ion-icon> New Disbursement Voucher Entry</h3>
           <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Add a new voucher to track in the system</p>
         </div>
         <form className="form-grid" onSubmit={addDisbursement}>
@@ -169,17 +169,17 @@ export default function Disbursements() {
       <section className="panel">
         <div className="table-toolbar">
           <div>
-            <h3 style={{ color: '#2c5dff' }}>📋 Open Disbursement Voucher Entries</h3>
+            <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> Open Disbursement Voucher Entries</h3>
             <p style={{ color: '#4b5563', marginTop: '0.3rem' }}>{filtered.length} active records</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <Link to="/disbursements/archived" className="btn-archive" style={{ fontSize: '0.9rem', padding: '0.65rem 1rem' }}>
-              📦 Archived
+              <ion-icon name="archive"></ion-icon> Archived
             </Link>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="🔍 Search by tracking, DV number, or officer..."
+              placeholder="Search by tracking, DV number, or officer..."
               className="search"
             />
           </div>
@@ -189,12 +189,12 @@ export default function Disbursements() {
           <table>
             <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
               <tr>
-                <th style={{ color: '#2c5dff' }}>📌 Tracking #</th>
-                <th style={{ color: '#2c5dff' }}>🔖 DV Number</th>
-                <th style={{ color: '#2c5dff' }}>📊 Status</th>
-                <th style={{ color: '#2c5dff' }}>📅 Request Date</th>
-                <th style={{ color: '#2c5dff' }}>👤 Created By</th>
-                <th style={{ color: '#2c5dff' }}>⚙️ Actions</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> DV Number</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="calendar"></ion-icon> Request Date</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Created By</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -217,11 +217,11 @@ export default function Disbursements() {
                       else if (d.status === 'Draft') newStatus = 'Pending'
                       updateStatus(d, newStatus)
                     }}>
-                      {d.status === 'Pending' && '✅ Approve'}
-                      {d.status === 'Approved' && '🚀 Release'}
-                      {d.status === 'Completed' && '🔒 Lock'}
-                      {d.status === 'Draft' && '↩️ Reopen'}
-                      {d.status === 'Rejected' && '❌ Rejected'}
+                      {d.status === 'Pending' && <><ion-icon name="checkmark-circle"></ion-icon> Approve</> }
+                      {d.status === 'Approved' && <><ion-icon name="airplane"></ion-icon> Release</> }
+                      {d.status === 'Completed' && <><ion-icon name="lock-closed"></ion-icon> Lock</> }
+                      {d.status === 'Draft' && <><ion-icon name="return-up-back"></ion-icon> Reopen</> }
+                      {d.status === 'Rejected' && <><ion-icon name="close-circle"></ion-icon> Rejected</> }
                     </button>
                     <button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }} onClick={async () => {
                         if (!confirm('Delete this disbursement?')) return
@@ -243,7 +243,7 @@ export default function Disbursements() {
                               console.error('Delete error', e)
                             }
                         }}>
-                      🗑️ Delete
+                      <ion-icon name="trash"></ion-icon> Delete
                     </button>
                     <button className="btn-archive" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem' }} onClick={async () => {
                         if (!confirm('Archive this disbursement?')) return
@@ -265,14 +265,14 @@ export default function Disbursements() {
                           console.error('Archive error', e)
                         }
                       }}>
-                      📦 Archive
+                      <ion-icon name="archive"></ion-icon> Archive
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <p className="empty" style={{ textAlign: 'center', padding: '2rem', color: '#4b5563' }}>📭 No disbursements found.</p>}
+          {filtered.length === 0 && <p className="empty" style={{ textAlign: 'center', padding: '2rem', color: '#4b5563' }}><ion-icon name="mail-unread"></ion-icon> No disbursements found.</p>}
         </div>
       </section>
     </div>

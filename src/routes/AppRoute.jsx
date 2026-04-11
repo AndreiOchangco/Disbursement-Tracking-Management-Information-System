@@ -13,7 +13,7 @@ import ReportGeneration from '../pages/ReportGeneration'
 import PrivateRoute from './PrivateRoute'
 import { getCurrentUser, clearCurrentUser, ssoLogin, API_ORIGIN } from '../api'
 
-// 🔐 Layout
+// <ion-icon name="lock-closed"></ion-icon> Layout
 function AppLayout() {
   const location = useLocation()
   const currentUser = getCurrentUser()
@@ -59,7 +59,7 @@ function AppLayout() {
             </button>
           )}
           <button type="button" onClick={logout} className="btn-logout">
-            🚪 Logout
+            <ion-icon name="log-out"></ion-icon> Logout
           </button>
         </div>
       </header>
@@ -168,13 +168,13 @@ function AppLayout() {
 }
 
 export const router = createBrowserRouter([
-  // 🔓 Public
+  // <ion-icon name="lock-open"></ion-icon> Public
   { path: '/login', element: <Login /> },
 
-  // 🚨 Force root → login
+  // <ion-icon name="alert"></ion-icon> Force root → login
   { path: '/', element: <Navigate to="/login" replace /> },
 
-  // 🔐 Protected routes
+  // <ion-icon name="lock-closed"></ion-icon> Protected routes
   {
     path: '/',
     element: (

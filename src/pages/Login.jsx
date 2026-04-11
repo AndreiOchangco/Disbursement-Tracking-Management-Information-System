@@ -112,7 +112,7 @@ export default function Login() {
 
         {/* Welcome Message */}
         <div className="mb-6 p-3 rounded-lg flex items-start gap-3" style={{ backgroundColor: '#F0F7FF', borderLeft: '4px solid #0052CC' }}>
-          <span style={{ fontSize: '1.3rem' }}>👋</span>
+          <span style={{ fontSize: '1.3rem' }}><ion-icon name="hand"></ion-icon></span>
           <div>
             <p style={{ color: '#0052CC', fontSize: '0.9rem', fontWeight: '500' }}>
               Welcome back!
@@ -129,7 +129,7 @@ export default function Login() {
             backgroundColor: '#FEE2E2',
             borderColor: '#DC2626'
           }}>
-            <span style={{ color: '#DC2626', fontSize: '1.2rem', flexShrink: 0 }}>⚠️</span>
+            <span style={{ color: '#DC2626', fontSize: '1.2rem', flexShrink: 0 }}><ion-icon name="warning"></ion-icon></span>
             <div>
               <p className="font-semibold" style={{ color: '#991B1B' }}>Oops! Sign in failed</p>
               <p style={{ color: '#7F1D1D', fontSize: '0.9rem' }}>{error}</p>
@@ -213,14 +213,14 @@ export default function Login() {
                 title={showPassword ? 'Hide password' : 'Show password'}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <ion-icon name="eye-off"></ion-icon> : <ion-icon name="eye"></ion-icon>}
               </button>
             </div>
 
             {/* Caps Lock Warning */}
             {capsLockOn && (
               <p style={{ color: '#F59E0B', fontSize: '0.85rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                ⚠️ Caps Lock is ON
+                <ion-icon name="warning"></ion-icon> Caps Lock is ON
               </p>
             )}
           </div>
@@ -255,7 +255,7 @@ export default function Login() {
           >
             {loading ? (
               <>
-                <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⏳</span>
+                <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><ion-icon name="time"></ion-icon></span>
                 Logging in...
               </>
             ) : (
