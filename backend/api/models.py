@@ -45,13 +45,19 @@ WORKFLOW_STATUS_CHOICES = [
     ('archived', 'Archived'),
 ]
 
+USER_STATUS_CHOICES = [
+    ('active', 'Active'),
+    ('inactive', 'Inactive'),
+    ('archived', 'Archived'),
+]
+
 
 class User(models.Model):
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     pass_hashed = models.CharField(max_length=255)
     department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES)
-    status = models.CharField(max_length=20, default='active')
+    status = models.CharField(max_length=20, choices=USER_STATUS_CHOICES, default='active')
 
     class Meta:
         db_table = 'user'

@@ -2,6 +2,7 @@
 import { createBrowserRouter, Link, Outlet, Navigate, useLocation } from 'react-router-dom'
 import Login from '../pages/Login'
 import Dashboard from '../pages/Dashboard'
+import UserManagement from '../pages/UserManagement'
 import Disbursements from '../pages/Disbursements'
 import DisbursementDetail from '../pages/DisbursementDetail'
 import ArchivedDisbursements from '../pages/ArchivedDisbursements'
@@ -13,6 +14,7 @@ import { getCurrentUser, clearCurrentUser } from '../api'
 // 🔐 Layout
 function AppLayout() {
   const location = useLocation()
+  const currentUser = getCurrentUser()
 
   const logout = () => {
     clearCurrentUser()
@@ -22,6 +24,7 @@ function AppLayout() {
   }
 
   const isActive = (path) => location.pathname === path
+  const isAdmin = currentUser?.department === 'admin'
 
   return (
     <div className="app-layout">
@@ -34,7 +37,7 @@ function AppLayout() {
           </div>
         </div>
         <div className="header-actions">
-          <span>{getCurrentUser()?.fullname || 'Guest'}</span>
+          <span>{currentUser?.full_name || 'Guest'}</span>
           <button type="button" onClick={logout} className="btn-logout">
             🚪 Logout
           </button>
@@ -52,6 +55,17 @@ function AppLayout() {
               <span className="nav-icon">📈</span>
               <span className="nav-text">Dashboard</span>
             </Link>
+
+            {isAdmin && (
+              <Link 
+                className={`nav-link ${isActive('/admin/users') ? 'active' : ''}`}
+                to="/admin/users"
+                title="Manage Users and Permissions"
+              >
+                <span className="nav-icon">👥</span>
+                <span className="nav-text">User Management</span>
+              </Link>
+            )}
 
             <Link 
               className={`nav-link ${isActive('/disbursements') ? 'active' : ''}`}
@@ -111,6 +125,16 @@ export const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        ),
+      },
+
+      // ADMIN DASHBOARD
+      {
+        path: 'admin/users',
+        element: (
+          <PrivateRoute>
+            <UserManagement />
           </PrivateRoute>
         ),
       },

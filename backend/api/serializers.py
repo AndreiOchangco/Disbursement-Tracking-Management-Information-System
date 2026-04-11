@@ -26,18 +26,20 @@ class UserCreateUpdateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
+        user = User.objects.create(**validated_data)
         if password:
-            validated_data['pass_hashed'] = password
-            
-        return User.objects.create(**validated_data)
+            user.set_password(password)
+            user.save()
+        return user
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
-        if password:
-            instance.pass_hashed = password
-            
+        
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        
+        if password:
+            instance.set_password(password)
             
         instance.save()
         return instance

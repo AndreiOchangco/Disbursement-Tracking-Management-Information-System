@@ -194,11 +194,11 @@ def user_list(request):
     return Response(UserSerializer(users, many=True).data)
 
 
-@api_view(['GET', 'PUT', 'PATCH'])
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def user_detail(request, pk):
-    """Retrieve or update a user (e.g., changing status to inactive)."""
+    """Retrieve, update, or delete a user (e.g., changing status to inactive)."""
     
     if request.user.department != 'admin':
         return Response(
@@ -225,6 +225,16 @@ def user_detail(request, pk):
             updated_user = serializer.save()
             return Response(UserSerializer(updated_user).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'DELETE':
+        if user_obj.id == request.user.id:
+            return Response(
+                {'error': 'You cannot archive your own admin account.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user_obj.status = 'archived'
+        user_obj.save()
+        return Response({'message': 'User archived successfully.'}, status=status.HTTP_200_OK)
 
 # ─────────────────── DV LIST / CREATE ───────────────────
 

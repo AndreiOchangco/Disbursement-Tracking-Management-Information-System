@@ -111,44 +111,46 @@ export default function Disbursements() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Disbursement Tracking</h2>
-          <p>
-            Track requests, approvals, and release statuses in Disbursement MIS.
-          </p>
+          <h2>💳 Disbursement Voucher Tracking</h2>
+          <p>Track requests, approvals, and release statuses in Disbursement MIS.</p>
         </div>
       </div>
 
-      <section className="panel">
-        <h3>New Disbursement Voucher Entry</h3>
+      {/* ➕ NEW ENTRY FORM */}
+      <section className="panel" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', borderLeft: '4px solid #fbbf24' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}>➕ New Disbursement Voucher Entry</h3>
+          <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Add a new voucher to track in the system</p>
+        </div>
         <form className="form-grid" onSubmit={addDisbursement}>
           <label>
-            Tracking Number
+            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Tracking Number</span>
             <input
               type="number"
               value={trackingno}
               onChange={(e) => setTrackingNo(e.target.value)}
-              placeholder="Tracking number"
+              placeholder="Enter tracking number"
             />
           </label>
           <label>
-            DV Number
+            <span style={{ color: '#2c5dff', fontWeight: '600' }}>DV Number</span>
             <input
               type="number"
               value={dvno}
               onChange={(e) => setDVno(e.target.value)}
-              placeholder="DV Number"
+              placeholder="Enter DV number"
             />
           </label>
           <label>
-            Role
+            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Role</span>
             <input
               value={officer}
               onChange={(e) => setOfficer(e.target.value)}
-              placeholder="Role"
+              placeholder="Enter your role"
             />
           </label>
           <label>
-            Status
+            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Status</span>
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
               {statusOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -157,100 +159,82 @@ export default function Disbursements() {
               ))}
             </select>
           </label>
-          <button type="submit" className="btn-primary">
-            Add Voucher Entry
+          <button type="submit" className="btn-primary" style={{ marginTop: '1.75rem' }}>
+            + Add Voucher Entry
           </button>
         </form>
       </section>
 
+      {/* 📋 VOUCHERS TABLE */}
       <section className="panel">
         <div className="table-toolbar">
           <div>
-            <h3>Open Disbursement Voucher Entry Requests</h3>
-            <p>{filtered.length} records</p>
+            <h3 style={{ color: '#2c5dff' }}>📋 Open Disbursement Voucher Entries</h3>
+            <p style={{ color: '#4b5563', marginTop: '0.3rem' }}>{filtered.length} active records</p>
           </div>
-          <div>
-            <Link to="/disbursements/archived" className="btn-secondary">
-              Archived Voucher Entry
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <Link to="/disbursements/archived" className="btn-archive" style={{ fontSize: '0.9rem', padding: '0.65rem 1rem' }}>
+              📦 Archived
             </Link>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="🔍 Search by tracking, DV number, or officer..."
+              className="search"
+            />
           </div>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by tracking number, status, or officer"
-            className="search"
-          />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-slate-100 text-slate-700">
+        <div className="table-wrap">
+          <table>
+            <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
               <tr>
-                <th>Tracking Number</th>
-                <th>DV Number</th>
-                <th>Status</th>
-                <th>Request Date</th>
-                <th>Created By</th>
-                <th>Actions</th>
+                <th style={{ color: '#2c5dff' }}>📌 Tracking #</th>
+                <th style={{ color: '#2c5dff' }}>🔖 DV Number</th>
+                <th style={{ color: '#2c5dff' }}>📊 Status</th>
+                <th style={{ color: '#2c5dff' }}>📅 Request Date</th>
+                <th style={{ color: '#2c5dff' }}>👤 Created By</th>
+                <th style={{ color: '#2c5dff' }}>⚙️ Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((d) => (
-                <tr key={d.id}>
-                  <td>{d.tracking_no}</td>
+                <tr key={d.id} style={{ borderBottom: '1px solid #fef3c7', transition: 'all 0.3s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = '#fffbeb'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
+                  <td style={{ fontWeight: '600', color: '#2c5dff' }}>{d.tracking_no}</td>
+                  <td>{d.dv_no !== undefined && d.dv_no !== null && d.dv_no !== '' ? Number(d.dv_no).toString() : '-'}</td>
                   <td>
-                    {d.dv_no !== undefined && d.dv_no !== null && d.dv_no !== ''
-                      ? Number(d.dv_no).toString()
-                      : ''}
-                  </td>
-                  <td>
-                    <span
-                      className={
-                        'status-badge status-' +
-                        String(d.status || '')
-                          .toLowerCase()
-                          .replace(/\s+/g, '-')
-                      }
-                    >
+                    <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-')} style={{ textTransform: 'capitalize' }}>
                       {d.status}
                     </span>
                   </td>
                   <td>{formatDateMMDDYYYY(d.created_date)}</td>
                   <td>{d.accounting_name}</td>
                   <td>
-                    <button className="btn-primary" onClick={() => {
+                    <button className="btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }} onClick={() => {
                       let newStatus = d.status
                       if (d.status === 'Pending') newStatus = 'Approved'
                       else if (d.status === 'Approved') newStatus = 'Completed'
                       else if (d.status === 'Draft') newStatus = 'Pending'
                       updateStatus(d, newStatus)
                     }}>
-                      {d.status === 'Pending' && 'Approve'}
-                      {d.status === 'Approved' && 'Release'}
-                      {d.status === 'Completed' && 'Lock'}
-                      {d.status === 'Draft' && 'Reopen'}
-                      {d.status === 'Rejected' && 'Rejected'}
+                      {d.status === 'Pending' && '✅ Approve'}
+                      {d.status === 'Approved' && '🚀 Release'}
+                      {d.status === 'Completed' && '🔒 Lock'}
+                      {d.status === 'Draft' && '↩️ Reopen'}
+                      {d.status === 'Rejected' && '❌ Rejected'}
                     </button>
-                    <button
-                      className="btn-danger"
-                      style={{ marginLeft: 8 }}
-                      onClick={async () => {
+                    <button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }} onClick={async () => {
                         if (!confirm('Delete this disbursement?')) return
                         try {
                           const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}`, { method: 'DELETE' })
                           const json = await res.json()
                           if (res.ok && json.success) {
-                            // reload from backend to ensure DB/UI sync
                             try {
-                              console.log('Deleted', d.id)
                               const r = await fetch('http://localhost:5000/api/disbursements')
                               const j = await r.json()
                               if (j && j.success) setDisbursements(j.disbursements || [])
-                              alert('Disbursement deleted')
                             } catch (e) {
-                              // fallback to local filter
                               setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
-                              alert('Deleted locally (could not reload)')
                             }
                             } else {
                               console.error('Delete failed', json)
@@ -258,20 +242,15 @@ export default function Disbursements() {
                             } catch (e) {
                               console.error('Delete error', e)
                             }
-                        }}
-                      >
-                        Delete
-                      </button>
-                    <button
-                      className="btn-archive"
-                      style={{ marginLeft: 8 }}
-                      onClick={async () => {
+                        }}>
+                      🗑️ Delete
+                    </button>
+                    <button className="btn-archive" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem' }} onClick={async () => {
                         if (!confirm('Archive this disbursement?')) return
                         try {
                           const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}/archive`, { method: 'POST' })
                           const json = await res.json()
                           if (res.ok && json.success) {
-                            // reload list from backend
                             try {
                               const r = await fetch('http://localhost:5000/api/disbursements')
                               const j = await r.json()
@@ -285,16 +264,15 @@ export default function Disbursements() {
                         } catch (e) {
                           console.error('Archive error', e)
                         }
-                      }}
-                    >
-                      Archive
+                      }}>
+                      📦 Archive
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <p className="empty">No disbursements found.</p>}
+          {filtered.length === 0 && <p className="empty" style={{ textAlign: 'center', padding: '2rem', color: '#4b5563' }}>📭 No disbursements found.</p>}
         </div>
       </section>
     </div>
