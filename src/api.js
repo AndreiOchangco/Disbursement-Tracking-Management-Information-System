@@ -106,3 +106,26 @@ export async function initUser() {
     return null
   }
 }
+
+// ===== SSO: Create Django session from frontend JWT =====
+export async function ssoLogin() {
+  const token = getToken()
+
+  const res = await fetch(`${BASE_URL}/auth/sso-login/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    credentials: 'include', // accept/set cookies from backend
+  })
+
+  const data = await res.json().catch(() => null)
+
+  if (!res.ok) {
+    console.error('SSO ERROR:', data)
+    throw new Error(data?.error || 'SSO failed')
+  }
+
+  return data
+}

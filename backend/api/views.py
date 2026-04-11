@@ -12,6 +12,9 @@ from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE
 from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DVWorkflowSerializer, DVArchivedSerializer
 from .authentication import JWTAuthentication
+from django.contrib.auth import authenticate as django_authenticate
+from django.contrib.auth.models import User as DjangoUser
+from django.contrib.auth import login as django_login
 
 DEPT_STEP = {
     'accounting': 1,
@@ -80,16 +83,37 @@ def login(request):
     email = request.data.get('email', '').strip().lower()
     password = request.data.get('password', '')
 
+    # First try to authenticate against the app's User model
     try:
         user = User.objects.get(email__iexact=email)
+        # verify password stored in app user
+        if not user.check_password(password):
+            return Response({'error': 'Password is incorrect.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if user.status != 'active':
+            return Response({'error': 'Account deactivated.'}, status=status.HTTP_401_UNAUTHORIZED)
+
     except User.DoesNotExist:
-        return Response({'error': 'Email is not yet registered.'}, status=status.HTTP_401_UNAUTHORIZED)
+        # Fallback: attempt to authenticate using Django's built-in auth (useful for superuser)
+        django_user = django_authenticate(request, username=email, password=password)
+        if django_user is None:
+            return Response({'error': 'Email is not yet registered.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    if not user.check_password(password):
-        return Response({'error': 'Password is incorrect.'}, status=status.HTTP_401_UNAUTHORIZED)
+        # Only allow mapping for Django superusers
+        if not getattr(django_user, 'is_superuser', False):
+            return Response({'error': 'Email is not yet registered.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    if user.status != 'active':
-        return Response({'error': 'Account deactivated.'}, status=status.HTTP_401_UNAUTHORIZED)
+        # Create or get corresponding app User record and map fields
+        app_user, created = User.objects.get_or_create(
+            email=django_user.email.lower(),
+            defaults={
+                'full_name': django_user.get_full_name() or django_user.username,
+                'pass_hashed': django_user.password,
+                'department': 'admin',
+                'status': 'active'
+            }
+        )
+        user = app_user
 
     access_token, refresh_token = get_tokens_for_user(user)
 
@@ -159,6 +183,41 @@ def logout(request):
 @permission_classes([IsAuthenticated])
 def me(request):
     return Response(UserSerializer(request.user).data)
+
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def sso_login(request):
+    """Create a Django session for the authenticated user so they can access Django admin.
+
+    Frontend should POST to this endpoint with the current Bearer access token
+    and use `fetch` with `credentials: 'include'` so the session cookie is accepted.
+    """
+    user = request.user
+    # Only allow system administrators to SSO into Django admin
+    if getattr(user, 'department', '') != 'admin':
+        return Response({'error': 'Only system administrators can access Django admin.'}, status=status.HTTP_403_FORBIDDEN)
+
+    # Use the underlying Django request to establish a session
+    dj_request = request._request
+    django_login(dj_request, user)
+    # Ensure session is saved so we can set cookie
+    dj_request.session.save()
+
+    session_key = dj_request.session.session_key
+    response = Response({'next': '/admin/'})
+
+    # Set the session cookie explicitly so browser receives it (works with credentials: 'include')
+    response.set_cookie(
+        key=settings.SESSION_COOKIE_NAME,
+        value=session_key,
+        httponly=True,
+        secure=not settings.DEBUG,
+        samesite=settings.CSRF_COOKIE_SAMESITE or 'Lax'
+    )
+
+    return response
 
 
 # ─────────────────── USER LISTS REGISTRATION, UPDATE ───────────────────

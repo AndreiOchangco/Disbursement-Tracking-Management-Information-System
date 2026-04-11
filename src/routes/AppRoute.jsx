@@ -8,8 +8,10 @@ import DisbursementDetail from '../pages/DisbursementDetail'
 import ArchivedDisbursements from '../pages/ArchivedDisbursements'
 import Journals from '../pages/Journals'
 import NotFound from '../pages/NotFound'
+import AdminDisbursements from '../pages/AdminDisbursements'
+import ReportGeneration from '../pages/ReportGeneration'
 import PrivateRoute from './PrivateRoute'
-import { getCurrentUser, clearCurrentUser } from '../api'
+import { getCurrentUser, clearCurrentUser, ssoLogin } from '../api'
 
 // 🔐 Layout
 function AppLayout() {
@@ -23,8 +25,21 @@ function AppLayout() {
     window.location.href = "/login"
   }
 
+  const openDjangoAdmin = async () => {
+    try {
+      const res = await ssoLogin()
+      const base = 'http://localhost:8000'
+      const next = res?.next || '/admin/'
+      window.open(base + next, '_blank')
+    } catch (err) {
+      console.error('SSO failed', err)
+      alert('Failed to open Django admin. Check console for details.')
+    }
+  }
+
   const isActive = (path) => location.pathname === path
   const isAdmin = currentUser?.department === 'admin'
+  const isAccountant = currentUser?.department === 'accountant'
 
   return (
     <div className="app-layout">
@@ -38,6 +53,11 @@ function AppLayout() {
         </div>
         <div className="header-actions">
           <span>{currentUser?.full_name || 'Guest'}</span>
+          {isAdmin && (
+            <button type="button" onClick={openDjangoAdmin} className="btn-primary" style={{ marginRight: '0.5rem' }}>
+              🔐 Open Django Admin
+            </button>
+          )}
           <button type="button" onClick={logout} className="btn-logout">
             🚪 Logout
           </button>
@@ -47,43 +67,87 @@ function AppLayout() {
       <div className="app-shell">
         <aside className="app-sidebar">
           <nav className="sidebar-nav">
-            <Link 
-              className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}
-              to="/dashboard"
-              title="View Dashboard"
-            >
-              <span className="nav-icon">📈</span>
-              <span className="nav-text">Dashboard</span>
-            </Link>
+            {/* Admin-specific navigation */}
+            {isAdmin ? (
+              <>
+                <Link
+                  className={`nav-link ${isActive('/admin/dashboard') ? 'active' : ''}`}
+                  to="/admin/dashboard"
+                  title="Admin Dashboard"
+                >
+                  <span className="nav-icon">📈</span>
+                  <span className="nav-text">Dashboard</span>
+                </Link>
 
-            {isAdmin && (
-              <Link 
-                className={`nav-link ${isActive('/admin/users') ? 'active' : ''}`}
-                to="/admin/users"
-                title="Manage Users and Permissions"
-              >
-                <span className="nav-icon">👥</span>
-                <span className="nav-text">User Management</span>
-              </Link>
+                <Link
+                  className={`nav-link ${isActive('/admin/users') ? 'active' : ''}`}
+                  to="/admin/users"
+                  title="Manage Users and Permissions"
+                >
+                  <span className="nav-icon">👥</span>
+                  <span className="nav-text">User Management</span>
+                </Link>
+
+                <Link
+                  className={`nav-link ${isActive('/admin/disbursements') ? 'active' : ''}`}
+                  to="/admin/disbursements"
+                  title="Disbursement Voucher Management"
+                >
+                  <span className="nav-icon">📋</span>
+                  <span className="nav-text">Disbursement Voucher Management</span>
+                </Link>
+
+                <Link
+                  className={`nav-link ${isActive('/admin/reports') ? 'active' : ''}`}
+                  to="/admin/reports"
+                  title="Report Generation"
+                >
+                  <span className="nav-icon">📑</span>
+                  <span className="nav-text">Report Generation</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}
+                  to="/dashboard"
+                  title="View Dashboard"
+                >
+                  <span className="nav-icon">📈</span>
+                  <span className="nav-text">Dashboard</span>
+                </Link>
+
+                <Link
+                  className={`nav-link ${isActive('/disbursements') ? 'active' : ''}`}
+                  to="/disbursements"
+                  title="Manage Vouchers"
+                >
+                  <span className="nav-icon">📋</span>
+                  <span className="nav-text">Voucher Entry</span>
+                </Link>
+
+                <Link
+                  className={`nav-link ${isActive('/journals') ? 'active' : ''}`}
+                  to="/journals"
+                  title="Manage Journals"
+                >
+                  <span className="nav-icon">📔</span>
+                  <span className="nav-text">Journal Entry</span>
+                </Link>
+
+                {/* Accountant gets report generation link */}
+                {isAccountant && (
+                  <Link
+                    className={`nav-link ${isActive('/reports') ? 'active' : ''}`}
+                    to="/reports"
+                    title="Report Generation"
+                  >
+                    <span className="nav-icon">📑</span>
+                    <span className="nav-text">Report Generation</span>
+                  </Link>
+                )}
+              </>
             )}
-
-            <Link 
-              className={`nav-link ${isActive('/disbursements') ? 'active' : ''}`}
-              to="/disbursements"
-              title="Manage Vouchers"
-            >
-              <span className="nav-icon">📋</span>
-              <span className="nav-text">Voucher Entry</span>
-            </Link>
-
-            <Link 
-              className={`nav-link ${isActive('/journals') ? 'active' : ''}`}
-              to="/journals"
-              title="Manage Journals"
-            >
-              <span className="nav-icon">📔</span>
-              <span className="nav-text">Journal Entry</span>
-            </Link>
           </nav>
 
           <div className="sidebar-footer">
@@ -129,12 +193,52 @@ export const router = createBrowserRouter([
         ),
       },
 
+      // ADMIN DASHBOARD (separate admin route)
+      {
+        path: 'admin/dashboard',
+        element: (
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        ),
+      },
+
       // ADMIN DASHBOARD
       {
         path: 'admin/users',
         element: (
           <PrivateRoute>
             <UserManagement />
+          </PrivateRoute>
+        ),
+      },
+
+      // ADMIN: Disbursement list management
+      {
+        path: 'admin/disbursements',
+        element: (
+          <PrivateRoute>
+            <AdminDisbursements />
+          </PrivateRoute>
+        ),
+      },
+
+      // ADMIN: Report generation
+      {
+        path: 'admin/reports',
+        element: (
+          <PrivateRoute>
+            <ReportGeneration />
+          </PrivateRoute>
+        ),
+      },
+
+      // ACCOUNTANT: Report generation (user route)
+      {
+        path: 'reports',
+        element: (
+          <PrivateRoute>
+            <ReportGeneration />
           </PrivateRoute>
         ),
       },
