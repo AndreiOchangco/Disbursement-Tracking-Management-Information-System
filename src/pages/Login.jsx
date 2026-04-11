@@ -99,19 +99,6 @@ export default function Login() {
           Disbursement Tracking Management Information System
         </p>
 
-        {/* Welcome Message */}
-        <div className="mb-6 p-3 rounded-lg flex items-start gap-3" style={{ backgroundColor: '#F0F7FF', borderLeft: '4px solid #0052CC' }}>
-          <span style={{ fontSize: '1.3rem' }}><ion-icon name="hand"></ion-icon></span>
-          <div>
-            <p style={{ color: '#0052CC', fontSize: '0.9rem', fontWeight: '500' }}>
-              Welcome back!
-            </p>
-            <p style={{ color: '#666', fontSize: '0.85rem' }}>
-              Sign in with your Luna LGU credentials to continue
-            </p>
-          </div>
-        </div>
-
         {/* Error Alert */}
         {error && (
           <div className="mb-6 p-4 rounded-lg border-l-4 flex items-start gap-3 animate-pulse" style={{ 
