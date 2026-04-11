@@ -7,10 +7,13 @@ const user = JSON.parse(localStorage.getItem("user"))
 const statusOptions = ['Pending', 'Approved', 'Rejected']
 
 const formatDateMMDDYYYY = (date) => {
-   const inputDate = date;
-   const parts = inputDate.split('-');
-   const formattedDate = `${parts[1]}-${parts[2]}-${parts[0]}`;
-   return formattedDate;
+   const parts = date.split('-'); 
+   const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+   return dateObj.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+   });
 }
 
 export default function Disbursements() {
