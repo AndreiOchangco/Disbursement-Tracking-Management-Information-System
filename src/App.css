@@ -28,6 +28,13 @@
   box-sizing: border-box;
 }
 
+.noselect {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 html, body, #root {
   min-height: 100%;
   margin: 0;

@@ -22,10 +22,13 @@ export default function Disbursements() {
   const [trackingno, setTrackingNo] = useState('')
   const [dvno, setDVno] = useState('')
   const [status, setStatus] = useState('Pending')
-  const [officer, setOfficer] = useState(() => {
+
+  const initialOfficer = (() => {
     const u = getCurrentUser()
-    return (u && u.name) || ''
-  })
+    return (u && (u.department || u.name)) || ''
+  })()
+
+  const [officer, setOfficer] = useState(initialOfficer)
 
   // 🔥 Load data from Django backend
   useEffect(() => {
@@ -72,7 +75,7 @@ export default function Disbursements() {
       setTrackingNo('')
       setDVno('')
       setStatus('Pending')
-      setOfficer('')
+      setOfficer(initialOfficer)
     } catch (err) {
       console.error('Create failed', err)
     }
@@ -108,7 +111,7 @@ export default function Disbursements() {
   }
 
   return (
-    <div>
+    <div className='noselect'>
       <div className="page-header">
         <div>
           <h2><ion-icon name="card"></ion-icon> Disbursement Voucher Tracking</h2>
@@ -117,12 +120,12 @@ export default function Disbursements() {
       </div>
 
       {/* ➕ NEW ENTRY FORM */}
-      <section className="panel" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', borderLeft: '4px solid #fbbf24' }}>
+      <section className="panel noselect" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', borderLeft: '4px solid #fbbf24' }}>
         <div style={{ marginBottom: '1.5rem' }}>
           <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="add"></ion-icon> New Disbursement Voucher Entry</h3>
           <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Add a new voucher to track in the system</p>
         </div>
-        <form className="form-grid" onSubmit={addDisbursement}>
+        <form className="form-grid noselect" onSubmit={addDisbursement}>
           <label>
             <span style={{ color: '#2c5dff', fontWeight: '600' }}>Tracking Number</span>
             <input
@@ -142,11 +145,12 @@ export default function Disbursements() {
             />
           </label>
           <label>
-            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Role</span>
+            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Department</span>
             <input
               value={officer}
-              onChange={(e) => setOfficer(e.target.value)}
-              placeholder="Enter your role"
+              readOnly
+              disabled
+              placeholder=""
             />
           </label>
           <label>

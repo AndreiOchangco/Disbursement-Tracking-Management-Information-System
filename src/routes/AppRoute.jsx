@@ -42,7 +42,7 @@ function AppLayout() {
   const isAccountant = currentUser?.department === 'accountant'
 
   return (
-    <div className="app-layout">
+    <div className="app-layout noselect">
       <header className="app-header">
         <div className="header-brand">
           <img src="/MuniLuna.png" alt="DTMIS Logo" className="header-logo" />
@@ -149,10 +149,6 @@ function AppLayout() {
               </>
             )}
           </nav>
-
-          <div className="sidebar-footer">
-            <p>Disbursement Tracking<br />Management Information System</p>
-          </div>
         </aside>
 
         <div className="app-content">
