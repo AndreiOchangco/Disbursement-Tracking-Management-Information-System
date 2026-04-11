@@ -2,6 +2,10 @@
 Username: lguluna
 Password: DTMIS2026
 
+# React Admin
+E-Mail: lguluna@gmail.com
+Password: DTMIS2026
+
 
 # All Users password: pogiako123
 

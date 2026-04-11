@@ -1,4 +1,6 @@
-const BASE_URL = 'http://localhost:8000/api'
+// Ensure API origin matches the Django admin host (use 127.0.0.1 if your admin runs there)
+export const BASE_URL = 'http://127.0.0.1:8000/api'
+export const API_ORIGIN = new URL(BASE_URL).origin
 
 // ===== STORAGE KEYS =====
 const TOKEN_KEY = 'token'
@@ -105,4 +107,37 @@ export async function initUser() {
     logout()
     return null
   }
+}
+
+// ===== SSO: Create Django session from frontend JWT =====
+export async function ssoLogin() {
+  const token = getToken()
+  const res = await fetch(`${BASE_URL}/auth/sso-login/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    credentials: 'include', // accept/set cookies from backend
+  })
+
+  // Try to parse JSON, fallback to text for better diagnostics
+  let body = null
+  try {
+    body = await res.json()
+  } catch (e) {
+    try {
+      body = await res.text()
+    } catch (e2) {
+      body = null
+    }
+  }
+
+  if (!res.ok) {
+    console.error('SSO ERROR:', res.status, body)
+    const message = (body && (body.error || body.detail || JSON.stringify(body))) || `HTTP ${res.status}`
+    throw new Error(`SSO failed: ${message}`)
+  }
+
+  return body
 }
