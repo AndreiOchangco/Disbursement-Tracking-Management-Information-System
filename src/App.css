@@ -352,7 +352,6 @@ button {
 .app-content {
   flex: 1 1 auto;
   margin-left: var(--sidebar-width);
-  margin-top: 0;
   padding: calc(1rem + var(--header-height)) 2rem calc(1rem + var(--footer-height));
   box-sizing: border-box;
   color: var(--text-primary);
@@ -504,7 +503,7 @@ button {
 }
 
 .app-main {
-  padding: 1.5rem 0.5rem;
+  padding: 0 0.5rem;
 }
 
 .app-main h2 {
@@ -549,7 +548,6 @@ button {
 }
 
 .page-header p {
-  margin: 0.5rem 0 0;
   color: var(--text-secondary);
   font-weight: 500;
 }
@@ -990,7 +988,7 @@ tbody tr:hover {
 
   .app-content {
     margin-left: 0;
-    padding-top: calc(var(--mobile-header-height) + 1rem);
+    padding-top: 1rem;
     padding-left: 1rem;
     padding-right: 1rem;
     height: calc(100vh - var(--footer-height));

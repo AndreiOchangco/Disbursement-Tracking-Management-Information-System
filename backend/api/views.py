@@ -10,7 +10,7 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE
-from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DVWorkflowSerializer, DVArchivedSerializer
+from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DVWorkflowSerializer
 from .authentication import JWTAuthentication
 from django.contrib.auth import authenticate as django_authenticate
 from django.contrib.auth.models import User as DjangoUser
@@ -365,8 +365,7 @@ def dv_list(request):
             )
             return Response(DVSerializer(dv).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+    
 # ─────────────────── DV DETAIL / UPDATE ───────────────────
 
 @api_view(['GET', 'PUT'])
