@@ -22,13 +22,39 @@ export default function Disbursements() {
   const [trackingno, setTrackingNo] = useState('')
   const [dvno, setDVno] = useState('')
   const [status, setStatus] = useState('Pending')
+  const [payee, setPayee] = useState('')
+  const [fundSource, setFundSource] = useState('GF')
 
   const initialOfficer = (() => {
     const u = getCurrentUser()
-    return (u && (u.department || u.name)) || ''
+    return (u && u.full_name) || ''
   })()
 
   const [officer, setOfficer] = useState(initialOfficer)
+  const currentUser = getCurrentUser()
+  // Normalize department keys to match backend choices (be tolerant of label variants)
+  const normalizeDept = (d) => {
+    if (!d) return null
+    const v = String(d).toLowerCase().trim()
+    if (v === 'admin' || v.includes('system')) return 'admin'
+    if (v === 'accounting' || v === 'accountant') return 'accounting'
+    if (v.includes('budget')) return 'budget'
+    if (v.includes('treasurer')) return 'treasurer'
+    if (v.includes('bac') || v.includes('technical')) return 'bac_gso'
+    if (v.includes('mayor') || v.includes('secretary')) return 'mayors_office'
+    return v.replace(/\s+/g, '_')
+  }
+
+  const currentUserDeptKey = normalizeDept(currentUser?.department)
+  const isAccountant = currentUserDeptKey === 'accounting'
+  const DEPT_STEP = {
+    accounting: 1,
+    budget: 2,
+    treasurer: 3,
+    bac_gso: 4,
+    mayors_office: 5,
+  }
+  const currentUserStep = DEPT_STEP[currentUserDeptKey] || null
 
   // 🔥 Load data from Django backend
   useEffect(() => {
@@ -38,6 +64,15 @@ export default function Disbursements() {
     }
     load()
   }, [])
+
+  const reload = async () => {
+    try {
+      const data = await apiRequest('/dv/')
+      if (data) setDisbursements(data)
+    } catch (e) {
+      console.error('Failed to reload disbursements', e)
+    }
+  }
 
   // 🔍 Search filter
   const filtered = useMemo(() => {
@@ -59,25 +94,38 @@ export default function Disbursements() {
   const addDisbursement = async (e) => {
     e.preventDefault()
 
-    if (!trackingno || !dvno || !officer) return
+    if (!trackingno || !dvno || !officer || !payee || !fundSource) {
+      return alert('Please fill required fields: Tracking, DV, Payee, Fund Source')
+    }
 
     try {
-      const newItem = await apiRequest('/dv/', 'POST', {
-        trackingno,
-        dvno: Number(dvno),
-        status,
-        officer,
-      })
+      const payload = {
+        dv_no: String(dvno),
+        tracking_no: String(trackingno),
+        payee: payee,
+        office: officer,
+        created_date: new Date().toISOString().split('T')[0],
+        fund_source: fundSource,
+      }
 
-      setDisbursements((prev) => [newItem, ...prev])
+      const newItem = await apiRequest('/dv/', 'POST', payload)
+
+      if (newItem) {
+        setDisbursements((prev) => [newItem, ...prev])
+      } else {
+        await reload()
+      }
 
       // reset form
       setTrackingNo('')
       setDVno('')
       setStatus('Pending')
+      setPayee('')
+      setFundSource('GF')
       setOfficer(initialOfficer)
     } catch (err) {
       console.error('Create failed', err)
+      alert(err?.message || 'Failed to create disbursement')
     }
   }
 
@@ -96,8 +144,99 @@ export default function Disbursements() {
     console.error(err)
     alert("Action not allowed")
   }
+
 }
 
+  const approveItem = async (item) => {
+    if (!confirm('Approve this disbursement?')) return
+    try {
+      await apiRequest(`/dv/${item.id}/approve/`, 'POST')
+      await reload()
+    } catch (err) {
+      console.error('Approve failed', err)
+      alert(err?.message || 'Approve failed')
+    }
+  }
+
+  const rejectItem = async (item) => {
+    const remarks = prompt('Enter remarks for rejection:')
+    if (!remarks) return alert('Rejection remarks are required')
+    try {
+      await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks })
+      await reload()
+    } catch (err) {
+      console.error('Reject failed', err)
+      alert(err?.message || 'Reject failed')
+    }
+  }
+
+  const handleDecision = async (item) => {
+    const input = prompt('Type A to approve, or enter rejection remarks to reject:')
+    if (!input) return
+    if (input.trim().toLowerCase() === 'a') {
+      await approveItem(item)
+    } else {
+      try {
+        await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: input })
+        await reload()
+      } catch (err) {
+        console.error('Reject failed', err)
+        alert('Reject failed')
+      }
+    }
+  }
+
+  const isActionable = (d) => {
+    const statusLower = String(d.status || '').toLowerCase()
+    // Allow accountants to act regardless of workflow stage (but not on archived/completed)
+    if (currentUserDeptKey === 'accounting') {
+      return statusLower !== 'archived' && statusLower !== 'completed'
+    }
+    const allowed = statusLower === 'pending'
+    return allowed && d.current_step === currentUserStep
+  }
+
+  const toggleDecision = async (item) => {
+    const isApproved = String(item.status || '').toLowerCase() === 'approved'
+
+    // Client-side guard: allow when pending, or for Accounting allow draft at step 1
+    const statusLower = String(item.status || '').toLowerCase()
+    const allowed = statusLower === 'pending' || (currentUser?.department === 'accounting' && statusLower === 'draft')
+    if (!allowed || item.current_step !== currentUserStep) {
+      return alert('You cannot approve this Disbursement Voucher at this stage.')
+    }
+
+    if (!isApproved) {
+      // Approve
+      if (!confirm('Approve this disbursement?')) return
+      try {
+        const updated = await apiRequest(`/dv/${item.id}/approve/`, 'POST')
+        if (updated) {
+          setDisbursements((prev) => prev.map((d) => (d.id === item.id ? updated : d)))
+        } else {
+          await reload()
+        }
+      } catch (err) {
+        console.error('Approve failed', err)
+        alert(err?.message || 'Approve failed')
+      }
+    } else {
+      // Reject (disapprove) — require remarks
+      const remarks = prompt('Enter remarks for rejection:')
+      if (!remarks) return alert('Rejection remarks are required')
+      try {
+        const updated = await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks })
+        if (updated) {
+          setDisbursements((prev) => prev.map((d) => (d.id === item.id ? updated : d)))
+        } else {
+          await reload()
+        }
+      } catch (err) {
+        console.error('Reject failed', err)
+        alert(err?.message || 'Reject failed')
+      }
+    }
+  }
   // ❌ Delete
   const deleteItem = async (id) => {
     if (!confirm('Delete this disbursement?')) return
@@ -109,7 +248,7 @@ export default function Disbursements() {
       console.error('Delete failed', err)
     }
   }
-
+  
   return (
     <div className='noselect'>
       <div className="page-header">
@@ -145,7 +284,30 @@ export default function Disbursements() {
             />
           </label>
           <label>
-            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Department</span>
+            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Payee</span>
+            <input
+              type="text"
+              value={payee}
+              onChange={(e) => setPayee(e.target.value)}
+              placeholder="Enter payee name"
+            />
+          </label>
+          <label>
+            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Fund Source</span>
+            <select value={fundSource} onChange={(e) => setFundSource(e.target.value)}>
+              <option value="GF">GF</option>
+              <option value="20% DF">20% DF</option>
+              <option value="5% DRRM">5% DRRM</option>
+              <option value="GAD">GAD</option>
+              <option value="RA7171">RA7171</option>
+              <option value="SEF">SEF</option>
+              <option value="TF">TF</option>
+              <option value="PHILHEALTH">PHILHEALTH</option>
+              <option value="CALAMITY">CALAMITY</option>
+            </select>
+          </label>
+          <label>
+            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Created By</span>
             <input
               value={officer}
               readOnly
@@ -214,63 +376,68 @@ export default function Disbursements() {
                   <td>{formatDateMMDDYYYY(d.created_date)}</td>
                   <td>{d.accounting_name}</td>
                   <td>
-                    <button className="btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }} onClick={() => {
-                      let newStatus = d.status
-                      if (d.status === 'Pending') newStatus = 'Approved'
-                      else if (d.status === 'Approved') newStatus = 'Completed'
-                      else if (d.status === 'Draft') newStatus = 'Pending'
-                      updateStatus(d, newStatus)
-                    }}>
-                      {d.status === 'Pending' && <><ion-icon name="checkmark-circle"></ion-icon> Approve</> }
-                      {d.status === 'Approved' && <><ion-icon name="airplane"></ion-icon> Release</> }
-                      {d.status === 'Completed' && <><ion-icon name="lock-closed"></ion-icon> Lock</> }
-                      {d.status === 'Draft' && <><ion-icon name="return-up-back"></ion-icon> Reopen</> }
-                      {d.status === 'Rejected' && <><ion-icon name="close-circle"></ion-icon> Rejected</> }
-                    </button>
-                    <button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }} onClick={async () => {
-                        if (!confirm('Delete this disbursement?')) return
-                        try {
-                          const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}`, { method: 'DELETE' })
-                          const json = await res.json()
-                          if (res.ok && json.success) {
-                            try {
-                              const r = await fetch('http://localhost:5000/api/disbursements')
-                              const j = await r.json()
-                              if (j && j.success) setDisbursements(j.disbursements || [])
-                            } catch (e) {
-                              setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
-                            }
-                            } else {
-                              console.error('Delete failed', json)
-                            }
-                            } catch (e) {
-                              console.error('Delete error', e)
-                            }
-                        }}>
-                      <ion-icon name="trash"></ion-icon> Delete
-                    </button>
-                    <button className="btn-archive" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem' }} onClick={async () => {
-                        if (!confirm('Archive this disbursement?')) return
-                        try {
-                          const res = await fetch(`http://localhost:5000/api/disbursements/${d.id}/archive`, { method: 'POST' })
-                          const json = await res.json()
-                          if (res.ok && json.success) {
-                            try {
-                              const r = await fetch('http://localhost:5000/api/disbursements')
-                              const j = await r.json()
-                              if (j && j.success) setDisbursements(j.disbursements || [])
-                            } catch (e) {
-                              setDisbursements((prev) => prev.filter((x) => x.id !== d.id))
-                            }
-                          } else {
-                            console.error('Archive failed', json)
+                    {/* Actions: Approve/Reject for non-admin users; Delete/Archive for Accounting */}
+                    {currentUser?.department !== 'admin' && (
+                      <>
+                        {/* Separate Approve and Reject buttons */}
+                        <>
+                          <button
+                            className="btn-primary"
+                            style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }}
+                            onClick={() => approveItem(d)}
+                            disabled={!isActionable(d)}
+                            title={!isActionable(d) ? 'Not actionable at your stage' : 'Approve'}
+                          >
+                            <ion-icon name="checkmark-circle"></ion-icon> Approve
+                          </button>
+
+                          <button
+                            className="btn-danger"
+                            style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }}
+                            onClick={() => rejectItem(d)}
+                            disabled={!isActionable(d)}
+                            title={!isActionable(d) ? 'Not actionable at your stage' : 'Reject'}
+                          >
+                            <ion-icon name="close-circle"></ion-icon> Reject
+                          </button>
+
+                          {!isActionable(d) && (
+                            <small style={{ color: '#6b7280' }}>
+                              ({String(d.status || '')}, step {d.current_step ?? 'N/A'}, your step {currentUserStep ?? 'N/A'})
+                            </small>
+                          )}
+                        </>
+                      </>
+                    )}
+
+                    {isAccountant && (
+                      <>
+                        <button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }} onClick={async () => {
+                          if (!confirm('Delete this disbursement?')) return
+                          try {
+                            await deleteItem(d.id)
+                          } catch (e) {
+                            console.error('Delete error', e)
                           }
-                        } catch (e) {
-                          console.error('Archive error', e)
-                        }
-                      }}>
-                      <ion-icon name="archive"></ion-icon> Archive
-                    </button>
+                        }}>
+                          <ion-icon name="trash"></ion-icon> Delete
+                        </button>
+
+                        <button className="btn-archive" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem' }} onClick={async () => {
+                          if (!confirm('Archive this disbursement?')) return
+                          const reason = prompt('Reason for archiving:')
+                          if (!reason) return alert('Reason is required')
+                          try {
+                            await apiRequest(`/dv/${d.id}/archive/`, 'POST', { reason })
+                            await reload()
+                          } catch (e) {
+                            console.error('Archive error', e)
+                          }
+                        }}>
+                          <ion-icon name="archive"></ion-icon> Archive
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}

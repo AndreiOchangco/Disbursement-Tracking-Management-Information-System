@@ -82,7 +82,15 @@ export async function apiRequest(endpoint, method = 'GET', body = null) {
 
     if (!res.ok) {
       console.error('API ERROR:', data)
-      throw new Error(data?.detail || 'API error')
+      let message = null
+      if (data) {
+        if (data.error) message = data.error
+        else if (data.detail) message = data.detail
+        else message = JSON.stringify(data)
+      } else {
+        message = `HTTP ${res.status}`
+      }
+      throw new Error(message)
     }
 
     return data

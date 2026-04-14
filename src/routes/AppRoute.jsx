@@ -8,7 +8,6 @@ import DisbursementDetail from '../pages/DisbursementDetail'
 import ArchivedDisbursements from '../pages/ArchivedDisbursements'
 import Journals from '../pages/Journals'
 import NotFound from '../pages/NotFound'
-import AdminDisbursements from '../pages/AdminDisbursements'
 import ReportGeneration from '../pages/ReportGeneration'
 import PrivateRoute from './PrivateRoute'
 import { getCurrentUser, clearCurrentUser, ssoLogin, API_ORIGIN } from '../api'
@@ -86,15 +85,6 @@ function AppLayout() {
                 >
                   <span className="nav-icon">👥</span>
                   <span className="nav-text">User Management</span>
-                </Link>
-
-                <Link
-                  className={`nav-link ${isActive('/admin/disbursements') ? 'active' : ''}`}
-                  to="/admin/disbursements"
-                  title="Disbursement Voucher Management"
-                >
-                  <span className="nav-icon">📋</span>
-                  <span className="nav-text">Disbursement Voucher Management</span>
                 </Link>
 
                 <Link
@@ -214,7 +204,7 @@ export const router = createBrowserRouter([
         path: 'admin/disbursements',
         element: (
           <PrivateRoute>
-            <AdminDisbursements />
+            <Disbursements />
           </PrivateRoute>
         ),
       },

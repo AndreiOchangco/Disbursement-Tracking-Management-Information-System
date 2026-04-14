@@ -28,4 +28,8 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/', views.dashboard_stats, name='dashboard-stats'),
+    # PDF report for approved disbursements
+    path('dv/approved/report/pdf/', views.approved_dv_pdf, name='dv-approved-pdf'),
+    # wkhtmltopdf diagnostic
+    path('health/wkhtmltopdf/', views.wkhtmltopdf_health, name='wkhtmltopdf-health'),
 ]
