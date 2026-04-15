@@ -44,7 +44,13 @@ function AppLayout() {
     <div className="app-layout noselect">
       <header className="app-header">
         <div className="header-brand">
-          <img src="/MuniLuna.png" alt="DTMIS Logo" className="header-logo" />
+          <Link
+                  className={`${isActive('/admin/dashboard') ? 'active' : ''}`}
+                  to="/admin/dashboard"
+                  title="Admin Dashboard"
+                >
+                <img src="/MuniLuna.png" alt="DTMIS Logo" className="header-logo" />
+                </Link>
           <div>
             <h1 className="text-xl font-bold">DTMIS</h1>
             <p className="text-sm text-gray-600">Disbursement Tracking Management Information System</p>

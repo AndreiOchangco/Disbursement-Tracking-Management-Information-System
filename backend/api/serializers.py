@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE
+from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVParticularValue
 
 
 STEP_LABELS = {
@@ -79,11 +79,16 @@ class DVPaymentSerializer(serializers.ModelSerializer):
         model = DVPayment
         exclude = ['dv']
 
+class DVParticularValueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DVParticularValue
+        fields = ['id', 'category', 'np', 'ft', 'tf']
 
 class DVParticularsSerializer(serializers.ModelSerializer):
+    category_values = DVParticularValueSerializer(many=True)
     class Meta:
         model = DVParticulars
-        exclude = ['dv']
+        fields = ['id', 'description', 'jev_no', 'date', 'category_values']
 
 
 class DVJESerializer(serializers.ModelSerializer):
