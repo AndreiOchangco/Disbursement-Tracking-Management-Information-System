@@ -152,30 +152,24 @@ class DVPayment(models.Model):
     class Meta:
         db_table = 'dv_payment'
 
-
 class DVParticulars(models.Model):
     dv = models.ForeignKey(DV, on_delete=models.CASCADE, related_name='particulars')
     description = models.TextField()
     jev_no = models.CharField(max_length=100, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
-    # NP columns
-    organic_np = models.DecimalField(max_digits=15, decimal_places=2, default=0,)
-    devolved_np = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    vmsb_np = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    adjustment_np = models.DecimalField(max_digits=15, decimal_places=2, default=0, blank=True, null=True)
-    # FT columns
-    organic_ft = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    devolved_ft = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    vmsb_ft = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    adjustment_ft = models.DecimalField(max_digits=15, decimal_places=2, default=0, blank=True, null=True)
-    # TF columns
-    organic_tf = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    devolved_tf = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    vmsb_tf = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    adjustment_tf = models.DecimalField(max_digits=15, decimal_places=2, default=0, blank=True, null=True)
-
+   
     class Meta:
         db_table = 'dv_particulars'
+
+class DVParticularValue(models.Model):
+    particulars = models.ForeignKey(DVParticulars, on_delete=models.CASCADE, related_name='category_values')
+    category = models.CharField(max_length=100)
+    np = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Net Pay")
+    ft = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="15th")
+    tf = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="31st")
+
+    class Meta:
+        db_table = 'dv_particular_values'
 
 
 class DVJE(models.Model):
