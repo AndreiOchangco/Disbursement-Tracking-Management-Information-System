@@ -27,11 +27,11 @@ export default function UserManagement() {
 
   const departmentChoices = [
     { value: 'admin', label: 'System Administrator', icon: 'crown' },
-    { value: 'accounting', label: 'Accounting', icon: 'bar-chart' },
-    { value: 'budget', label: 'Budget', icon: 'cash' },
+    { value: 'accounting', label: 'Accountant', icon: 'bar-chart' },
+    { value: 'budget', label: 'Budget Officer', icon: 'cash' },
     { value: 'treasurer', label: 'Treasurer', icon: 'business' },
-    { value: 'bac_gso', label: 'BAC/GSO', icon: 'clipboard' },
-    { value: 'mayors_office', label: 'Mayor\'s Office', icon: 'business' },
+    { value: 'bac_gso', label: 'Technical Officer', icon: 'clipboard' },
+    { value: 'mayors_office', label: 'Secretary', icon: 'business' },
   ]
 
   // Load users
@@ -348,30 +348,6 @@ export default function UserManagement() {
             <p style={{ color: '#4b5563', marginTop: '0.3rem' }}>{filtered.length} users found</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setShowArchived(!showArchived)}
-              style={{
-                fontSize: '0.9rem',
-                padding: '0.65rem 1rem',
-                background: showArchived ? '#fee2e2' : '#eff6ff',
-                color: showArchived ? '#991b1b' : '#2c5dff',
-                border: `2px solid ${showArchived ? '#dc2626' : '#2563eb'}`,
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '600',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(251, 191, 36, 0.2)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-            >
-              {showArchived ? <><ion-icon name="folder-open"></ion-icon> Show Active</> : <><ion-icon name="archive"></ion-icon> Show Archived</>}
-            </button>
             {!showForm && (
               <button 
                 className="btn-primary" 
@@ -445,32 +421,18 @@ export default function UserManagement() {
                       className={`status-badge ${user.status === 'active' ? 'status-approved' : user.status === 'archived' ? 'status-archived' : 'status-rejected'}`}
                       style={{
                         display: 'inline-flex',
+                        marginBottom: '-3px',
                         alignItems: 'center',
-                        gap: '0.4rem',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '20px',
-                        fontSize: '0.8rem',
-                        fontWeight: '700',
-                        textTransform: 'uppercase',
-                        background: user.status === 'active' ? '#d1fae5' : user.status === 'archived' ? '#f3f4f6' : '#fee2e2',
-                        color: user.status === 'active' ? '#065f46' : user.status === 'archived' ? '#4b5563' : '#991b1b',
-                        border: `2px solid ${user.status === 'active' ? '#10b981' : user.status === 'archived' ? '#9ca3af' : '#dc2626'}`,
-                        boxShadow: user.status === 'active' ? '0 2px 8px rgba(16, 185, 129, 0.2)' : user.status === 'archived' ? '0 2px 8px rgba(155, 163, 175, 0.2)' : '0 2px 8px rgba(220, 38, 38, 0.2)',
+                        background: user.status === 'active' ? 'transparent' : user.status === 'archived' ? 'transparent' : 'transparent',
+                        boxShadow: 'none',
                         cursor: 'default'
                       }}
                     >
-                      <span style={{ fontSize: '1rem' }}>{user.status === 'active' ? <ion-icon name="ellipse" style={{color: 'green'}}></ion-icon> : user.status === 'archived' ? <ion-icon name="archive"></ion-icon> : <ion-icon name="ellipse" style={{color: 'red'}}></ion-icon>}</span>
-                      {user.status === 'active' ? 'Active' : user.status === 'archived' ? 'Archived' : 'Inactive'}
+                      <span style={{ fontSize: '1.3rem' }}>{user.status === 'active' ? <ion-icon name="ellipse" style={{color: 'green', fontSize: '1.1rem', border: '2px solid darkgreen', borderRadius: '100%', margin: '0', padding: '0', background: 'green'}}></ion-icon> : user.status === 'archived' ? <ion-icon name="archive"></ion-icon> : <ion-icon name="ellipse" style={{color: 'red', fontSize: '1.1rem', border: '2px solid darkred', borderRadius: '100%', margin: '0', padding: '0', background: 'red'}}></ion-icon>}</span>
+                      {user.status === 'active' ? '' : user.status === 'archived' ? 'Archived' : ''}
                     </span>
                   </td>
                   <td>
-                    <button
-                      className="btn-primary"
-                      style={{ fontSize: '0.8rem', padding: '0.45rem 0.75rem', marginRight: '0.4rem' }}
-                      onClick={() => handleEdit(user)}
-                    >
-                      <ion-icon name="pencil"></ion-icon> Edit
-                    </button>
                     {!showArchived && (
                       <>
                         <button
@@ -498,42 +460,9 @@ export default function UserManagement() {
                           }}
                           onClick={() => toggleUserStatus(user)}
                         >
-                          {user.status === 'active' ? <><ion-icon name="lock-closed"></ion-icon> Lock</> : <><ion-icon name="lock-open"></ion-icon> Unlock</>}
-                        </button>
-                        <button
-                          className="btn-danger"
-                          style={{ fontSize: '0.8rem', padding: '0.45rem 0.75rem' }}
-                          onClick={() => handleDelete(user.id)}
-                        >
-                          <ion-icon name="archive"></ion-icon> Archive
+                          {user.status === 'active' ? <><ion-icon name="lock-closed"></ion-icon> Deactive</> : <><ion-icon name="lock-open"></ion-icon> Active</>}
                         </button>
                       </>
-                    )}
-                    {showArchived && (
-                      <button
-                        style={{
-                          fontSize: '0.8rem',
-                          padding: '0.5rem 0.85rem',
-                          background: '#d1fae5',
-                          color: '#065f46',
-                          border: '2px solid #10b981',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          borderRadius: '6px',
-                          transition: 'all 0.3s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-2px)'
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0)'
-                          e.currentTarget.style.boxShadow = 'none'
-                        }}
-                        onClick={() => handleRestore(user.id)}
-                      >
-                        <ion-icon name="return-up-back"></ion-icon> Restore
-                      </button>
                     )}
                   </td>
                 </tr>
