@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { apiRequest, getCurrentUser } from '../api'
 
 const user = JSON.parse(localStorage.getItem("user"))
@@ -95,7 +96,8 @@ export default function Disbursements() {
     e.preventDefault()
 
     if (!trackingno || !dvno || !officer || !payee || !fundSource) {
-      return alert('Please fill required fields: Tracking, DV, Payee, Fund Source')
+      toast.error('Please fill required fields: Tracking#, DV#, Payee, Fund Source')
+      return
     }
 
     try {
@@ -116,6 +118,8 @@ export default function Disbursements() {
         await reload()
       }
 
+      toast.success('Disbursement voucher entry added successfully!')
+
       // reset form
       setTrackingNo('')
       setDVno('')
@@ -125,7 +129,7 @@ export default function Disbursements() {
       setOfficer(initialOfficer)
     } catch (err) {
       console.error('Create failed', err)
-      alert(err?.message || 'Failed to create disbursement')
+      toast.error(err?.message || 'Failed to create disbursement')
     }
   }
 
