@@ -15,6 +15,9 @@ from .authentication import JWTAuthentication
 from django.contrib.auth import authenticate as django_authenticate
 from django.contrib.auth.models import User as DjangoUser
 from django.contrib.auth import login as django_login
+from django.http import HttpResponse
+import os
+from pathlib import Path
 
 DEPT_STEP = {
     'accounting': 1,
@@ -450,12 +453,15 @@ def dv_approve(request, pk):
     except DV.DoesNotExist:
         return Response({'error': 'Disbursement Voucher cannot be found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.department == 'accounting':
-        return Response({'error': 'Accounting personnel cannot approve DVs.'}, status=status.HTTP_403_FORBIDDEN)
-
+    # Allow accounting personnel to approve at step 1; determine user's workflow step
     user_step = DEPT_STEP.get(request.user.department)
 
-    if dv.status != 'pending' or dv.current_step != user_step:
+    # Allow Accounting to approve a DV in 'draft' at step 1, or allow approval when status is 'pending'
+    allowed_status = ['pending']
+    if user_step == 1:
+        allowed_status.append('draft')
+
+    if dv.status not in allowed_status or dv.current_step != user_step:
         return Response(
             {'error': 'You cannot approve this Disbursement Voucher at this stage.'},
             status=status.HTTP_400_BAD_REQUEST
@@ -487,9 +493,7 @@ def dv_disapprove(request, pk):
     except DV.DoesNotExist:
         return Response({'error': 'Disbursement Voucher cannot found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    if request.user.department == 'accounting':
-        return Response({'error': 'Accounting personnel cannot disapprove Disbursement Vouchers.'}, status=status.HTTP_403_FORBIDDEN)
-
+    # Allow accounting personnel to disapprove at step 1; determine user's workflow step
     user_step = DEPT_STEP.get(request.user.department)
 
     if dv.status != 'pending' or dv.current_step != user_step:
@@ -631,3 +635,126 @@ def dashboard_stats(request):
     recent = DVSerializer(recent_dvs, many=True).data
 
     return Response({**stats, 'recent_dvs': recent})
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def approved_dv_pdf(request):
+    """Generate a PDF containing approved/completed disbursement vouchers."""
+    # Only authenticated users can access; limit further if desired
+    approved_dvs = DV.objects.filter(Q(status__iexact='approved') | Q(status__iexact='completed')).order_by('-approved_date', '-created_at')
+
+    # Build a simple HTML document
+    rows = []
+    for dv in approved_dvs:
+        rows.append(
+            f"<tr>"
+            f"<td style='font-weight:600'>{dv.tracking_no or '-'}</td>"
+            f"<td>{dv.dv_no or '-'}</td>"
+            f"<td>{dv.amount or '-'}</td>"
+            f"<td>{getattr(dv, 'approved_date', '') or dv.created_date or '-'}</td>"
+            f"<td>{getattr(dv, 'accounting_name', '') or '-'}</td>"
+            f"</tr>"
+        )
+
+    html = f"""
+    <html>
+      <head>
+        <meta charset='utf-8'/>
+        <style>
+          body {{ font-family: Arial, sans-serif; font-size: 12px; }}
+          table {{ width:100%; border-collapse: collapse; }}
+          th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+          th {{ background: #f3f4f6; }}
+          h2 {{ color: #2c5dff; }}
+        </style>
+      </head>
+      <body>
+        <h2>Approved Disbursement Vouchers</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Tracking #</th>
+              <th>DV Number</th>
+              <th>Amount</th>
+              <th>Approved Date</th>
+              <th>Prepared By</th>
+            </tr>
+          </thead>
+          <tbody>
+            {''.join(rows)}
+          </tbody>
+        </table>
+      </body>
+    </html>
+    """
+
+    try:
+        # Import pdfkit lazily so the project can start even if the package isn't installed.
+        try:
+            import pdfkit
+        except ModuleNotFoundError:
+            return Response({'error': 'Python package "pdfkit" is not installed. Run `python -m pip install pdfkit` or `pip install -r backend/requirements.txt`.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Use wkhtmltopdf via pdfkit. Ensure wkhtmltopdf binary is available in PATH.
+        options = {
+            'enable-local-file-access': None,
+        }
+
+        # Try explicit configuration (env var -> project-local -> common system paths)
+        wkhtmltopdf_path = getattr(settings, 'WKHTMLTOPDF_PATH', None) or os.environ.get('WKHTMLTOPDF_PATH')
+
+        if not wkhtmltopdf_path:
+            candidate = Path(settings.BASE_DIR) / 'wkhtmltopdf' / 'bin' / 'wkhtmltopdf.exe'
+            if candidate.exists():
+                wkhtmltopdf_path = str(candidate)
+
+        if not wkhtmltopdf_path:
+            for p in ('/usr/local/bin/wkhtmltopdf', '/usr/bin/wkhtmltopdf'):
+                if os.path.exists(p):
+                    wkhtmltopdf_path = p
+                    break
+
+        config = None
+        if wkhtmltopdf_path:
+            try:
+                config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
+            except Exception:
+                config = None
+
+        pdf_bytes = pdfkit.from_string(html, False, options=options, configuration=config)
+    except Exception as e:
+        return Response({'error': 'Failed to generate PDF.', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="approved-disbursements.pdf"'
+    return response
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def wkhtmltopdf_health(request):
+    """Return the detected wkhtmltopdf binary path for diagnostics."""
+    wkhtmltopdf_path = getattr(settings, 'WKHTMLTOPDF_PATH', None) or os.environ.get('WKHTMLTOPDF_PATH')
+
+    if not wkhtmltopdf_path:
+        candidate = Path(settings.BASE_DIR) / 'wkhtmltopdf' / 'bin' / 'wkhtmltopdf.exe'
+        if candidate.exists():
+            wkhtmltopdf_path = str(candidate)
+
+    if not wkhtmltopdf_path:
+        for p in ('/usr/local/bin/wkhtmltopdf', '/usr/bin/wkhtmltopdf'):
+            if os.path.exists(p):
+                wkhtmltopdf_path = p
+                break
+
+    if wkhtmltopdf_path and os.path.exists(wkhtmltopdf_path):
+        return Response({'wkhtmltopdf_path': wkhtmltopdf_path, 'status': 'ok'})
+
+    return Response({
+        'wkhtmltopdf_path': None,
+        'status': 'missing',
+        'message': 'wkhtmltopdf binary not found. Set settings.WKHTMLTOPDF_PATH or WKHTMLTOPDF_PATH env var, or place the binary under backend/wkhtmltopdf/bin.'
+    }, status=status.HTTP_404_NOT_FOUND)

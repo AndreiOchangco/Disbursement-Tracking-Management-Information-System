@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react'
-import { apiRequest } from '../api'
+import { apiRequest, BASE_URL, getToken } from '../api'
 
 export default function ReportGeneration() {
   const [approved, setApproved] = useState([])
@@ -35,6 +35,35 @@ export default function ReportGeneration() {
     URL.revokeObjectURL(url)
   }
 
+  const downloadPDF = async () => {
+    setLoading(true)
+    try {
+      const token = getToken()
+      const res = await fetch(`${BASE_URL}/dv/approved/report/pdf/`, {
+        method: 'GET',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      })
+
+      if (!res.ok) throw new Error('Failed to generate PDF')
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'approved-disbursements.pdf'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -53,6 +82,9 @@ export default function ReportGeneration() {
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button className="btn-primary" onClick={() => downloadJSON(approved)} disabled={approved.length === 0 || loading}>
               ⤓ Export JSON
+            </button>
+            <button className="btn-primary" onClick={downloadPDF} disabled={approved.length === 0 || loading}>
+              ⤓ Export PDF
             </button>
             <button className="btn-archive" onClick={loadApproved} disabled={loading}>
               🔄 Refresh

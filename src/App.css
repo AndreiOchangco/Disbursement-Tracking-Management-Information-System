@@ -54,7 +54,7 @@ a {
 
 a:hover {
   color: var(--primary-dark);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 button {
@@ -195,13 +195,13 @@ button {
 .nav-link:hover {
   color: white;
   border-color: var(--accent-color);
-  transform: translateX(6px);
-  box-shadow: 0 8px 20px rgba(251, 191, 36, 0.35);
+  transform: none;
+  box-shadow: 0 6px 16px rgba(251, 191, 36, 0.25);
   background: var(--accent-color);
 }
 
 .nav-link:hover .nav-icon {
-  transform: scale(1.25) translateX(4px) rotate(5deg);
+  transform: none;
   filter: drop-shadow(0 4px 8px rgba(251, 191, 36, 0.3));
 }
 
@@ -418,15 +418,8 @@ button {
   object-fit: cover;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(44, 93, 255, 0.15), 0 2px 4px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid rgba(44, 93, 255, 0.1);
   cursor: pointer;
-}
-
-.header-logo:hover {
-  box-shadow: 0 8px 24px rgba(44, 93, 255, 0.25), 0 4px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-3px) scale(1.05);
-  border-color: rgba(44, 93, 255, 0.2);
 }
 
 .header-actions {
@@ -626,14 +619,14 @@ button {
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.35);
+  transform: none;
+  box-shadow: 0 5px 14px rgba(251, 191, 36, 0.25);
   background: var(--accent-dark);
 }
 
 .btn-primary:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.2);
+  transform: none;
+  box-shadow: 0 2px 10px rgba(251, 191, 36, 0.2);
 }
 
 .btn-danger {
@@ -650,14 +643,14 @@ button {
 }
 
 .btn-danger:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+  transform: none;
+  box-shadow: 0 5px 14px rgba(239, 68, 68, 0.25);
   background: #dc2626;
 }
 
 .btn-danger:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+  transform: none;
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
 }
 
 .btn-archive {
@@ -674,14 +667,14 @@ button {
 }
 
 .btn-archive:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(44, 93, 255, 0.35);
+  transform: none;
+  box-shadow: 0 5px 14px rgba(44, 93, 255, 0.25);
   background: var(--primary-dark);
 }
 
 .btn-archive:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(44, 93, 255, 0.2);
+  transform: none;
+  box-shadow: 0 2px 10px rgba(44, 93, 255, 0.2);
 }
 
 /* Logout button - solid yellow */
@@ -721,14 +714,14 @@ button {
 }
 
 .btn-logout:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
+  transform: none;
+  box-shadow: 0 6px 18px rgba(251, 191, 36, 0.3);
   background: var(--accent-dark);
   color: white;
 }
 
 .btn-logout:active {
-  transform: translateY(-1px);
+  transform: none;
   box-shadow: 0 4px 12px rgba(251, 191, 36, 0.25);
 }
 
@@ -1099,14 +1092,25 @@ tbody tr:hover {
 }
 
 .auth-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.35);
+  transform: none;
+  box-shadow: 0 5px 14px rgba(251, 191, 36, 0.25);
   background: var(--accent-dark);
 }
 
 .auth-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.2);
+  transform: none;
+  box-shadow: 0 2px 10px rgba(251, 191, 36, 0.2);
+}
+
+button:hover ion-icon,
+button:hover .icon,
+button:hover svg,
+.btn-primary:hover ion-icon,
+.btn-danger:hover ion-icon,
+.btn-archive:hover ion-icon,
+.btn-logout:hover ion-icon,
+.auth-btn:hover ion-icon {
+  transform: none !important;
 }
 
 .auth-wrapper .page-header {

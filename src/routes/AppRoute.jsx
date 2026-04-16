@@ -8,7 +8,6 @@ import DisbursementDetail from '../pages/DisbursementDetail'
 import ArchivedDisbursements from '../pages/ArchivedDisbursements'
 import Journals from '../pages/Journals'
 import NotFound from '../pages/NotFound'
-import AdminDisbursements from '../pages/AdminDisbursements'
 import ReportGeneration from '../pages/ReportGeneration'
 import PrivateRoute from './PrivateRoute'
 import { getCurrentUser, clearCurrentUser, ssoLogin, API_ORIGIN } from '../api'
@@ -39,13 +38,19 @@ function AppLayout() {
 
   const isActive = (path) => location.pathname === path
   const isAdmin = currentUser?.department === 'admin'
-  const isAccountant = currentUser?.department === 'accountant'
+  const isAccountant = currentUser?.department === 'accounting'
 
   return (
     <div className="app-layout noselect">
       <header className="app-header">
         <div className="header-brand">
-          <img src="/MuniLuna.png" alt="DTMIS Logo" className="header-logo" />
+          <Link
+                  className={`${isActive('/admin/dashboard') ? 'active' : ''}`}
+                  to="/admin/dashboard"
+                  title="Admin Dashboard"
+                >
+                <img src="/MuniLuna.png" alt="DTMIS Logo" className="header-logo" />
+                </Link>
           <div>
             <h1 className="text-xl font-bold">DTMIS</h1>
             <p className="text-sm text-gray-600">Disbursement Tracking Management Information System</p>
@@ -86,15 +91,6 @@ function AppLayout() {
                 >
                   <span className="nav-icon">👥</span>
                   <span className="nav-text">User Management</span>
-                </Link>
-
-                <Link
-                  className={`nav-link ${isActive('/admin/disbursements') ? 'active' : ''}`}
-                  to="/admin/disbursements"
-                  title="Disbursement Voucher Management"
-                >
-                  <span className="nav-icon">📋</span>
-                  <span className="nav-text">Disbursement Voucher Management</span>
                 </Link>
 
                 <Link
@@ -214,7 +210,7 @@ export const router = createBrowserRouter([
         path: 'admin/disbursements',
         element: (
           <PrivateRoute>
-            <AdminDisbursements />
+            <Disbursements />
           </PrivateRoute>
         ),
       },

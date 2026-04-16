@@ -17,3 +17,7 @@ Pillow>=10.0.0
 
 # Dev tools (optional but recommended)
 django-filter>=23.5
+# HTML -> PDF conversion (higher-fidelity renderer)
+# Uses `pdfkit` which requires the `wkhtmltopdf` binary to be installed on the host.
+# On Windows download/install wkhtmltopdf from https://wkhtmltopdf.org/downloads.html
+pdfkit>=1.0.0

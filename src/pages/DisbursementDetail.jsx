@@ -41,7 +41,7 @@ export default function DisbursementDetail() {
         <p><span className="font-semibold text-slate-800">DV Number:</span> {disbursement.dvno.toLocaleString()}</p>
         <p><span className="font-semibold text-slate-800">Status:</span> {disbursement.status}</p>
         <p><span className="font-semibold text-slate-800">Request Date:</span> {disbursement.date}</p>
-        <p><span className="font-semibold text-slate-800">Officer:</span> {disbursement.officer}</p>
+        <p><span className="font-semibold text-slate-800">Department:</span> {disbursement.officer}</p>
       </section>
 
       <Link to="/disbursements" className="inline-block border border-blue-600 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">Back to Voucher Entry List</Link>
