@@ -102,7 +102,7 @@ class DV(models.Model):
     responsibility_center = models.CharField(max_length=255, blank=True, null=True)
     fund_source = models.CharField(max_length=50, choices=FUND_SOURCE_CHOICES)
     tin = models.CharField(max_length=50, blank=True, null=True)
-    status = models.CharField(max_length=20, choices=DV_STATUS_CHOICES, default='draft')
+    status = models.CharField(max_length=20, choices=DV_STATUS_CHOICES, default='pending')
     # current_step: 1=Accounting, 2=Budget, 3=Treasurer, 4=BAC/GSO, 5=Mayor's Office, 6=Completed
     current_step = models.IntegerField(default=1, blank=True, null=True)
     last_disapproved_step = models.IntegerField(null=True, blank=True)
