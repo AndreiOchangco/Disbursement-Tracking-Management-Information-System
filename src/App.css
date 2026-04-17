@@ -414,6 +414,7 @@ button {
   object-fit: cover;
   border-radius: 12px;
   cursor: pointer;
+  margin-top: -2px;
 }
 
 .header-actions {
