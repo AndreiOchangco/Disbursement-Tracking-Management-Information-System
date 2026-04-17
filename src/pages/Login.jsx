@@ -231,7 +231,7 @@ export default function Login() {
           >
             {loading ? (
               <>
-                <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><ion-icon name="time"></ion-icon></span>
+                <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}><ion-icon name="time" style={{ marginTop: '3px', fontSize: '1.25rem' }}></ion-icon></span>
                 Logging in...
               </>
             ) : (

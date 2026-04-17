@@ -38,7 +38,7 @@ function AppLayout() {
 
   const isActive = (path) => location.pathname === path
   const isAdmin = currentUser?.department === 'admin'
-  const isAccountant = currentUser?.department === 'accountant'
+  const isAccountant = currentUser?.department === 'accounting'
 
   return (
     <div className="app-layout noselect">
