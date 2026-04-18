@@ -263,14 +263,16 @@ export default function Disbursements() {
       </div>
 
       {/* ➕ NEW ENTRY FORM */}
-      <section className="panel noselect" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', borderLeft: '4px solid #fbbf24' }}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="add"></ion-icon> New Disbursement Voucher Entry</h3>
-          <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Add a new voucher to track in the system</p>
+      <section className="panel panel-alt noselect">
+        <div className="panel-head">
+          <div>
+            <h3 className="panel-title"><ion-icon name="add"></ion-icon> New Disbursement Voucher Entry</h3>
+            <p className="panel-subtitle">Add a new voucher to track in the system.</p>
+          </div>
         </div>
-        <form className="form-grid noselect" onSubmit={addDisbursement}>
+        <form className="form-grid form-grid--split noselect" onSubmit={addDisbursement}>
           <label>
-            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Tracking Number</span>
+            <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
             <input
               type="number"
               value={trackingno}
@@ -279,7 +281,7 @@ export default function Disbursements() {
             />
           </label>
           <label>
-            <span style={{ color: '#2c5dff', fontWeight: '600' }}>DV Number</span>
+            <span>DV Number<span style={{ color: 'red' }}>*</span></span>
             <input
               type="number"
               value={dvno}
@@ -288,7 +290,7 @@ export default function Disbursements() {
             />
           </label>
           <label>
-            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Payee</span>
+            <span>Payee<span style={{ color: 'red' }}>*</span></span>
             <input
               type="text"
               value={payee}
@@ -297,7 +299,7 @@ export default function Disbursements() {
             />
           </label>
           <label>
-            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Fund Source</span>
+            <span>Fund Source<span style={{ color: 'red' }}>*</span></span>
             <select value={fundSource} onChange={(e) => setFundSource(e.target.value)}>
               <option value="GF">GF</option>
               <option value="20% DF">20% DF</option>
@@ -311,16 +313,16 @@ export default function Disbursements() {
             </select>
           </label>
           <label>
-            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Created By</span>
+            <span>Created By</span>
             <input
               value={officer}
               readOnly
               disabled
-              placeholder=""
+              placeholder="Auto-filled by your account"
             />
           </label>
           <label>
-            <span style={{ color: '#2c5dff', fontWeight: '600' }}>Status</span>
+            <span>Status</span>
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
               {statusOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -329,7 +331,7 @@ export default function Disbursements() {
               ))}
             </select>
           </label>
-          <button type="submit" className="btn-primary" style={{ marginTop: '1.75rem' }}>
+          <button type="submit" className="btn-primary btn-small" style={{ marginTop: '1.75rem' }}>
             + Add Voucher Entry
           </button>
         </form>
@@ -339,55 +341,55 @@ export default function Disbursements() {
       <section className="panel">
         <div className="table-toolbar">
           <div>
-            <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> Open Disbursement Voucher Entries</h3>
-            <p style={{ color: '#4b5563', marginTop: '0.3rem' }}>{filtered.length} active records</p>
+            <h3 className="panel-title"><ion-icon name="clipboard"></ion-icon> Open Disbursement Voucher Entries</h3>
+            <p className="panel-subtitle">{filtered.length} active records</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <Link to="/disbursements/archived" className="btn-archive" style={{ fontSize: '0.9rem', padding: '0.65rem 1rem' }}>
+          <div className="toolbar-actions">
+            <Link to="/disbursements/archived" className="btn-archive btn-small">
               <ion-icon name="archive"></ion-icon> Archived
             </Link>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by tracking, DV number, or officer..."
-              className="search"
+              className="search search--wide"
             />
           </div>
         </div>
 
         <div className="table-wrap">
           <table>
-            <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
+            <thead className="table-head">
               <tr>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> DV Number</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="calendar"></ion-icon> Request Date</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Created By</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
+                <th><ion-icon name="pin"></ion-icon> Tracking #</th>
+                <th><ion-icon name="bookmark"></ion-icon> DV Number</th>
+                <th><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th><ion-icon name="calendar"></ion-icon> Request Date</th>
+                <th><ion-icon name="person"></ion-icon> Created By</th>
+                <th><ion-icon name="settings"></ion-icon> Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((d) => (
-                <tr key={d.id} style={{ borderBottom: '1px solid #fef3c7', transition: 'all 0.3s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = '#fffbeb'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
-                  <td style={{ fontWeight: '600', color: '#2c5dff' }}>{d.tracking_no}</td>
+                <tr key={d.id} className="table-row">
+                  <td className="table-strong">{d.tracking_no}</td>
                   <td>{d.dv_no !== undefined && d.dv_no !== null && d.dv_no !== '' ? Number(d.dv_no).toString() : '-'}</td>
                   <td>
-                    <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-')} style={{ textTransform: 'capitalize' }}>
+                    <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-') }>
                       {d.status}
                     </span>
                   </td>
                   <td>{formatDateMMDDYYYY(d.created_date)}</td>
                   <td>{d.accounting_name}</td>
                   <td>
+                    <div className="action-buttons">
                     {/* Actions: Approve/Reject for non-admin users; Delete/Archive for Accounting */}
                     {currentUser?.department !== 'admin' && (
                       <>
                         {/* Separate Approve and Reject buttons */}
                         <>
                           <button
-                            className="btn-primary"
-                            style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }}
+                            className="btn-primary btn-small"
                             onClick={() => approveItem(d)}
                             disabled={!isActionable(d)}
                             title={!isActionable(d) ? 'Not actionable at your stage' : 'Approve'}
@@ -396,8 +398,7 @@ export default function Disbursements() {
                           </button>
 
                           <button
-                            className="btn-danger"
-                            style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }}
+                            className="btn-danger btn-small"
                             onClick={() => rejectItem(d)}
                             disabled={!isActionable(d)}
                             title={!isActionable(d) ? 'Not actionable at your stage' : 'Reject'}
@@ -416,7 +417,7 @@ export default function Disbursements() {
 
                     {isAccountant && (
                       <>
-                        <button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem', marginRight: '0.5rem' }} onClick={async () => {
+                        <button className="btn-danger btn-small" onClick={async () => {
                           if (!confirm('Delete this disbursement?')) return
                           try {
                             await deleteItem(d.id)
@@ -427,7 +428,7 @@ export default function Disbursements() {
                           <ion-icon name="trash"></ion-icon> Delete
                         </button>
 
-                        <button className="btn-archive" style={{ fontSize: '0.85rem', padding: '0.5rem 0.85rem' }} onClick={async () => {
+                        <button className="btn-archive btn-small" onClick={async () => {
                           if (!confirm('Archive this disbursement?')) return
                           const reason = prompt('Reason for archiving:')
                           if (!reason) return alert('Reason is required')
@@ -442,12 +443,13 @@ export default function Disbursements() {
                         </button>
                       </>
                     )}
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <p className="empty" style={{ textAlign: 'center', padding: '2rem', color: '#4b5563' }}><ion-icon name="mail-unread"></ion-icon> No disbursements found.</p>}
+          {filtered.length === 0 && <p className="empty empty--center"><ion-icon name="mail-unread"></ion-icon> No disbursements found.</p>}
         </div>
       </section>
     </div>
