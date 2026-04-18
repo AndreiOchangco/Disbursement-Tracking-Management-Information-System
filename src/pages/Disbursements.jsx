@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { apiRequest, getCurrentUser } from '../api'
+import Modal from '../components/Modal'
 
 const user = JSON.parse(localStorage.getItem("user"))
 const statusOptions = ['Pending', 'Approved', 'Rejected']
@@ -48,6 +49,10 @@ export default function Disbursements() {
 
   const [officer, setOfficer] = useState(initialOfficer)
   const currentUser = getCurrentUser()
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [addedDV, setAddedDV] = useState(null)
+  const [showRecordsModal, setShowRecordsModal] = useState(false)
   // Normalize department keys to match backend choices (be tolerant of label variants)
   const normalizeDept = (d) => {
     if (!d) return null
@@ -169,6 +174,8 @@ export default function Disbursements() {
 
       if (newItem) {
         setDisbursements((prev) => [newItem, ...prev])
+        setAddedDV(newItem)
+        setShowSuccessModal(true)
       } else {
         await reload()
       }
@@ -440,9 +447,11 @@ export default function Disbursements() {
                 ))}
               </select>
             </label>
-            <button type="submit" className="btn-primary btn-small" style={{ marginTop: "1rem",  }}>
-              + Add Voucher Entry
-            </button>
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', marginTop: '1rem' }}>
+              <button type="submit" className="btn-primary btn-small">
+                + Add Voucher Entry
+              </button>
+            </div>
           </form>
 
           <div className="particulars-box">
@@ -666,6 +675,83 @@ export default function Disbursements() {
           {filtered.length === 0 && <p className="empty empty--center"><ion-icon name="mail-unread"></ion-icon> No disbursements found.</p>}
         </div>
       </section>
+
+      {/* Success Modal */}
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Disbursement Added Successfully"
+        size="medium"
+      >
+        <div>
+          <p>The disbursement voucher has been added successfully.</p>
+          {addedDV && (
+            <div style={{ marginTop: '1rem' }}>
+              <h4>Added DV Details:</h4>
+              <p><strong>Tracking #:</strong> {addedDV.tracking_no}</p>
+              <p><strong>DV #:</strong> {addedDV.dv_no}</p>
+              <p><strong>Payee:</strong> {addedDV.payee}</p>
+              <p><strong>Fund Source:</strong> {addedDV.fund_source}</p>
+              <p><strong>Status:</strong> {addedDV.status}</p>
+            </div>
+          )}
+          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+            <button
+              className="btn-secondary btn-small"
+              onClick={() => {
+                setShowSuccessModal(false)
+                setShowRecordsModal(true)
+              }}
+            >
+              View Records
+            </button>
+            <button
+              className="btn-primary btn-small"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Records Modal */}
+      <Modal
+        isOpen={showRecordsModal}
+        onClose={() => setShowRecordsModal(false)}
+        title="Disbursement Records"
+        size="large"
+      >
+        <div className="table-wrap">
+          <table>
+            <thead className="table-head">
+              <tr>
+                <th><ion-icon name="pin"></ion-icon> Tracking #</th>
+                <th><ion-icon name="bookmark"></ion-icon> DV Number</th>
+                <th><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th><ion-icon name="calendar"></ion-icon> Request Date</th>
+                <th><ion-icon name="person"></ion-icon> Created By</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((d) => (
+                <tr key={d.id} className="table-row">
+                  <td className="table-strong">{d.tracking_no}</td>
+                  <td>{d.dv_no !== undefined && d.dv_no !== null && d.dv_no !== '' ? Number(d.dv_no).toString() : '-'}</td>
+                  <td>
+                    <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-') }>
+                      {d.status}
+                    </span>
+                  </td>
+                  <td>{d.created_date ? formatDateMMDDYYYY(d.created_date) : '-'}</td>
+                  <td>{d.office || '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filtered.length === 0 && <p className="empty empty--center"><ion-icon name="mail-unread"></ion-icon> No disbursements found.</p>}
+        </div>
+      </Modal>
     </div>
   )
 }

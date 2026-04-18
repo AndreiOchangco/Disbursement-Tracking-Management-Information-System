@@ -690,7 +690,7 @@ button {
   color: var(--text-primary);
   font-weight: 700;
   cursor: pointer;
-  padding: 6rem 1.5rem;
+  padding: 0.6rem 1.5rem;
   margin-top: 0.5rem;
   width: fit-content;
   border-radius: 8px;
@@ -714,7 +714,7 @@ button {
 .btn-small {
   padding: 0.55rem 1rem;
   font-size: 0.88rem;
-  
+
 }
 
 .btn-archive.btn-small,
