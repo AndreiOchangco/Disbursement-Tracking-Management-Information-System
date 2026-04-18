@@ -194,17 +194,10 @@ export default function Dashboard() {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '0.4rem',
-                          padding: '0.5rem 1rem',
                           borderRadius: '20px',
                           fontSize: '0.8rem',
-                          fontWeight: '700',
-                          textTransform: 'uppercase',
-                          background: user.status === 'active' ? '#d1fae5' : '#fee2e2',
-                          color: user.status === 'active' ? '#065f46' : '#991b1b',
-                          border: `2px solid ${user.status === 'active' ? '#10b981' : '#dc2626'}`,
                         }}>
-                          {user.status === 'active' ? <ion-icon name="ellipse" style={{color: 'green'}}></ion-icon> : <ion-icon name="ellipse" style={{color: 'red'}}></ion-icon>}
-                          {user.status}
+                          {user.status === 'active' ? <ion-icon name="ellipse" style={{color: 'green', fontSize: '1.1rem', border: '2px solid darkgreen', borderRadius: '100%', margin: '0', padding: '0', background: 'green'}}></ion-icon> : user.status === 'archived' ? <ion-icon name="archive"></ion-icon> : <ion-icon name="ellipse" style={{color: 'red', fontSize: '1.1rem', border: '2px solid darkred', borderRadius: '100%', margin: '0', padding: '0', background: 'red'}}></ion-icon>}
                         </span>
                       </td>
                     </tr>

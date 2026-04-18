@@ -6,7 +6,6 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
-from rest_framework.authentication import BaseAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE
