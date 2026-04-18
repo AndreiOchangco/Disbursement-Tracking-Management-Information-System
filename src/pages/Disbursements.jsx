@@ -25,6 +25,21 @@ export default function Disbursements() {
   const [status, setStatus] = useState('Pending')
   const [payee, setPayee] = useState('')
   const [fundSource, setFundSource] = useState('GF')
+  const [modeOfPayment, setModeOfPayment] = useState('CASH')
+  const [paymentMopSpecify, setPaymentMopSpecify] = useState('')
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0])
+  const [atmNo, setAtmNo] = useState('')
+  const [bank, setBank] = useState('')
+  const [tin, setTin] = useState('')
+  const [particularDescription, setParticularDescription] = useState('Disbursement particulars')
+  const [particularJevNo, setParticularJevNo] = useState('')
+  const [particularDate, setParticularDate] = useState(new Date().toISOString().split('T')[0])
+  const [particulars, setParticulars] = useState([
+    { category: 'Organic', np: '0', ft: '0', tf: '0' },
+    { category: 'Devolved', np: '0', ft: '0', tf: '0' },
+    { category: 'VM & SB', np: '0', ft: '0', tf: '0' },
+    { category: 'Adjustment', np: '0', ft: '0', tf: '0' },
+  ])
 
   const initialOfficer = (() => {
     const u = getCurrentUser()
@@ -75,6 +90,20 @@ export default function Disbursements() {
     }
   }
 
+  const handleParticularChange = (index, field, value) => {
+    setParticulars((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    )
+  }
+
+  const addParticularRow = () => {
+    setParticulars((prev) => [...prev, { category: '', np: '0', ft: '0', tf: '0' }])
+  }
+
+  const removeParticularRow = (index) => {
+    setParticulars((prev) => prev.filter((_, i) => i !== index))
+  }
+
   // 🔍 Search filter
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -82,9 +111,12 @@ export default function Disbursements() {
 
     return disbursements.filter((d) =>
       (
-        String(d.trackingno) +
-        d.status +
-        d.officer
+        String(d.tracking_no || '') +
+        String(d.dv_no || '') +
+        String(d.status || '') +
+        String(d.payee || '') +
+        String(d.office || '') +
+        String(d.fund_source || '')
       )
         .toLowerCase()
         .includes(query)
@@ -95,8 +127,8 @@ export default function Disbursements() {
   const addDisbursement = async (e) => {
     e.preventDefault()
 
-    if (!trackingno || !dvno || !officer || !payee || !fundSource) {
-      toast.error('Please fill required fields: Tracking#, DV#, Payee, Fund Source')
+    if (!trackingno || !dvno || !officer || !payee || !fundSource || !tin || !paymentDate) {
+      toast.error('Please fill required fields: Tracking#, DV#, Payee, Fund Source, ID #/TIN, Date')
       return
     }
 
@@ -104,10 +136,33 @@ export default function Disbursements() {
       const payload = {
         dv_no: String(dvno),
         tracking_no: String(trackingno),
-        payee: payee,
+        payee,
         office: officer,
         created_date: new Date().toISOString().split('T')[0],
         fund_source: fundSource,
+        tin,
+        payments: [
+          {
+            mop: modeOfPayment,
+            mop_specify: paymentMopSpecify,
+            atm_no: atmNo,
+            bank,
+            date: paymentDate,
+          },
+        ],
+        particulars: [
+          {
+            description: particularDescription,
+            jev_no: particularJevNo,
+            date: particularDate,
+            category_values: particulars.map((item) => ({
+              category: item.category,
+              np: parseFloat(item.np) || 0,
+              ft: parseFloat(item.ft) || 0,
+              tf: parseFloat(item.tf) || 0,
+            })),
+          },
+        ],
       }
 
       const newItem = await apiRequest('/dv/', 'POST', payload)
@@ -126,6 +181,21 @@ export default function Disbursements() {
       setStatus('Pending')
       setPayee('')
       setFundSource('GF')
+      setModeOfPayment('CASH')
+      setPaymentMopSpecify('')
+      setPaymentDate(new Date().toISOString().split('T')[0])
+      setAtmNo('')
+      setBank('')
+      setTin('')
+      setParticularDescription('Disbursement particulars')
+      setParticularJevNo('')
+      setParticularDate(new Date().toISOString().split('T')[0])
+      setParticulars([
+        { category: 'Organic', np: '0', ft: '0', tf: '0' },
+        { category: 'Devolved', np: '0', ft: '0', tf: '0' },
+        { category: 'VM & SB', np: '0', ft: '0', tf: '0' },
+        { category: 'Adjustment', np: '0', ft: '0', tf: '0' },
+      ])
       setOfficer(initialOfficer)
     } catch (err) {
       console.error('Create failed', err)
@@ -263,79 +333,223 @@ export default function Disbursements() {
       </div>
 
       {/* ➕ NEW ENTRY FORM */}
-      <section className="panel panel-alt noselect">
-        <div className="panel-head">
-          <div>
-            <h3 className="panel-title"><ion-icon name="add"></ion-icon> New Disbursement Voucher Entry</h3>
-            <p className="panel-subtitle">Add a new voucher to track in the system.</p>
+      {isAccountant ? (
+        <section className="panel panel-alt noselect">
+          <div className="panel-head">
+            <div>
+              <h3 className="panel-title"><ion-icon name="add"></ion-icon> New Disbursement Voucher Entry</h3>
+              <p className="panel-subtitle">Add a new voucher in the accounting office workflow.</p>
+            </div>
+            <div className="panel-note">Only accounting users can create new disbursement vouchers.</div>
           </div>
-        </div>
-        <form className="form-grid form-grid--split noselect" onSubmit={addDisbursement}>
-          <label>
-            <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
-            <input
-              type="number"
-              value={trackingno}
-              onChange={(e) => setTrackingNo(e.target.value)}
-              placeholder="Enter tracking number"
-            />
-          </label>
-          <label>
-            <span>DV Number<span style={{ color: 'red' }}>*</span></span>
-            <input
-              type="number"
-              value={dvno}
-              onChange={(e) => setDVno(e.target.value)}
-              placeholder="Enter DV number"
-            />
-          </label>
-          <label>
-            <span>Payee<span style={{ color: 'red' }}>*</span></span>
-            <input
-              type="text"
-              value={payee}
-              onChange={(e) => setPayee(e.target.value)}
-              placeholder="Enter payee name"
-            />
-          </label>
-          <label>
-            <span>Fund Source<span style={{ color: 'red' }}>*</span></span>
-            <select value={fundSource} onChange={(e) => setFundSource(e.target.value)}>
-              <option value="GF">GF</option>
-              <option value="20% DF">20% DF</option>
-              <option value="5% DRRM">5% DRRM</option>
-              <option value="GAD">GAD</option>
-              <option value="RA7171">RA7171</option>
-              <option value="SEF">SEF</option>
-              <option value="TF">TF</option>
-              <option value="PHILHEALTH">PHILHEALTH</option>
-              <option value="CALAMITY">CALAMITY</option>
-            </select>
-          </label>
-          <label>
-            <span>Created By</span>
-            <input
-              value={officer}
-              readOnly
-              disabled
-              placeholder="Auto-filled by your account"
-            />
-          </label>
-          <label>
-            <span>Status</span>
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
-              {statusOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="submit" className="btn-primary btn-small" style={{ marginTop: '1.75rem' }}>
-            + Add Voucher Entry
-          </button>
-        </form>
-      </section>
+
+          <form className="form-grid form-grid--split noselect" onSubmit={addDisbursement}>
+            <label>
+              <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
+              <input
+                type="number"
+                value={trackingno}
+                onChange={(e) => setTrackingNo(e.target.value)}
+                placeholder="Enter tracking number"
+              />
+            </label>
+            <label>
+              <span>DV Number<span style={{ color: 'red' }}>*</span></span>
+              <input
+                type="text"
+                value={dvno}
+                onChange={(e) => setDVno(e.target.value)}
+                placeholder="Enter DV number"
+              />
+            </label>
+            <label>
+              <span>Payee<span style={{ color: 'red' }}>*</span></span>
+              <input
+                type="text"
+                value={payee}
+                onChange={(e) => setPayee(e.target.value)}
+                placeholder="Enter payee name"
+              />
+            </label>
+            <label>
+              <span>ID # / TIN<span style={{ color: 'red' }}>*</span></span>
+              <input
+                type="text"
+                value={tin}
+                onChange={(e) => setTin(e.target.value)}
+                placeholder="Enter TIN or ID number"
+              />
+            </label>
+            <label>
+              <span>Fund Source<span style={{ color: 'red' }}>*</span></span>
+              <select value={fundSource} onChange={(e) => setFundSource(e.target.value)}>
+                <option value="GF">GF</option>
+                <option value="20% DF">20% DF</option>
+                <option value="5% DRRM">5% DRRM</option>
+                <option value="GAD">GAD</option>
+                <option value="RA7171">RA7171</option>
+                <option value="SEF">SEF</option>
+                <option value="TF">TF</option>
+                <option value="PHILHEALTH">PHILHEALTH</option>
+                <option value="CALAMITY">CALAMITY</option>
+              </select>
+            </label>
+            <label>
+              <span>Mode of Payment</span>
+              <select value={modeOfPayment} onChange={(e) => setModeOfPayment(e.target.value)}>
+                <option value="CASH">Cash</option>
+                <option value="CHECK">Check</option>
+                <option value="OTHERS">Others</option>
+              </select>
+            </label>
+            {modeOfPayment === 'OTHERS' && (
+              <label>
+                <span>Specify Payment Mode</span>
+                <input
+                  type="text"
+                  value={paymentMopSpecify}
+                  onChange={(e) => setPaymentMopSpecify(e.target.value)}
+                  placeholder="Specify payment mode"
+                />
+              </label>
+            )}
+            <label>
+              <span>Date<span style={{ color: 'red' }}>*</span></span>
+              <input
+                type="date"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+              />
+            </label>
+            <label>
+              <span>Created By</span>
+              <input
+                value={officer}
+                readOnly
+                disabled
+                placeholder="Auto-filled by your account"
+              />
+            </label>
+            <label>
+              <span>Status</span>
+              <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                {statusOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button type="submit" className="btn-primary btn-small" style={{ marginTop: "1rem",  }}>
+              + Add Voucher Entry
+            </button>
+          </form>
+
+          <div className="particulars-box">
+            <div className="panel-head" style={{ alignItems: 'center' }}>
+              <div>
+                <h3 className="panel-title"><ion-icon name="list"></ion-icon> Particulars</h3>
+                <p className="panel-subtitle">Enter dynamic disbursement categories and amounts.</p>
+              </div>
+            </div>
+
+            <div className="form-grid form-grid--split" style={{ gap: '1rem' }}>
+              <label>
+                <span>Description</span>
+                <input
+                  type="text"
+                  value={particularDescription}
+                  onChange={(e) => setParticularDescription(e.target.value)}
+                  placeholder="Brief particulars description"
+                />
+              </label>
+              <label>
+                <span>JEV No.</span>
+                <input
+                  type="text"
+                  value={particularJevNo}
+                  onChange={(e) => setParticularJevNo(e.target.value)}
+                  placeholder="Journal entry voucher number"
+                />
+              </label>
+              <label>
+                <span>Date</span>
+                <input
+                  type="date"
+                  value={particularDate}
+                  onChange={(e) => setParticularDate(e.target.value)}
+                />
+              </label>
+            </div>
+
+            <table className="particulars-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Net Pay</th>
+                  <th>15th</th>
+                  <th>31st</th>
+                  <th className="text-center">Remove</th>
+                </tr>
+              </thead>
+              <tbody>
+                {particulars.map((item, idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <input
+                        className="particulars-input"
+                        type="text"
+                        value={item.category}
+                        onChange={(e) => handleParticularChange(idx, 'category', e.target.value)}
+                        placeholder="Category name"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="particulars-input"
+                        type="number"
+                        value={item.np}
+                        onChange={(e) => handleParticularChange(idx, 'np', e.target.value)}
+                        placeholder="0.00"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="particulars-input"
+                        type="number"
+                        value={item.ft}
+                        onChange={(e) => handleParticularChange(idx, 'ft', e.target.value)}
+                        placeholder="0.00"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="particulars-input"
+                        type="number"
+                        value={item.tf}
+                        onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)}
+                        placeholder="0.00"
+                      />
+                    </td>
+                    <td className="text-center">
+                      <button type="button" className="btn-danger btn-small" onClick={() => removeParticularRow(idx)}>
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button type="button" className="btn-primary btn-small" onClick={addParticularRow} style={{ marginTop: '1rem' }}>
+              + Add Category Row
+            </button>
+          </div>
+        </section>
+      ) : (
+        <section className="panel">
+          <p className="panel-subtitle">New disbursement voucher entry is available only for Accounting office users.</p>
+        </section>
+      )}
 
       {/* 📋 VOUCHERS TABLE */}
       <section className="panel">
