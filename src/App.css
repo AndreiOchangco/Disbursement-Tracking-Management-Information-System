@@ -624,7 +624,6 @@ button {
 
 .particulars-input {
   width: 100%;
-  border: 1px solid var(--border-color);
   padding: 0.55rem 0.75rem;
   border-radius: 8px;
   font-size: 0.9rem;
@@ -632,6 +631,7 @@ button {
 }
 
 .particulars-input:focus {
+  border: 1px solid var(--border-color);
   outline: none;
   border-color: var(--accent-color);
   background: #fffbeb;
@@ -730,7 +730,6 @@ button {
   color: white;
   font-weight: 700;
   cursor: pointer;
-  padding: 0.65rem 1.25rem;
   border-radius: 8px;
   font-size: 0.9rem;
   transition: all 0.3s ease;
@@ -765,6 +764,7 @@ button {
   transform: none;
   box-shadow: 0 5px 14px rgba(44, 93, 255, 0.25);
   background: var(--primary-dark);
+  color: white;
 }
 
 .btn-archive:active {

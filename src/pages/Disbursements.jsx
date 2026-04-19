@@ -345,7 +345,7 @@ export default function Disbursements() {
     <div className='noselect'>
       <div className="page-header">
         <div>
-          <h2><ion-icon name="card"></ion-icon> Disbursement Voucher Tracking</h2>
+          <h2><ion-icon name="card-outline"></ion-icon> Disbursement Voucher Tracking</h2>
           <p>Track requests, approvals, and release statuses in Disbursement MIS.</p>
         </div>
       </div>

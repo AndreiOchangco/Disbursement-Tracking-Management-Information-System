@@ -77,7 +77,7 @@ export default function Journals() {
     <div>
       <div className="page-header">
         <div>
-          <h2><ion-icon name="book"></ion-icon> Journal Entry Management</h2>
+          <h2><ion-icon name="book-outline"></ion-icon> Journal Entry Management</h2>
           <p>Track journal entries, approvals, and posting statuses.</p>
         </div>
       </div>

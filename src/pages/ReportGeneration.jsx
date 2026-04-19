@@ -78,7 +78,7 @@ export default function ReportGeneration() {
     <div>
       <div className="page-header">
         <div>
-          <h2>📑 Report Generation</h2>
+          <h2><ion-icon name="document-text-outline"></ion-icon> Report Generation</h2>
           <p>Generate reports for approved disbursement vouchers after workflow completion.</p>
         </div>
       </div>
