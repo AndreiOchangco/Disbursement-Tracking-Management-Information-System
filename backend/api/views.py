@@ -63,7 +63,7 @@ def get_csrf_token(request):
 def get_tokens_for_user(user):
     access_payload = {
         'user_id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=15),
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=2880),
         'iat': datetime.datetime.utcnow(),
         'type': 'access'
     }
