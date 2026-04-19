@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { apiRequest, getCurrentUser } from '../api'
 import Modal from '../components/Modal'
@@ -19,6 +19,16 @@ const formatDateMMDDYYYY = (date) => {
 }
 
 export default function Disbursements() {
+  const navigate = useNavigate()
+  const currentUser = getCurrentUser()
+
+  // Redirect admin to dashboard
+  useEffect(() => {
+    if (currentUser?.department === 'admin') {
+      navigate('/admin/dashboard', { replace: true })
+    }
+  }, [currentUser, navigate])
+
   const [disbursements, setDisbursements] = useState([])
   const [search, setSearch] = useState('')
   const [trackingno, setTrackingNo] = useState('')
@@ -48,7 +58,6 @@ export default function Disbursements() {
   })()
 
   const [officer, setOfficer] = useState(initialOfficer)
-  const currentUser = getCurrentUser()
 
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [addedDV, setAddedDV] = useState(null)

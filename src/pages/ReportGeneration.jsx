@@ -1,10 +1,20 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react'
-import { apiRequest, BASE_URL, getToken } from '../api'
+import { useNavigate } from 'react-router-dom'
+import { apiRequest, BASE_URL, getToken, getCurrentUser } from '../api'
 
 export default function ReportGeneration() {
+  const navigate = useNavigate()
+  const currentUser = getCurrentUser()
   const [approved, setApproved] = useState([])
   const [loading, setLoading] = useState(false)
+
+  // Redirect admin to dashboard
+  useEffect(() => {
+    if (currentUser?.department === 'admin') {
+      navigate('/admin/dashboard', { replace: true })
+    }
+  }, [currentUser, navigate])
 
   useEffect(() => {
     loadApproved()
