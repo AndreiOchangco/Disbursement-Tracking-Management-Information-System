@@ -340,11 +340,11 @@ export default function UserManagement() {
           <table>
             <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
               <tr>
-                <th style={{ color: '#2c5dff' }}> Full Name</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department/Role</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}> Full Name</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department/Role</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -373,7 +373,7 @@ export default function UserManagement() {
                 >
                   <td style={{ fontWeight: '500' }}>{user.full_name}</td>
                   <td>{user.email}</td>
-                  <td>
+                  <td className='table-column-center'>
                     <span style={{
                       display: 'inline-block',
                       padding: '0.4rem 0.8rem',
@@ -388,7 +388,7 @@ export default function UserManagement() {
                       {departmentChoices.find(d => d.value === user.department)?.label || user.department}
                     </span>
                   </td>
-                  <td>
+                  <td className='table-column-center'>
                     <span 
                       className={`status-badge ${user.status === 'active' ? 'status-approved' : user.status === 'archived' ? 'status-archived' : 'status-rejected'}`}
                       style={{
@@ -404,7 +404,7 @@ export default function UserManagement() {
                       {user.status === 'active' ? '' : user.status === 'archived' ? 'Archived' : ''}
                     </span>
                   </td>
-                  <td>
+                  <td className='table-column-center'>
                     {!showArchived && (
                       <>
                         <button

@@ -192,10 +192,10 @@ export default function Dashboard() {
                     <table>
                       <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
                         <tr>
-                          <th style={{ color: '#2c5dff' }}><ion-icon name="pencil"></ion-icon> Full Name</th>
-                          <th style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
-                          <th style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department</th>
-                          <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                          <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="pencil"></ion-icon> Full Name</th>
+                          <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
+                          <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department</th>
+                          <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -205,7 +205,7 @@ export default function Dashboard() {
                           <tr key={user.id} style={{ borderBottom: '1px solid #fef3c7' }}>
                             <td style={{ fontWeight: '500' }}>{user.full_name}</td>
                             <td>{user.email}</td>
-                            <td>
+                            <td className='table-column-center'>
                               <span style={{
                                 display: 'inline-block',
                                 padding: '0.4rem 0.8rem',
@@ -220,7 +220,7 @@ export default function Dashboard() {
                                 {user.department.replace(/_/g, ' ')}
                               </span>
                             </td>
-                            <td>
+                            <td className='table-column-center'>
                               <span style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
