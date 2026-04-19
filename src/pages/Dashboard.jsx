@@ -132,83 +132,123 @@ export default function Dashboard() {
 
   return (
     <div>
-      {/* 👑 ADMIN DASHBOARD VIEW */}
-      {isAdmin && (
-        <>
-          <div className="page-header">
-            <div>
-              <h2><ion-icon name="crown"></ion-icon> Admin Dashboard</h2>
-              <p>Complete system overview with user management and all disbursement analytics</p>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '2rem' }}>
-            <h3 style={{ color: '#2c5dff', marginBottom: '1rem', fontSize: '1.1rem' }}><ion-icon name="people"></ion-icon> User Management</h3>
-            <div className="stats-grid">
-              <div className="stat-card" style={{ borderColor: '#2c5dff', background: '#f0f7ff' }}>
-                <div className="stat-icon"><ion-icon name="people"></ion-icon></div>
-                <div className="stat-content">
-                  <p className="stat-label">Total Users</p>
-                  <h3 className="stat-value" style={{ color: '#2c5dff' }}>{userStats.totalUsers}</h3>
+      {/* 👑 ADMIN DASHBOARD */}
+            {isAdmin && (
+              <>
+                <div className="page-header">
+                  <div>
+                    <h2><ion-icon name="crown"></ion-icon> Admin Dashboard</h2>
+                    <p>Complete system overview with user management</p>
+                  </div>
                 </div>
-              </div>
-              <div className="stat-card" style={{ borderColor: '#059669', background: '#f0fdf4' }}>
-                <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
-                <div className="stat-content">
-                  <p className="stat-label">Active Users</p>
-                  <h3 className="stat-value" style={{ color: '#059669' }}>{userStats.activeUsers}</h3>
-                </div>
-              </div>
-              <div className="stat-card" style={{ borderColor: '#fbbf24', background: '#fffbeb' }}>
-                <div className="stat-icon"><ion-icon name="crown"></ion-icon></div>
-                <div className="stat-content">
-                  <p className="stat-label">Admins</p>
-                  <h3 className="stat-value" style={{ color: '#d97706' }}>{userStats.adminUsers}</h3>
-                </div>
-              </div>
-            </div>
-          </div>
+      
+                {/* 📊 USER STATS CARDS */}
+                <div style={{ marginBottom: '2rem' }}>
+                  <h3 style={{ color: '#2c5dff', marginBottom: '1rem', fontSize: '1.1rem' }}><ion-icon name="people"></ion-icon> User Management</h3>
+                  <div className="stats-grid">
+                  <div className="stat-card" style={{ borderColor: '#2c5dff', background: '#f0f7ff' }}>
+                    <div className="stat-icon"><ion-icon name="people"></ion-icon></div>
+                    <div className="stat-content">
+                      <p className="stat-label">Total Users</p>
+                      <h3 className="stat-value" style={{ color: '#2c5dff' }}>{userStats.totalUsers}</h3>
+                    </div>
+                  </div>
+      
+                  <div className="stat-card" style={{ borderColor: '#059669', background: '#f0fdf4' }}>
+                    <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
+                    <div className="stat-content">
+                      <p className="stat-label">Active Users</p>
+                      <h3 className="stat-value" style={{ color: '#059669' }}>{userStats.activeUsers}</h3>
+                    </div>
+                  </div>
+      
+                  <div className="stat-card" style={{ borderColor: '#fbbf24', background: '#fffbeb' }}>
+                    <div className="stat-icon"><ion-icon name="crown"></ion-icon></div>
+                    <div className="stat-content">
+                      <p className="stat-label">System Administrators</p>
+                      <h3 className="stat-value" style={{ color: '#d97706' }}>{userStats.adminUsers}</h3>
+                    </div>
+                  </div>
+      
+                  <div className="stat-card" style={{ borderColor: '#2563eb', background: '#eff6ff' }}>
+                    <div className="stat-icon"><ion-icon name="clipboard"></ion-icon></div>
+                    <div className="stat-content">
+                      <p className="stat-label">Staff Members</p>
+                      <h3 className="stat-value" style={{ color: '#2563eb' }}>{userStats.staffUsers}</h3>
+                    </div>
+                  </div>
+                </div>          </div>
+                {/* 📋 USERS LIST PANEL */}
+                <section className="panel" style={{ marginBottom: '2rem' }}>
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="clipboard"></ion-icon> Recent Users</h3>
+                    <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Last {Math.min(5, users.length)} users created</p>
+                  </div>
+      
+                  <div className="table-wrap">
+                    <table>
+                      <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
+                        <tr>
+                          <th style={{ color: '#2c5dff' }}><ion-icon name="pencil"></ion-icon> Full Name</th>
+                          <th style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
+                          <th style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department</th>
+                          <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.filter(u => u.status !== 'archived').slice(0, 5).map((user) => (
+                          <tr key={user.id} style={{ borderBottom: '1px solid #fef3c7' }}>
+                            <td style={{ fontWeight: '500' }}>{user.full_name}</td>
+                            <td>{user.email}</td>
+                            <td>
+                              <span style={{
+                                display: 'inline-block',
+                                padding: '0.4rem 0.8rem',
+                                borderRadius: '6px',
+                                fontSize: '0.85rem',
+                                fontWeight: '600',
+                                textTransform: 'capitalize',
+                                background: user.department === 'admin' ? 'rgba(251, 191, 36, 0.2)' : 'rgba(44, 93, 255, 0.1)',
+                                color: user.department === 'admin' ? '#d97706' : '#2c5dff'
+                              }}>
+                                {user.department === 'admin' && <ion-icon name="crown"></ion-icon>}
+                                {user.department.replace(/_/g, ' ')}
+                              </span>
+                            </td>
+                            <td>
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                borderRadius: '20px',
+                                fontSize: '0.8rem',
+                              }}>
+                                {user.status === 'active' ? <ion-icon name="ellipse" style={{color: 'green', fontSize: '1.1rem', border: '2px solid darkgreen', borderRadius: '100%', margin: '0', padding: '0', background: 'green'}}></ion-icon> : user.status === 'archived' ? <ion-icon name="archive"></ion-icon> : <ion-icon name="ellipse" style={{color: 'red', fontSize: '1.1rem', border: '2px solid darkred', borderRadius: '100%', margin: '0', padding: '0', background: 'red'}}></ion-icon>}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+      
+               
+              </>
+            )}
 
-          <section className="panel" style={{ marginBottom: '2rem' }}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="clipboard"></ion-icon> Recent Users</h3>
-            </div>
-            <div className="table-wrap">
-              <table>
-                <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
-                  <tr>
-                    <th>Full Name</th>
-                    <th>Email</th>
-                    <th>Department</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.slice(0, 5).map((user) => (
-                    <tr key={user.id}>
-                      <td style={{ fontWeight: '500' }}>{user.full_name}</td>
-                      <td>{user.email}</td>
-                      <td>{user.department}</td>
-                      <td>{user.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </>
-      )}
-
-      {/* 📊 GLOBAL STATS SECTION (For both Admin & Staff) */}
-      <div className={!isAdmin ? "" : ""} style={{ marginBottom: '2rem' }}>
-        {!isAdmin && (
+      {/* 📊 GLOBAL STATS SECTION */}
+      {!isAdmin && (
+      <>
+      <div style={{ marginBottom: '2rem' }}>
+        
           <div className="page-header">
             <div>
               <h2><ion-icon name="bar-chart"></ion-icon> Dashboard Analytics</h2>
               <p>Disbursement Voucher Insights & Performance Metrics</p>
             </div>
           </div>
-        )}
+        
         
         <h3 style={{ color: '#2c5dff', marginBottom: '1rem', fontSize: '1.1rem' }}><ion-icon name="stats-chart"></ion-icon> Disbursement Overview</h3>
         <div className="stats-grid">
@@ -266,6 +306,8 @@ export default function Dashboard() {
           <Line data={monthlyData} />
         </div>
       </div>
+      </>
+      )}
     </div>
   )
 }
