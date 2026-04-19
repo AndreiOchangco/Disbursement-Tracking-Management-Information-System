@@ -458,7 +458,8 @@ export default function Disbursements() {
                 ))}
               </select>
             </label>
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', marginTop: '1rem' }}>
+            <span>&nbsp;</span> 
+            <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
               <button type="submit" className="btn-primary btn-small">
                 + Add Voucher Entry
               </button>
@@ -553,7 +554,7 @@ export default function Disbursements() {
                     </td>
                     <td className="text-center">
                       <button type="button" className="btn-danger btn-small" onClick={() => removeParticularRow(idx)}>
-                        Remove
+                        <ion-icon name="trash" style={{ fontSize: '20px' }}></ion-icon>
                       </button>
                     </td>
                   </tr>
