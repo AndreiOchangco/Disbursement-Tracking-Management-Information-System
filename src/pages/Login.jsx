@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { setToken, setCurrentUser, apiRequest, getToken, getCurrentUser } from '../api'
+import { setToken, setCurrentUser, apiRequest } from '../api'
 import logo from '/MuniLuna.png'
 
 export default function Login() {
@@ -10,7 +10,6 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [isChecking, setIsChecking] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [touched, setTouched] = useState({ email: false, password: false })
   const [capsLockOn, setCapsLockOn] = useState(false)
@@ -80,26 +79,12 @@ export default function Login() {
     setPassword(e.target.value)
   }
 
-  // Check if user is already logged in on mount
-  useEffect(() => {
-    const token = getToken()
-    const currentUser = getCurrentUser()
-    
-    if (token && currentUser) {
-      navigate('/dashboard')
-    } else {
-      setIsChecking(false)
-    }
-  }, [navigate])
-
   useEffect(() => {
     setPassword('')
   }, [])
 
   return (
-    <>
-      {isChecking ? null : (
-      <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'linear-gradient(135deg, #0052CC 0%, #003A96 100%)' }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'linear-gradient(135deg, #0052CC 0%, #003A96 100%)' }}>
       <div className="bg-white p-8 w-full max-w-md border-4 border-yellow-400 rounded-lg shadow-2xl" style={{ boxShadow: '0 8px 32px rgba(0, 82, 204, 0.3)' }}>
 
         {/* Header */}
@@ -278,8 +263,6 @@ export default function Login() {
           }
         `}</style>
       )}
-      </div>
-      )}
-    </>
+    </div>
   )
 }

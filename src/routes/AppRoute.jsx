@@ -64,7 +64,7 @@ function AppLayout() {
             </button>
           )}
           <button type="button" onClick={logout} className="btn-logout">
-            <ion-icon name="log-out" style={{ fontSize: '18px' }}></ion-icon> Logout
+            <ion-icon name="log-out"></ion-icon> Logout
           </button>
         </div>
       </header>
@@ -93,6 +93,14 @@ function AppLayout() {
                   <span className="nav-text">User Management</span>
                 </Link>
 
+                <Link
+                  className={`nav-link ${isActive('/admin/reports') ? 'active' : ''}`}
+                  to="/admin/reports"
+                  title="Report Generation"
+                >
+                  <span className="nav-icon">📑</span>
+                  <span className="nav-text">Report Generation</span>
+                </Link>
               </>
             ) : (
               <>
@@ -203,6 +211,16 @@ export const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Disbursements />
+          </PrivateRoute>
+        ),
+      },
+
+      // ADMIN: Report generation
+      {
+        path: 'admin/reports',
+        element: (
+          <PrivateRoute>
+            <ReportGeneration />
           </PrivateRoute>
         ),
       },

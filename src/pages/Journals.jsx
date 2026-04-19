@@ -1,23 +1,14 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { apiRequest, getCurrentUser } from '../api'
 
 const user = JSON.parse(localStorage.getItem("user"))
 const statusOptions = ['Pending', 'Approved', 'Rejected']
 
 export default function Journals() {
-  const navigate = useNavigate()
-  const currentUser = getCurrentUser()
   const [journals, setJournals] = useState([])
   const [search, setSearch] = useState('')
-
-  // Redirect admin to dashboard
-  useEffect(() => {
-    if (currentUser?.department === 'admin') {
-      navigate('/admin/dashboard', { replace: true })
-    }
-  }, [currentUser, navigate])
 
   // 🔥 Load data from Django backend
   useEffect(() => {
