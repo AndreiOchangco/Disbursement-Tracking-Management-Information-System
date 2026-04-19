@@ -434,6 +434,7 @@ button {
   background: rgba(44, 93, 255, 0.08);
   border: 1px solid rgba(44, 93, 255, 0.15);
   transition: all 0.3s ease;
+  min-width: -webkit-fit-available;
   min-width: fit-content;
 }
 
@@ -1037,6 +1038,7 @@ tbody tr:hover {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    min-width: -webkit-fit-available;
     min-width: fit-content;
   }
 
@@ -1720,4 +1722,12 @@ button, a, input, select {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-
+.table-column-center {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+.table-column-border {
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+}

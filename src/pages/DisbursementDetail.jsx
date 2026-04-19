@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { getCurrentUser } from '../api'
 
 const STORAGE_KEY = 'dtmis.disbursements'
 
@@ -16,6 +18,14 @@ function readSavedDisbursements() {
 export default function DisbursementDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const currentUser = getCurrentUser()
+
+  // Redirect admin to dashboard
+  useEffect(() => {
+    if (currentUser?.department === 'admin') {
+      navigate('/admin/dashboard', { replace: true })
+    }
+  }, [currentUser, navigate])
   const disbursements = readSavedDisbursements()
   const disbursement = disbursements.find((d) => String(d.id) === String(id))
 
