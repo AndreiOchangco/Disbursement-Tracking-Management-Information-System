@@ -157,7 +157,7 @@ def refresh_token(request):
             
         access_payload = {
             'user_id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=15),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=4320),
             'iat': datetime.datetime.utcnow(),
             'type': 'access'
         }
