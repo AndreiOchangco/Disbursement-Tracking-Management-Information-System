@@ -9,6 +9,8 @@ export default function UserManagement() {
   const [editingUser, setEditingUser] = useState(null)
   const [loading, setLoading] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -359,7 +361,10 @@ export default function UserManagement() {
             )}
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setCurrentPage(1)
+              }}
               placeholder="Search users by name, email, username..."
               className="search"
             />
@@ -370,15 +375,17 @@ export default function UserManagement() {
           <table>
             <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
               <tr>
-                <th style={{ color: '#2c5dff' }}> Full Name</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department/Role</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}> Full Name</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department/Role</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((user) => (
+             {filtered
+                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                .map((user) => (
                 <tr 
                   key={user.id} 
                   style={{ 
@@ -401,7 +408,7 @@ export default function UserManagement() {
                 >
                   <td style={{ fontWeight: '500' }}>{user.full_name}</td>
                   <td>{user.email}</td>
-                  <td>
+                  <td className='table-column-center'>
                     <span style={{
                       display: 'inline-block',
                       padding: '0.4rem 0.8rem',
@@ -416,7 +423,7 @@ export default function UserManagement() {
                       {departmentChoices.find(d => d.value === user.department)?.label || user.department}
                     </span>
                   </td>
-                  <td>
+                  <td className='table-column-center'>
                     <span 
                       className={`status-badge ${user.status === 'active' ? 'status-approved' : user.status === 'archived' ? 'status-archived' : 'status-rejected'}`}
                       style={{
@@ -432,7 +439,7 @@ export default function UserManagement() {
                       {user.status === 'active' ? '' : user.status === 'archived' ? 'Archived' : ''}
                     </span>
                   </td>
-                  <td>
+                  <td className='table-column-center'>
                     {!showArchived && (
                       <>
                         <button
@@ -476,6 +483,54 @@ export default function UserManagement() {
             </div>
           )}
         </div>
+        {/* 📄 Pagination Controls */}
+        {filtered.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+            <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+              Page {currentPage} of {Math.ceil(filtered.length / itemsPerPage) || 1}
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #d1d5db',
+                  background: currentPage === 1 ? '#f3f4f6' : '#fff',
+                  color: currentPage === 1 ? '#9ca3af' : '#2c5dff',
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                <ion-icon name="chevron-back"></ion-icon> Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(Math.ceil(filtered.length / itemsPerPage), p + 1))}
+                disabled={currentPage >= Math.ceil(filtered.length / itemsPerPage)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #d1d5db',
+                  background: currentPage >= Math.ceil(filtered.length / itemsPerPage) ? '#f3f4f6' : '#fff',
+                  color: currentPage >= Math.ceil(filtered.length / itemsPerPage) ? '#9ca3af' : '#2c5dff',
+                  cursor: currentPage >= Math.ceil(filtered.length / itemsPerPage) ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                Next <ion-icon name="chevron-forward"></ion-icon>
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   )

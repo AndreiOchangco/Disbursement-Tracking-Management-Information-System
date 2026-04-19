@@ -64,7 +64,7 @@ function AppLayout() {
             </button>
           )}
           <button type="button" onClick={logout} className="btn-logout">
-            <ion-icon name="log-out"></ion-icon> Logout
+            <ion-icon name="log-out" style={{ fontSize: '18px' }}></ion-icon> Logout
           </button>
         </div>
       </header>
