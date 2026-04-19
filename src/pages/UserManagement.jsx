@@ -9,6 +9,8 @@ export default function UserManagement() {
   const [editingUser, setEditingUser] = useState(null)
   const [loading, setLoading] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -206,41 +208,6 @@ export default function UserManagement() {
         </div>
       </div>
 
-      {/* 📊 STATS CARDS */}
-      <div className="stats-grid">
-        <div className="stat-card" style={{ borderColor: '#2c5dff', background: '#f0f7ff' }}>
-          <div className="stat-icon"><ion-icon name="people"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">Total Users</p>
-            <h3 className="stat-value" style={{ color: '#2c5dff' }}>{stats.totalUsers}</h3>
-          </div>
-        </div>
-
-        <div className="stat-card" style={{ borderColor: '#059669', background: '#f0fdf4' }}>
-          <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">Active Users</p>
-            <h3 className="stat-value" style={{ color: '#059669' }}>{stats.activeUsers}</h3>
-          </div>
-        </div>
-
-        <div className="stat-card" style={{ borderColor: '#fbbf24', background: '#fffbeb' }}>
-          <div className="stat-icon"><ion-icon name="crown"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">System Administrators</p>
-            <h3 className="stat-value" style={{ color: '#d97706' }}>{stats.adminUsers}</h3>
-          </div>
-        </div>
-
-        <div className="stat-card" style={{ borderColor: '#2563eb', background: '#eff6ff' }}>
-          <div className="stat-icon"><ion-icon name="clipboard"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">Staff Members</p>
-            <h3 className="stat-value" style={{ color: '#2563eb' }}>{stats.staffUsers}</h3>
-          </div>
-        </div>
-      </div>
-
       {/* ➕ ADD USER FORM */}
       {showForm && (
         <section className="panel" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', borderLeft: '4px solid #fbbf24' }}>
@@ -359,7 +326,10 @@ export default function UserManagement() {
             )}
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setCurrentPage(1)
+              }}
               placeholder="Search users by name, email, username..."
               className="search"
             />
@@ -378,7 +348,9 @@ export default function UserManagement() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((user) => (
+              {filtered
+                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                .map((user) => (
                 <tr 
                   key={user.id} 
                   style={{ 
@@ -476,6 +448,55 @@ export default function UserManagement() {
             </div>
           )}
         </div>
+
+        {/* 📄 Pagination Controls */}
+        {filtered.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+            <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+              Page {currentPage} of {Math.ceil(filtered.length / itemsPerPage) || 1}
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #d1d5db',
+                  background: currentPage === 1 ? '#f3f4f6' : '#fff',
+                  color: currentPage === 1 ? '#9ca3af' : '#2c5dff',
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                <ion-icon name="chevron-back"></ion-icon> Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(Math.ceil(filtered.length / itemsPerPage), p + 1))}
+                disabled={currentPage >= Math.ceil(filtered.length / itemsPerPage)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #d1d5db',
+                  background: currentPage >= Math.ceil(filtered.length / itemsPerPage) ? '#f3f4f6' : '#fff',
+                  color: currentPage >= Math.ceil(filtered.length / itemsPerPage) ? '#9ca3af' : '#2c5dff',
+                  cursor: currentPage >= Math.ceil(filtered.length / itemsPerPage) ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                Next <ion-icon name="chevron-forward"></ion-icon>
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   )

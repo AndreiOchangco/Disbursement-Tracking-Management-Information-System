@@ -53,6 +53,8 @@ export default function Disbursements() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [addedDV, setAddedDV] = useState(null)
   const [showRecordsModal, setShowRecordsModal] = useState(false)
+  const [dvCurrentPage, setDVCurrentPage] = useState(1)
+  const dvItemsPerPage = 10
   // Normalize department keys to match backend choices (be tolerant of label variants)
   const normalizeDept = (d) => {
     if (!d) return null
@@ -573,7 +575,10 @@ export default function Disbursements() {
             </Link>
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setDVCurrentPage(1)
+              }}
               placeholder="Search by tracking, DV number, or officer..."
               className="search search--wide"
             />
@@ -593,7 +598,9 @@ export default function Disbursements() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((d) => (
+              {filtered
+                .slice((dvCurrentPage - 1) * dvItemsPerPage, dvCurrentPage * dvItemsPerPage)
+                .map((d) => (
                 <tr key={d.id} className="table-row">
                   <td className="table-strong">{d.tracking_no}</td>
                   <td>{d.dv_no !== undefined && d.dv_no !== null && d.dv_no !== '' ? Number(d.dv_no).toString() : '-'}</td>
@@ -674,6 +681,49 @@ export default function Disbursements() {
           </table>
           {filtered.length === 0 && <p className="empty empty--center"><ion-icon name="mail-unread"></ion-icon> No disbursements found.</p>}
         </div>
+
+        {/* 📄 Pagination Controls */}
+        {filtered.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+            <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+              Showing {(dvCurrentPage - 1) * dvItemsPerPage + 1} to {Math.min(dvCurrentPage * dvItemsPerPage, filtered.length)} of {filtered.length} records | Page {dvCurrentPage} of {Math.ceil(filtered.length / dvItemsPerPage)}
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => setDVCurrentPage(p => Math.max(1, p - 1))}
+                disabled={dvCurrentPage === 1}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #d1d5db',
+                  background: dvCurrentPage === 1 ? '#f3f4f6' : '#fff',
+                  color: dvCurrentPage === 1 ? '#9ca3af' : '#2c5dff',
+                  cursor: dvCurrentPage === 1 ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                <ion-icon name="chevron-back"></ion-icon> Previous
+              </button>
+              <button
+                onClick={() => setDVCurrentPage(p => Math.min(Math.ceil(filtered.length / dvItemsPerPage), p + 1))}
+                disabled={dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #d1d5db',
+                  background: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? '#f3f4f6' : '#fff',
+                  color: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? '#9ca3af' : '#2c5dff',
+                  cursor: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                Next <ion-icon name="chevron-forward"></ion-icon>
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Success Modal */}

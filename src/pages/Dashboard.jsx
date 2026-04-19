@@ -26,11 +26,14 @@ export default function Dashboard() {
     adminUsers: 0,
     staffUsers: 0,
   })
+  const [userCurrentPage, setUserCurrentPage] = useState(1)
+  const usersPerPage = 5
+  const [dvCurrentPage, setDVCurrentPage] = useState(1)
+  const dvPerPage = 5
 
   useEffect(() => {
     if (isAdmin) {
       loadUserData()
-      loadData()
     } else {
       loadData()
     }
@@ -163,7 +166,7 @@ export default function Dashboard() {
                   </div>
       
                   <div className="stat-card" style={{ borderColor: '#fbbf24', background: '#fffbeb' }}>
-                    <div className="stat-icon"><ion-icon name="crown"></ion-icon></div>
+                    <div className="stat-icon"><ion-icon name="terminal"></ion-icon></div>
                     <div className="stat-content">
                       <p className="stat-label">System Administrators</p>
                       <h3 className="stat-value" style={{ color: '#d97706' }}>{userStats.adminUsers}</h3>
@@ -182,7 +185,7 @@ export default function Dashboard() {
                 <section className="panel" style={{ marginBottom: '2rem' }}>
                   <div style={{ marginBottom: '1.5rem' }}>
                     <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="clipboard"></ion-icon> Recent Users</h3>
-                    <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Last {Math.min(5, users.length)} users created</p>
+                    <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Total {users.filter(u => u.status !== 'archived').length} users</p>
                   </div>
       
                   <div className="table-wrap">
@@ -196,7 +199,9 @@ export default function Dashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {users.filter(u => u.status !== 'archived').slice(0, 5).map((user) => (
+                        {users.filter(u => u.status !== 'archived')
+                          .slice((userCurrentPage - 1) * usersPerPage, userCurrentPage * usersPerPage)
+                          .map((user) => (
                           <tr key={user.id} style={{ borderBottom: '1px solid #fef3c7' }}>
                             <td style={{ fontWeight: '500' }}>{user.full_name}</td>
                             <td>{user.email}</td>
@@ -230,6 +235,53 @@ export default function Dashboard() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* 📄 Pagination Controls */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+                    <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+                      Page {userCurrentPage} of {Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) || 1}
+                    </span>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => setUserCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={userCurrentPage === 1}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '4px',
+                          border: '1px solid #d1d5db',
+                          background: userCurrentPage === 1 ? '#f3f4f6' : '#fff',
+                          color: userCurrentPage === 1 ? '#9ca3af' : '#2c5dff',
+                          cursor: userCurrentPage === 1 ? 'not-allowed' : 'pointer',
+                          fontSize: '0.9rem',
+                          fontWeight: '500',
+                        }}
+                      >
+                        <ion-icon name="chevron-back"></ion-icon> Previous
+                      </button>
+                      <button
+                        onClick={() => setUserCurrentPage(p => Math.min(Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage), p + 1))}
+                        disabled={userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '4px',
+                          border: '1px solid #d1d5db',
+                          background: userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) ? '#f3f4f6' : '#fff',
+                          color: userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) ? '#9ca3af' : '#2c5dff',
+                          cursor: userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) ? 'not-allowed' : 'pointer',
+                          fontSize: '0.9rem',
+                          fontWeight: '500',
+                        }}
+                      >
+                        Next <ion-icon name="chevron-forward"></ion-icon>
+                      </button>
+                    </div>
                   </div>
                 </section>
       
@@ -289,6 +341,108 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      <section className="panel" style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="receipt"></ion-icon> Recent Disbursements</h3>
+          <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Latest {data.length} disbursement vouchers</p>
+        </div>
+
+        <div className="table-wrap">
+          <table>
+            <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
+              <tr>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> DV Number</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Payee</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th style={{ color: '#2c5dff' }}><ion-icon name="calendar"></ion-icon> Created Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data
+                .slice((dvCurrentPage - 1) * dvPerPage, dvCurrentPage * dvPerPage)
+                .map((dv) => (
+                <tr key={dv.id} style={{ borderBottom: '1px solid #fef3c7' }}>
+                  <td style={{ fontWeight: '500' }}>{dv.tracking_no}</td>
+                  <td>{dv.dv_no || '-'}</td>
+                  <td>{dv.payee}</td>
+                  <td>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '0.3rem 0.6rem',
+                      borderRadius: '4px',
+                      fontSize: '0.8rem',
+                      fontWeight: '600',
+                      textTransform: 'capitalize',
+                      background: dv.status === 'completed' ? 'rgba(5, 150, 105, 0.2)' : 
+                                 dv.status === 'pending' ? 'rgba(0, 82, 204, 0.2)' :
+                                 dv.status === 'draft' ? 'rgba(249, 115, 22, 0.2)' :
+                                 'rgba(107, 114, 128, 0.2)',
+                      color: dv.status === 'completed' ? '#059669' :
+                             dv.status === 'pending' ? '#0052CC' :
+                             dv.status === 'draft' ? '#f97316' :
+                             '#6b7280'
+                    }}>
+                      {dv.status}
+                    </span>
+                  </td>
+                  <td>{dv.created_date ? new Date(dv.created_date).toLocaleDateString() : '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 📄 Pagination Controls */}
+        {data.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+            <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+              Page {dvCurrentPage} of {Math.ceil(data.length / dvPerPage) || 1}
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => setDVCurrentPage(p => Math.max(1, p - 1))}
+                disabled={dvCurrentPage === 1}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #d1d5db',
+                  background: dvCurrentPage === 1 ? '#f3f4f6' : '#fff',
+                  color: dvCurrentPage === 1 ? '#9ca3af' : '#2c5dff',
+                  cursor: dvCurrentPage === 1 ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                <ion-icon name="chevron-back"></ion-icon> Previous
+              </button>
+              <button
+                onClick={() => setDVCurrentPage(p => Math.min(Math.ceil(data.length / dvPerPage), p + 1))}
+                disabled={dvCurrentPage >= Math.ceil(data.length / dvPerPage)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #d1d5db',
+                  background: dvCurrentPage >= Math.ceil(data.length / dvPerPage) ? '#f3f4f6' : '#fff',
+                  color: dvCurrentPage >= Math.ceil(data.length / dvPerPage) ? '#9ca3af' : '#2c5dff',
+                  cursor: dvCurrentPage >= Math.ceil(data.length / dvPerPage) ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                Next <ion-icon name="chevron-forward"></ion-icon>
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
 
       <div className="charts-grid">
         <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
