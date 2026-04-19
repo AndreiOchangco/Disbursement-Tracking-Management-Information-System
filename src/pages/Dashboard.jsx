@@ -332,13 +332,6 @@ export default function Dashboard() {
               <h3 className="stat-value">{stats.archived}</h3>
             </div>
           </div>
-          <div className="stat-card" style={{ borderLeft: '4px solid #fbbf24', background: '#fffbeb' }}>
-            <div className="stat-icon"><ion-icon name="cash" style={{color: '#d97706'}}></ion-icon></div>
-            <div className="stat-content">
-              <p className="stat-label">Total Amount</p>
-              <h3 className="stat-value">₱{stats.totalAmount.toLocaleString()}</h3>
-            </div>
-          </div>
         </div>
       </div>
 
