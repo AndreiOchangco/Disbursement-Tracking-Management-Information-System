@@ -59,7 +59,7 @@ function AppLayout() {
         <div className="header-actions">
           <span>{currentUser?.full_name || 'Guest'}</span>
           {isAdmin && (
-            <button type="button" onClick={openDjangoAdmin} className="btn-primary" style={{ marginRight: '0.5rem' }}>
+            <button type="button" onClick={openDjangoAdmin} className="btn-primary" style={{ marginRight: '0.5rem', marginTop: '-0.05rem' }}>
               🔐 Open Django Admin
             </button>
           )}
