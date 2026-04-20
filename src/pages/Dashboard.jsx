@@ -238,53 +238,6 @@ export default function Dashboard() {
                       </tbody>
                     </table>
                   </div>
-
-                  {/* 📄 Pagination Controls */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
-                    <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-                      Page {userCurrentPage} of {Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) || 1}
-                    </span>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button
-                        onClick={() => setUserCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={userCurrentPage === 1}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.3rem',
-                          padding: '0.5rem 1rem',
-                          borderRadius: '4px',
-                          border: '1px solid #d1d5db',
-                          background: userCurrentPage === 1 ? '#f3f4f6' : '#fff',
-                          color: userCurrentPage === 1 ? '#9ca3af' : '#2c5dff',
-                          cursor: userCurrentPage === 1 ? 'not-allowed' : 'pointer',
-                          fontSize: '0.9rem',
-                          fontWeight: '500',
-                        }}
-                      >
-                        <ion-icon name="chevron-back"></ion-icon> Previous
-                      </button>
-                      <button
-                        onClick={() => setUserCurrentPage(p => Math.min(Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage), p + 1))}
-                        disabled={userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.3rem',
-                          padding: '0.5rem 1rem',
-                          borderRadius: '4px',
-                          border: '1px solid #d1d5db',
-                          background: userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) ? '#f3f4f6' : '#fff',
-                          color: userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) ? '#9ca3af' : '#2c5dff',
-                          cursor: userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) ? 'not-allowed' : 'pointer',
-                          fontSize: '0.9rem',
-                          fontWeight: '500',
-                        }}
-                      >
-                        Next <ion-icon name="chevron-forward"></ion-icon>
-                      </button>
-                    </div>
-                  </div>
                 </section>
 
           {/* 📊 DV ANALYTICS SECTION */}
@@ -446,55 +399,6 @@ export default function Dashboard() {
             </tbody>
           </table>
         </div>
-
-        {/* 📄 Pagination Controls */}
-        {data.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
-            <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-              Page {dvCurrentPage} of {Math.ceil(data.length / dvPerPage) || 1}
-            </span>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={() => setDVCurrentPage(p => Math.max(1, p - 1))}
-                disabled={dvCurrentPage === 1}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '4px',
-                  border: '1px solid #d1d5db',
-                  background: dvCurrentPage === 1 ? '#f3f4f6' : '#fff',
-                  color: dvCurrentPage === 1 ? '#9ca3af' : '#2c5dff',
-                  cursor: dvCurrentPage === 1 ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                }}
-              >
-                <ion-icon name="chevron-back"></ion-icon> Previous
-              </button>
-              <button
-                onClick={() => setDVCurrentPage(p => Math.min(Math.ceil(data.length / dvPerPage), p + 1))}
-                disabled={dvCurrentPage >= Math.ceil(data.length / dvPerPage)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '4px',
-                  border: '1px solid #d1d5db',
-                  background: dvCurrentPage >= Math.ceil(data.length / dvPerPage) ? '#f3f4f6' : '#fff',
-                  color: dvCurrentPage >= Math.ceil(data.length / dvPerPage) ? '#9ca3af' : '#2c5dff',
-                  cursor: dvCurrentPage >= Math.ceil(data.length / dvPerPage) ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                }}
-              >
-                Next <ion-icon name="chevron-forward"></ion-icon>
-              </button>
-            </div>
-          </div>
-        )}
       </section>
 
           {/* 📊 CHARTS */}
