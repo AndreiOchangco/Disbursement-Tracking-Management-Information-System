@@ -11,7 +11,7 @@ urlpatterns = [
     path('auth/sso-login/', views.sso_login, name='sso-login'),
 
     # Admin
-    path('auth/signup/', views.register, name='register'),
+    path('users/signup/', views.register, name='register'),
     path('users/', views.user_list, name='user-list'),
     path('users/<int:pk>/', views.user_detail, name='user-detail'),
 

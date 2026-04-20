@@ -2,8 +2,20 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiRequest, BASE_URL, getToken, getCurrentUser } from '../api'
+import ReactModal from '../components/ReactModal'
 
 export default function ReportGeneration() {
+  // 🔥 State controls modal visibility
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Open modal
+  const openModal = () => setIsOpen(true);
+
+  // Close modal
+  const closeModal = () => setIsOpen(false);
+
+
+
   const navigate = useNavigate()
   const currentUser = getCurrentUser()
   const [approved, setApproved] = useState([])
@@ -99,6 +111,28 @@ export default function ReportGeneration() {
             <button className="btn-archive" onClick={loadApproved} disabled={loading}>
               🔄 Refresh
             </button>
+            {/* ===== BUTTON ===== */}
+            <button onClick={openModal}>
+              Open Modal
+            </button>
+
+            {/* ===== MODAL ===== */}
+            <ReactModal
+              isOpen={isOpen}
+              onClose={closeModal}
+              title="Disbursement Info"
+              footer={
+                <>
+                  <button onClick={closeModal}>Cancel</button>
+                  <button onClick={() => alert('Confirmed')}>
+                    Confirm
+                  </button>
+                </>
+              }
+            >
+              {/* BODY CONTENT */}
+              <p>This is your modal content.</p>
+            </ReactModal>
           </div>
         </div>
 

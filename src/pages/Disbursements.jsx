@@ -45,10 +45,7 @@ export default function Disbursements() {
   const [particularJevNo, setParticularJevNo] = useState('')
   const [particularDate, setParticularDate] = useState(new Date().toISOString().split('T')[0])
   const [particulars, setParticulars] = useState([
-    { category: 'Organic', np: '0', ft: '0', tf: '0' },
-    { category: 'Devolved', np: '0', ft: '0', tf: '0' },
-    { category: 'VM & SB', np: '0', ft: '0', tf: '0' },
-    { category: 'Adjustment', np: '0', ft: '0', tf: '0' },
+    { category: '', np: '0', ft: '0', tf: '0' },
   ])
 
   const initialOfficer = (() => {
@@ -209,10 +206,7 @@ export default function Disbursements() {
       setParticularJevNo('')
       setParticularDate(new Date().toISOString().split('T')[0])
       setParticulars([
-        { category: 'Organic', np: '0', ft: '0', tf: '0' },
-        { category: 'Devolved', np: '0', ft: '0', tf: '0' },
-        { category: 'VM & SB', np: '0', ft: '0', tf: '0' },
-        { category: 'Adjustment', np: '0', ft: '0', tf: '0' },
+        { category: '', np: '0', ft: '0', tf: '0' },
       ])
       setOfficer(initialOfficer)
     } catch (err) {

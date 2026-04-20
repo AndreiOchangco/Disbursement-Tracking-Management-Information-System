@@ -11,6 +11,7 @@ import NotFound from '../pages/NotFound'
 import ReportGeneration from '../pages/ReportGeneration'
 import PrivateRoute from './PrivateRoute'
 import { getCurrentUser, clearCurrentUser, ssoLogin, API_ORIGIN } from '../api'
+import ReactModal from '../components/ReactModal'
 
 // <ion-icon name="lock-closed"></ion-icon> Layout
 function AppLayout() {
@@ -45,12 +46,11 @@ function AppLayout() {
       <header className="app-header">
         <div className="header-brand">
           <Link
-                  className={`${isActive('/admin/dashboard') ? 'active' : ''}`}
-                  to="/admin/dashboard"
-                  title="Admin Dashboard"
-                >
-                <img src="/MuniLuna.png" alt="DTMIS Logo" className="header-logo" />
-                </Link>
+              className={`${isActive('/admin/dashboard') ? 'active' : ''}`}
+              to="/admin/dashboard"
+              title="Admin Dashboard">
+              <img src="/MuniLuna.png" alt="DTMIS Logo" className="header-logo" />
+          </Link>
           <div>
             <h1 className="text-xl font-bold">DTMIS</h1>
             <p className="text-sm text-gray-600">Disbursement Tracking Management Information System</p>
@@ -66,6 +66,7 @@ function AppLayout() {
           <button type="button" onClick={logout} className="btn-logout">
             <ion-icon name="log-out" style={{ fontSize: '18px' }}></ion-icon> Logout
           </button>
+          <ReactModal />
         </div>
       </header>
 

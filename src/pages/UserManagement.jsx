@@ -109,12 +109,12 @@ export default function UserManagement() {
         if (!submitData.password) {
           delete submitData.password
         }
-        result = await apiRequest(`/users/${editingUser.id}/`, 'PUT', submitData)
+        result = await apiRequest(`/users/signup/${editingUser.id}/`, 'PUT', submitData)
         setUsers(users.map(u => u.id === editingUser.id ? result : u))
         alert('User updated successfully')
       } else {
         // Create user
-        result = await apiRequest('/users/', 'POST', submitData)
+        result = await apiRequest('/users/signup/', 'POST', submitData)
         setUsers([result, ...users])
         alert('User created successfully')
       }
