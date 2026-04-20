@@ -645,12 +645,6 @@ export default function Disbursements() {
                           >
                             <ion-icon name="close-circle"></ion-icon> Reject
                           </button>
-
-                          {!isActionable(d) && (
-                            <small style={{ color: '#6b7280' }}>
-                              ({String(d.status || '')}, step {d.current_step ?? 'N/A'}, your step {currentUserStep ?? 'N/A'})
-                            </small>
-                          )}
                         </>
                       </>
                     )}
