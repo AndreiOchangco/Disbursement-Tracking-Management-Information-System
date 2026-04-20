@@ -506,17 +506,17 @@ export default function Disbursements() {
             <table className="particulars-table">
               <thead>
                 <tr>
-                  <th>Category</th>
-                  <th>Net Pay</th>
-                  <th>15th</th>
-                  <th>31st</th>
-                  <th className="text-center">Remove</th>
+                  <th className="table-column-center">Category</th>
+                  <th className="table-column-center">Net Pay</th>
+                  <th className="table-column-center">15th</th>
+                  <th className="table-column-center">31st</th>
+                  <th className="table-column-center">Remove</th>
                 </tr>
               </thead>
               <tbody>
                 {particulars.map((item, idx) => (
                   <tr key={idx}>
-                    <td>
+                    <td className="table-column-center">
                       <input
                         className="particulars-input"
                         type="text"
@@ -525,7 +525,7 @@ export default function Disbursements() {
                         placeholder="Category name"
                       />
                     </td>
-                    <td>
+                    <td className="table-column-center">
                       <input
                         className="particulars-input"
                         type="number"
@@ -534,7 +534,7 @@ export default function Disbursements() {
                         placeholder="0.00"
                       />
                     </td>
-                    <td>
+                    <td className="table-column-center">
                       <input
                         className="particulars-input"
                         type="number"
@@ -543,7 +543,7 @@ export default function Disbursements() {
                         placeholder="0.00"
                       />
                     </td>
-                    <td>
+                    <td className="table-column-center">
                       <input
                         className="particulars-input"
                         type="number"
@@ -552,7 +552,7 @@ export default function Disbursements() {
                         placeholder="0.00"
                       />
                     </td>
-                    <td className="text-center">
+                    <td className="table-column-center">
                       <button type="button" className="btn-danger btn-small" onClick={() => removeParticularRow(idx)}>
                         <ion-icon name="trash" style={{ fontSize: '20px' }}></ion-icon>
                       </button>
@@ -599,12 +599,12 @@ export default function Disbursements() {
           <table>
             <thead className="table-head">
               <tr>
-                <th><ion-icon name="pin"></ion-icon> Tracking #</th>
-                <th><ion-icon name="bookmark"></ion-icon> DV Number</th>
-                <th><ion-icon name="bar-chart"></ion-icon> Status</th>
-                <th><ion-icon name="calendar"></ion-icon> Request Date</th>
-                <th><ion-icon name="person"></ion-icon> Created By</th>
-                <th><ion-icon name="settings"></ion-icon> Actions</th>
+                <th className="table-column-center table-column-border"><ion-icon name="pin"></ion-icon> Tracking #</th>
+                <th className="table-column-center table-column-border"><ion-icon name="bookmark"></ion-icon> DV Number</th>
+                <th className="table-column-center table-column-border"><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th className="table-column-center table-column-border"><ion-icon name="calendar"></ion-icon> Request Date</th>
+                <th className="table-column-center table-column-border"><ion-icon name="person"></ion-icon> Created By</th>
+                <th className="table-column-center table-column-border"><ion-icon name="settings"></ion-icon> Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -614,14 +614,14 @@ export default function Disbursements() {
                 <tr key={d.id} className="table-row">
                   <td className="table-strong">{d.tracking_no}</td>
                   <td>{d.dv_no !== undefined && d.dv_no !== null && d.dv_no !== '' ? Number(d.dv_no).toString() : '-'}</td>
-                  <td>
+                  <td className="table-column-center">
                     <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-') }>
                       {d.status}
                     </span>
                   </td>
-                  <td>{formatDateMMDDYYYY(d.created_date)}</td>
+                  <td className='table-column-center'>{formatDateMMDDYYYY(d.created_date)}</td>
                   <td>{d.accounting_name}</td>
-                  <td>
+                  <td className="table-column-center">
                     <div className="action-buttons">
                     {/* Actions: Approve/Reject for non-admin users; Delete/Archive for Accounting */}
                     {currentUser?.department !== 'admin' && (

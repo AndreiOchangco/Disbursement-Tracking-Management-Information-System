@@ -101,11 +101,11 @@ export default function Journals() {
           <table>
             <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
               <tr>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> Journal Entry #</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Officer</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> Journal Entry #</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Officer</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
               </tr>
             </thead>
 
@@ -138,7 +138,7 @@ export default function Journals() {
                     </span>
                   </td>
 
-                  <td>
+                  <td className="table-column-center">
                     <span 
                       className={'status-badge status-' + (j.status || '').toLowerCase()}
                       style={{ 
@@ -162,7 +162,7 @@ export default function Journals() {
                     </div>
                   </td>
 
-                  <td>
+                  <td className="table-column-center">
                     <button
                       className="btn-primary"
                       style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', marginRight: '0.5rem' }}

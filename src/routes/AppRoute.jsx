@@ -92,15 +92,6 @@ function AppLayout() {
                   <span className="nav-icon">👥</span>
                   <span className="nav-text">User Management</span>
                 </Link>
-
-                <Link
-                  className={`nav-link ${isActive('/admin/reports') ? 'active' : ''}`}
-                  to="/admin/reports"
-                  title="Report Generation"
-                >
-                  <span className="nav-icon">📑</span>
-                  <span className="nav-text">Report Generation</span>
-                </Link>
               </>
             ) : (
               <>

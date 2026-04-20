@@ -106,11 +106,11 @@ export default function ReportGeneration() {
           <table>
             <thead>
               <tr>
-                <th>Tracking #</th>
-                <th>DV Number</th>
-                <th>Amount</th>
-                <th>Approved Date</th>
-                <th>Prepared By</th>
+                <th className="table-column-center table-column-border">Tracking #</th>
+                <th className="table-column-center table-column-border">DV Number</th>
+                <th className="table-column-center table-column-border">Amount</th>
+                <th className="table-column-center table-column-border">Approved Date</th>
+                <th className="table-column-center table-column-border">Prepared By</th>
               </tr>
             </thead>
             <tbody>
@@ -119,7 +119,7 @@ export default function ReportGeneration() {
                   <td style={{ fontWeight: 600 }}>{d.tracking_no}</td>
                   <td>{d.dv_no ?? '-'}</td>
                   <td>{d.amount ?? '-'}</td>
-                  <td>{d.approved_date ?? d.created_date ?? '-'}</td>
+                  <td className="table-column-center">{d.approved_date ?? d.created_date ?? '-'}</td>
                   <td>{d.accounting_name ?? '-'}</td>
                 </tr>
               ))}

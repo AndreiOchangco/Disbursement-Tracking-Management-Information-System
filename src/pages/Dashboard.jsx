@@ -405,11 +405,11 @@ export default function Dashboard() {
           <table>
             <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
               <tr>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> DV Number</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Payee</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
-                <th style={{ color: '#2c5dff' }}><ion-icon name="calendar"></ion-icon> Created Date</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> DV Number</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Payee</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="calendar"></ion-icon> Created Date</th>
               </tr>
             </thead>
             <tbody>
@@ -420,7 +420,7 @@ export default function Dashboard() {
                   <td style={{ fontWeight: '500' }}>{dv.tracking_no}</td>
                   <td>{dv.dv_no || '-'}</td>
                   <td>{dv.payee}</td>
-                  <td>
+                  <td className='table-column-center'>
                     <span style={{
                       display: 'inline-block',
                       padding: '0.3rem 0.6rem',
@@ -440,7 +440,7 @@ export default function Dashboard() {
                       {dv.status}
                     </span>
                   </td>
-                  <td>{dv.created_date ? new Date(dv.created_date).toLocaleDateString() : '-'}</td>
+                  <td className='table-column-center'>{dv.created_date ? new Date(dv.created_date).toLocaleDateString() : '-'}</td>
                 </tr>
               ))}
             </tbody>
