@@ -15,7 +15,10 @@ export default function Dashboard() {
   const [stats, setStats] = useState({
     total: 0,
     approved: 0,
+    completed: 0,
     pending: 0,
+    draft: 0,
+    archived: 0,
     rejected: 0,
   })
   const [userStats, setUserStats] = useState({
@@ -33,7 +36,6 @@ export default function Dashboard() {
   useEffect(() => {
     if (isAdmin) {
       loadUserData()
-      loadData()
     } else {
       loadData()
     }
@@ -45,23 +47,20 @@ export default function Dashboard() {
       setData(res)
 
       // Separate status counts based on your API response
-      const completed = res.filter(d => d.status === 'completed').length
       const approved = res.filter(d => d.status === 'approved').length
+      const completed = res.filter(d => d.status === 'completed').length
       const pending = res.filter(d => d.status === 'pending').length
       const draft = res.filter(d => d.status === 'draft').length
       const archived = res.filter(d => d.status === 'archived').length
-      
-      // Calculate total amount by summing debits in journal entries
-      const totalAmount = res.reduce((sum, d) => {
-        const entrySum = d.journal_entries?.reduce((s, j) => s + Number(j.debit || 0), 0) || 0
-        return sum + entrySum
-      }, 0)
       const rejected = res.filter(d => d.status === 'rejected').length
 
       setStats({
         total: res.length,
         approved,
+        completed,
         pending,
+        draft,
+        archived,
         rejected,
       })
     } catch (err) {
@@ -89,7 +88,7 @@ export default function Dashboard() {
 
   // <ion-icon name="bar-chart"></ion-icon> STATUS DATA
   const statusData = {
-    labels: ['Approved', 'Pending', 'Rejected'],
+    labels: ['Completed', 'Pending', 'Draft', 'Archived'],
     datasets: [
       {
         label: 'Disbursements',
@@ -142,7 +141,7 @@ export default function Dashboard() {
               <>
                 <div className="page-header">
                   <div>
-                    <h2><ion-icon name="crown"></ion-icon> Admin Dashboard</h2>
+                    <h2 style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}><ion-icon name="people-circle-outline"></ion-icon> Admin Dashboard</h2>
                     <p>Complete system overview with user management</p>
                   </div>
                 </div>
@@ -187,7 +186,6 @@ export default function Dashboard() {
                 <section className="panel" style={{ marginBottom: '2rem' }}>
                   <div style={{ marginBottom: '1.5rem' }}>
                     <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="clipboard"></ion-icon> Recent Users</h3>
-                    <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Total {users.filter(u => u.status !== 'archived').length} users</p>
                   </div>
       
                   <div className="table-wrap">
@@ -202,6 +200,7 @@ export default function Dashboard() {
                       </thead>
                       <tbody>
                         {users.filter(u => u.status !== 'archived')
+                          .sort((a, b) => b.id - a.id)
                           .slice((userCurrentPage - 1) * usersPerPage, userCurrentPage * usersPerPage)
                           .map((user) => (
                           <tr key={user.id} style={{ borderBottom: '1px solid #fef3c7' }}>
@@ -209,7 +208,9 @@ export default function Dashboard() {
                             <td>{user.email}</td>
                             <td className='table-column-center'>
                               <span style={{
-                                display: 'inline-block',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.3rem',
                                 padding: '0.4rem 0.8rem',
                                 borderRadius: '6px',
                                 fontSize: '0.85rem',
@@ -218,7 +219,7 @@ export default function Dashboard() {
                                 background: user.department === 'admin' ? 'rgba(251, 191, 36, 0.2)' : 'rgba(44, 93, 255, 0.1)',
                                 color: user.department === 'admin' ? '#d97706' : '#2c5dff'
                               }}>
-                                {user.department === 'admin' && <ion-icon name="crown"></ion-icon>}
+                                {user.department === 'admin' && <ion-icon name="terminal"></ion-icon>}
                                 {user.department.replace(/_/g, ' ')}
                               </span>
                             </td>
@@ -238,115 +239,7 @@ export default function Dashboard() {
                       </tbody>
                     </table>
                   </div>
-
-                  {/* 📄 Pagination Controls */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
-                    <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-                      Page {userCurrentPage} of {Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) || 1}
-                    </span>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button
-                        onClick={() => setUserCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={userCurrentPage === 1}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.3rem',
-                          padding: '0.5rem 1rem',
-                          borderRadius: '4px',
-                          border: '1px solid #d1d5db',
-                          background: userCurrentPage === 1 ? '#f3f4f6' : '#fff',
-                          color: userCurrentPage === 1 ? '#9ca3af' : '#2c5dff',
-                          cursor: userCurrentPage === 1 ? 'not-allowed' : 'pointer',
-                          fontSize: '0.9rem',
-                          fontWeight: '500',
-                        }}
-                      >
-                        <ion-icon name="chevron-back"></ion-icon> Previous
-                      </button>
-                      <button
-                        onClick={() => setUserCurrentPage(p => Math.min(Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage), p + 1))}
-                        disabled={userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.3rem',
-                          padding: '0.5rem 1rem',
-                          borderRadius: '4px',
-                          border: '1px solid #d1d5db',
-                          background: userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) ? '#f3f4f6' : '#fff',
-                          color: userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) ? '#9ca3af' : '#2c5dff',
-                          cursor: userCurrentPage >= Math.ceil(users.filter(u => u.status !== 'archived').length / usersPerPage) ? 'not-allowed' : 'pointer',
-                          fontSize: '0.9rem',
-                          fontWeight: '500',
-                        }}
-                      >
-                        Next <ion-icon name="chevron-forward"></ion-icon>
-                      </button>
-                    </div>
-                  </div>
                 </section>
-
-          {/* 📊 DV ANALYTICS SECTION */}
-          <div style={{ marginBottom: '2rem' }}>
-            <h3 style={{ color: '#2c5dff', marginBottom: '1rem', fontSize: '1.1rem' }}><ion-icon name="bar-chart"></ion-icon> Disbursement Analytics</h3>
-            <div className="stats-grid">
-              <div className="stat-card" style={{ borderColor: '#2c5dff', background: '#f0f7ff' }}>
-                <div className="stat-icon"><ion-icon name="bar-chart"></ion-icon></div>
-                <div className="stat-content">
-                  <p className="stat-label">Total Entries</p>
-                  <h3 className="stat-value" style={{ color: '#2c5dff' }}>{stats.total}</h3>
-                </div>
-              </div>
-
-              <div className="stat-card stat-approved">
-                <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
-                <div className="stat-content">
-                  <p className="stat-label">Approved</p>
-                  <h3 className="stat-value">{stats.approved}</h3>
-                </div>
-              </div>
-
-              <div className="stat-card stat-pending">
-                <div className="stat-icon"><ion-icon name="time"></ion-icon></div>
-                <div className="stat-content">
-                  <p className="stat-label">Pending</p>
-                  <h3 className="stat-value">{stats.pending}</h3>
-                </div>
-              </div>
-
-              <div className="stat-card stat-rejected">
-                <div className="stat-icon"><ion-icon name="close-circle"></ion-icon></div>
-                <div className="stat-content">
-                  <p className="stat-label">Rejected</p>
-                  <h3 className="stat-value">{stats.rejected}</h3>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 📊 CHARTS */}
-          <div className="charts-grid">
-
-            {/* 📊 BAR */}
-            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="trending-up"></ion-icon> Status Overview</h3>
-              <Bar data={statusData} />
-            </div>
-
-            {/* 📊 PIE */}
-            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="pie-chart"></ion-icon> Status Distribution</h3>
-              <Pie data={statusData} />
-            </div>
-
-            {/* 📊 LINE */}
-            <div className="panel" style={{ gridColumn: 'span 2', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>📅 Monthly Trend</h3>
-              <Line data={monthlyData} />
-            </div>
-
-          </div>
         </>
       )}
 
@@ -398,7 +291,7 @@ export default function Dashboard() {
           <section className="panel" style={{ marginBottom: '2rem' }}>
         <div style={{ marginBottom: '1.5rem' }}>
           <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="receipt"></ion-icon> Recent Disbursements</h3>
-          <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Latest {data.length} disbursement vouchers</p>
+          <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Latest 5 disbursement vouchers</p>
         </div>
 
         <div className="table-wrap">
@@ -446,55 +339,6 @@ export default function Dashboard() {
             </tbody>
           </table>
         </div>
-
-        {/* 📄 Pagination Controls */}
-        {data.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
-            <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-              Page {dvCurrentPage} of {Math.ceil(data.length / dvPerPage) || 1}
-            </span>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={() => setDVCurrentPage(p => Math.max(1, p - 1))}
-                disabled={dvCurrentPage === 1}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '4px',
-                  border: '1px solid #d1d5db',
-                  background: dvCurrentPage === 1 ? '#f3f4f6' : '#fff',
-                  color: dvCurrentPage === 1 ? '#9ca3af' : '#2c5dff',
-                  cursor: dvCurrentPage === 1 ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                }}
-              >
-                <ion-icon name="chevron-back"></ion-icon> Previous
-              </button>
-              <button
-                onClick={() => setDVCurrentPage(p => Math.min(Math.ceil(data.length / dvPerPage), p + 1))}
-                disabled={dvCurrentPage >= Math.ceil(data.length / dvPerPage)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '4px',
-                  border: '1px solid #d1d5db',
-                  background: dvCurrentPage >= Math.ceil(data.length / dvPerPage) ? '#f3f4f6' : '#fff',
-                  color: dvCurrentPage >= Math.ceil(data.length / dvPerPage) ? '#9ca3af' : '#2c5dff',
-                  cursor: dvCurrentPage >= Math.ceil(data.length / dvPerPage) ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                }}
-              >
-                Next <ion-icon name="chevron-forward"></ion-icon>
-              </button>
-            </div>
-          </div>
-        )}
       </section>
 
           {/* 📊 CHARTS */}

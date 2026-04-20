@@ -75,7 +75,6 @@ export async function apiRequest(endpoint, method = 'GET', body = null) {
 
     // 🔥 AUTO LOGOUT ON UNAUTHORIZED
     if (res.status === 401) {
-      console.warn('Unauthorized → logging out')
       logout()
       return
     }
