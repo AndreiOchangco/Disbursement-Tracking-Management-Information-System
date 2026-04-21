@@ -30,7 +30,6 @@ MOP_CHOICES = [
 ]
 
 DV_STATUS_CHOICES = [
-    ('draft', 'Draft'),
     ('pending', 'Pending'),
     ('disapproved', 'Disapproved'),
     ('completed', 'Completed'),

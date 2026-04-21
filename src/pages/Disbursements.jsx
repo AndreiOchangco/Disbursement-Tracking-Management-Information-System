@@ -205,7 +205,7 @@ export default function Disbursements() {
       setAtmNo('')
       setBank('')
       setTin('')
-      setParticularDescription('Disbursement particulars')
+      setParticularDescription('')
       setParticularJevNo('')
       setParticularDate(new Date().toISOString().split('T')[0])
       setParticulars([
@@ -580,67 +580,6 @@ export default function Disbursements() {
       }
     }
   }
-  // ❌ Delete
-  const deleteItem = async (id) => {
-    const result = await Swal.fire({
-      title: 'Delete Disbursement?',
-      text: 'This action cannot be undone. Are you sure you want to delete this disbursement voucher?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Delete',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#e11d48',
-      cancelButtonColor: '#6b7280',
-      background: '#F0F4FF',
-      color: '#1f2937',
-      didOpen: (modal) => {
-        modal.style.fontFamily = "'Inter', sans-serif"
-        const confirmBtn = modal.querySelector('.swal2-confirm')
-        const cancelBtn = modal.querySelector('.swal2-cancel')
-        if (confirmBtn) {
-          confirmBtn.style.fontWeight = '500'
-          confirmBtn.style.borderRadius = '6px'
-          confirmBtn.style.padding = '8px 24px'
-        }
-        if (cancelBtn) {
-          cancelBtn.style.fontWeight = '500'
-          cancelBtn.style.borderRadius = '6px'
-          cancelBtn.style.padding = '8px 24px'
-        }
-      }
-    })
-    
-    if (!result.isConfirmed) return
-
-    try {
-      await apiRequest(`/dv/${id}/`, 'DELETE')
-      await Swal.fire({
-        title: 'Deleted!',
-        text: 'Disbursement voucher deleted successfully.',
-        icon: 'success',
-        confirmButtonColor: '#0052CC',
-        background: '#F0F4FF',
-        color: '#1f2937',
-        didOpen: (modal) => {
-          modal.style.fontFamily = "'Inter', sans-serif"
-        }
-      })
-      setDisbursements((prev) => prev.filter((d) => d.id !== id))
-    } catch (err) {
-      console.error('Delete failed', err)
-      await Swal.fire({
-        title: 'Error!',
-        text: 'Failed to delete disbursement voucher',
-        icon: 'error',
-        confirmButtonColor: '#e11d48',
-        background: '#F0F4FF',
-        color: '#1f2937',
-        didOpen: (modal) => {
-          modal.style.fontFamily = "'Inter', sans-serif"
-        }
-      })
-    }
-  }
   
   return (
     <div className='noselect'>
@@ -878,7 +817,7 @@ export default function Disbursements() {
           <div className="toolbar-actions">
             {isAccountant && (
               <button
-                className="btn-small"
+                className="btn-archive btn-small"
                 onClick={() => setShowCreateModal(true)}
               >
                 <ion-icon name="add"></ion-icon> Create DV
