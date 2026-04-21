@@ -998,11 +998,11 @@ tbody tr:hover {
   background: #059669;
   color: white;
 }
-.status-rejected { 
+.status-disapproved { 
   background: #dc2626;
   color: white;
 }
-.status-draft { 
+.status-archived { 
   background: #6b7280;
   color: white;
 }
