@@ -573,7 +573,7 @@ export default function Disbursements() {
           <div className="toolbar-actions">
             {isAccountant && (
               <button
-                className="btn-small"
+                className="btn-archive btn-small"
                 onClick={() => setShowCreateModal(true)}
               >
                 <ion-icon name="add"></ion-icon> Create DV
@@ -650,17 +650,6 @@ export default function Disbursements() {
 
                     {isAccountant && (
                       <>
-                        <button className="btn-danger btn-small" onClick={async () => {
-                          if (!confirm('Delete this disbursement?')) return
-                          try {
-                            await deleteItem(d.id)
-                          } catch (e) {
-                            console.error('Delete error', e)
-                          }
-                        }}>
-                          <ion-icon name="trash"></ion-icon> Delete
-                        </button>
-
                         <button className="btn-archive btn-small" onClick={async () => {
                           if (!confirm('Archive this disbursement?')) return
                           const reason = prompt('Reason for archiving:')
