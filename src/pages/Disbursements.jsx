@@ -204,7 +204,7 @@ export default function Disbursements() {
       setAtmNo('')
       setBank('')
       setTin('')
-      setParticularDescription('Disbursement particulars')
+      setParticularDescription('')
       setParticularJevNo('')
       setParticularDate(new Date().toISOString().split('T')[0])
       setParticulars([
@@ -323,17 +323,6 @@ export default function Disbursements() {
         console.error('Reject failed', err)
         alert(err?.message || 'Reject failed')
       }
-    }
-  }
-  // ❌ Delete
-  const deleteItem = async (id) => {
-    if (!confirm('Delete this disbursement?')) return
-
-    try {
-      await apiRequest(`/dv/${id}/`, 'DELETE')
-      setDisbursements((prev) => prev.filter((d) => d.id !== id))
-    } catch (err) {
-      console.error('Delete failed', err)
     }
   }
   

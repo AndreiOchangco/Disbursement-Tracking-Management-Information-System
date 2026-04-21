@@ -357,7 +357,7 @@ def dv_list(request):
         if serializer.is_valid():
             dv = serializer.save(
                 accounting=request.user,
-                status='draft',
+                status='pending',
                 current_step=1
             )
             # Log creation in workflow
