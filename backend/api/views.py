@@ -636,6 +636,9 @@ def dashboard_stats(request):
     return Response({**stats, 'recent_dvs': recent})
 
 
+
+# ─────────────────── PDF GENERATION ───────────────────
+
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])

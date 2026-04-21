@@ -117,7 +117,7 @@ export async function initUser() {
 }
 
 // ===== SSO: Create Django session from frontend JWT =====
-export async function ssoLogin() {
+/*export async function ssoLogin() {
   const token = getToken()
   const res = await fetch(`${BASE_URL}/auth/sso-login/`, {
     method: 'POST',
@@ -147,4 +147,4 @@ export async function ssoLogin() {
   }
 
   return body
-}
+}*/

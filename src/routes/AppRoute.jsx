@@ -10,7 +10,7 @@ import Journals from '../pages/Journals'
 import NotFound from '../pages/NotFound'
 import ReportGeneration from '../pages/ReportGeneration'
 import PrivateRoute from './PrivateRoute'
-import { getCurrentUser, clearCurrentUser, ssoLogin, API_ORIGIN } from '../api'
+import { getCurrentUser, clearCurrentUser, API_ORIGIN } from '../api'
 import ReactModal from '../components/ReactModal'
 
 // <ion-icon name="lock-closed"></ion-icon> Layout
@@ -25,7 +25,7 @@ function AppLayout() {
     window.location.href = "/login"
   }
 
-  const openDjangoAdmin = async () => {
+  /*const openDjangoAdmin = async () => {
     try {
       const res = await ssoLogin()
       const base = API_ORIGIN
@@ -35,7 +35,7 @@ function AppLayout() {
       console.error('SSO failed', err)
       alert('Failed to open Django admin. Check console for details.')
     }
-  }
+  }*/
 
   const isActive = (path) => location.pathname === path
   const isAdmin = currentUser?.department === 'admin'
@@ -58,11 +58,11 @@ function AppLayout() {
         </div>
         <div className="header-actions">
           <span>{currentUser?.full_name || 'Guest'}</span>
-          {isAdmin && (
+          {/* {isAdmin && (
             <button type="button" onClick={openDjangoAdmin} className="btn-primary" style={{ marginRight: '0.5rem', marginTop: '-0.05rem' }}>
               🔐 Open Django Admin
             </button>
-          )}
+          )} */}
           <button type="button" onClick={logout} className="btn-logout">
             <ion-icon name="log-out" style={{ fontSize: '18px' }}></ion-icon> Logout
           </button>
