@@ -410,7 +410,7 @@ export default function Disbursements() {
   const toggleDecision = async (item) => {
     const isApproved = String(item.status || '').toLowerCase() === 'approved'
 
-    // Client-side guard: allow when pending, or for Accounting allow draft at step 1
+    // Client-side guard: allow when pending, or for Accounting allow pending at step 1
     const statusLower = String(item.status || '').toLowerCase()
     const allowed = statusLower === 'pending' || (currentUser?.department === 'accounting' && statusLower === 'pending' && item.current_step === 1)
     if (!allowed || item.current_step !== currentUserStep) {
