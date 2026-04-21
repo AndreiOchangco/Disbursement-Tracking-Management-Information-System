@@ -28,7 +28,6 @@ export default function UserManagement() {
   })
 
   const departmentChoices = [
-    { value: 'admin', label: 'System Administrator', icon: 'crown' },
     { value: 'accounting', label: 'Accountant', icon: 'bar-chart' },
     { value: 'budget', label: 'Budget Officer', icon: 'cash' },
     { value: 'treasurer', label: 'Treasurer', icon: 'business' },
@@ -310,23 +309,11 @@ export default function UserManagement() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: '500' }}>
                   <input
-                    type="radio"
-                    name="status"
-                    checked={formData.status === 'active'}
-                    onChange={() => setFormData({ ...formData, status: 'active' })}
-                    style={{ cursor: 'pointer', width: '18px', height: '18px' }}
-                  />
-                  <span style={{ color: '#059669' }}><ion-icon name="checkmark-circle"></ion-icon> Active</span>
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: '500' }}>
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={formData.status === 'inactive'}
-                    onChange={() => setFormData({ ...formData, status: 'inactive' })}
-                    style={{ cursor: 'pointer', width: '18px', height: '18px' }}
-                  />
-                  <span style={{ color: '#dc2626' }}><ion-icon name="close-circle"></ion-icon> Inactive</span>
+                  readOnly
+                  disabled
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                />
                 </label>
               </div>
             </label>
