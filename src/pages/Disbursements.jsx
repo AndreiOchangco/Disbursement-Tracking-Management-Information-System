@@ -894,11 +894,6 @@ export default function Disbursements() {
 
                     {isAccountant && (
                       <>
-                        <button className="btn-danger btn-small" onClick={async () => {
-                          await deleteItem(d.id)
-                        }}>
-                          <ion-icon name="trash"></ion-icon> Delete
-                        </button>
 
                         <button
                           className="btn-archive btn-small"
