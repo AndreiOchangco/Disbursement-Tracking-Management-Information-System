@@ -289,7 +289,7 @@ export default function Disbursements() {
 
     // Client-side guard: allow when pending, or for Accounting allow draft at step 1
     const statusLower = String(item.status || '').toLowerCase()
-    const allowed = statusLower === 'pending' || (currentUser?.department === 'accounting' && statusLower === 'draft')
+    const allowed = statusLower === 'pending' || (currentUser?.department === 'accounting' && statusLower === 'pending' && item.current_step === 1)
     if (!allowed || item.current_step !== currentUserStep) {
       return alert('You cannot approve this Disbursement Voucher at this stage.')
     }
@@ -344,7 +344,7 @@ export default function Disbursements() {
         >
           <section className="panel panel-alt noselect">
 
-<form className="form-grid form-grid--split noselect" onSubmit={addDisbursement}>
+          <form className="form-grid form-grid--split noselect" onSubmit={addDisbursement}>
             <label>
               <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
               <input
@@ -604,7 +604,7 @@ export default function Disbursements() {
                   <td>{d.dv_no !== undefined && d.dv_no !== null && d.dv_no !== '' ? Number(d.dv_no).toString() : '-'}</td>
                   <td className="table-column-center">
                     <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-') }>
-                      {d.status}
+                      {d.status} ({d.current_step})
                     </span>
                   </td>
                   <td className='table-column-center'>{formatDateMMDDYYYY(d.created_date)}</td>
