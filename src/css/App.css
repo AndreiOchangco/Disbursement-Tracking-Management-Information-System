@@ -1731,3 +1731,11 @@ button, a, input, select {
   border-left: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
 }
+
+.table-pin-column, .table-bookmark-column {
+  width: 10rem;
+}
+
+.table-calendar-column {
+  width: 11rem;
+}

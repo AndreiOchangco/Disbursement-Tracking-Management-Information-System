@@ -38,14 +38,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.5rem 2rem 1.5rem;
   border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
 }
 
 .modal-title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 0.5rem;
   font-weight: 600;
   color: #1f2937;
 }

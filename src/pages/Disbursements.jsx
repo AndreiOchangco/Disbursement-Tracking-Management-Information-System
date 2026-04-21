@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { apiRequest, getCurrentUser } from '../api'
 import Modal from '../components/Modal'
+import ReactModal from '../components/ReactModal'
 
 const user = JSON.parse(localStorage.getItem("user"))
 const statusOptions = ['Pending', 'Approved', 'Rejected']
@@ -58,8 +59,9 @@ export default function Disbursements() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [addedDV, setAddedDV] = useState(null)
   const [showRecordsModal, setShowRecordsModal] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [dvCurrentPage, setDVCurrentPage] = useState(1)
-  const dvItemsPerPage = 10
+  const dvItemsPerPage = 5
 
   // Normalize department keys to match backend choices (be tolerant of label variants)
   const normalizeDept = (d) => {
@@ -344,18 +346,16 @@ export default function Disbursements() {
         </div>
       </div>
 
-      {/* ➕ NEW ENTRY FORM */}
-      {isAccountant ? (
-        <section className="panel panel-alt noselect">
-          <div className="panel-head">
-            <div>
-              <h3 className="panel-title"><ion-icon name="add"></ion-icon> New Disbursement Voucher Entry</h3>
-              <p className="panel-subtitle">Add a new voucher in the accounting office workflow.</p>
-            </div>
-            <div className="panel-note">Only accounting users can create new disbursement vouchers.</div>
-          </div>
+      {/* ➕ NEW ENTRY FORM MODAL */}
+      {isAccountant && (
+        <ReactModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          title="New Disbursement Voucher Entry"
+        >
+          <section className="panel panel-alt noselect">
 
-          <form className="form-grid form-grid--split noselect" onSubmit={addDisbursement}>
+<form className="form-grid form-grid--split noselect" onSubmit={addDisbursement}>
             <label>
               <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
               <input
@@ -560,10 +560,7 @@ export default function Disbursements() {
             </button>
           </div>
         </section>
-      ) : (
-        <section className="panel">
-          <p className="panel-subtitle">New disbursement voucher entry is available only for Accounting office users.</p>
-        </section>
+        </ReactModal>
       )}
 
       {/* 📋 VOUCHERS TABLE */}
@@ -574,6 +571,14 @@ export default function Disbursements() {
             <p className="panel-subtitle">{filtered.length} active records</p>
           </div>
           <div className="toolbar-actions">
+            {isAccountant && (
+              <button
+                className="btn-small"
+                onClick={() => setShowCreateModal(true)}
+              >
+                <ion-icon name="add"></ion-icon> Create DV
+              </button>
+            )}
             <Link to="/disbursements/archived" className="btn-archive btn-small">
               <ion-icon name="archive"></ion-icon> Archived
             </Link>
@@ -593,10 +598,10 @@ export default function Disbursements() {
           <table>
             <thead className="table-head">
               <tr>
-                <th className="table-column-center table-column-border"><ion-icon name="pin"></ion-icon> Tracking #</th>
-                <th className="table-column-center table-column-border"><ion-icon name="bookmark"></ion-icon> DV Number</th>
+                <th className="table-column-center table-column-border table-pin-column"><ion-icon name="pin"></ion-icon> Tracking #</th>
+                <th className="table-column-center table-column-border table-bookmark-column"><ion-icon name="bookmark"></ion-icon> DV Number</th>
                 <th className="table-column-center table-column-border"><ion-icon name="bar-chart"></ion-icon> Status</th>
-                <th className="table-column-center table-column-border"><ion-icon name="calendar"></ion-icon> Request Date</th>
+                <th className="table-column-center table-column-border table-calendar-column"><ion-icon name="calendar"></ion-icon> Request Date</th>
                 <th className="table-column-center table-column-border"><ion-icon name="person"></ion-icon> Created By</th>
                 <th className="table-column-center table-column-border"><ion-icon name="settings"></ion-icon> Actions</th>
               </tr>
@@ -690,6 +695,9 @@ export default function Disbursements() {
                 onClick={() => setDVCurrentPage(p => Math.max(1, p - 1))}
                 disabled={dvCurrentPage === 1}
                 style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
                   padding: '0.5rem 1rem',
                   borderRadius: '4px',
                   border: '1px solid #d1d5db',
@@ -706,6 +714,9 @@ export default function Disbursements() {
                 onClick={() => setDVCurrentPage(p => Math.min(Math.ceil(filtered.length / dvItemsPerPage), p + 1))}
                 disabled={dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage)}
                 style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
                   padding: '0.5rem 1rem',
                   borderRadius: '4px',
                   border: '1px solid #d1d5db',
