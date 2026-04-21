@@ -43,11 +43,11 @@ export default function Disbursements() {
   const [atmNo, setAtmNo] = useState('')
   const [bank, setBank] = useState('')
   const [tin, setTin] = useState('')
-  const [particularDescription, setParticularDescription] = useState('Disbursement particulars')
+  const [particularDescription, setParticularDescription] = useState('')
   const [particularJevNo, setParticularJevNo] = useState('')
   const [particularDate, setParticularDate] = useState(new Date().toISOString().split('T')[0])
   const [particulars, setParticulars] = useState([
-    { category: '', np: '0', ft: '0', tf: '0' },
+    { category: '', np: '', ft: '', tf: '' },
   ])
 
   const initialOfficer = (() => {
@@ -113,7 +113,7 @@ export default function Disbursements() {
   }
 
   const addParticularRow = () => {
-    setParticulars((prev) => [...prev, { category: '', np: '0', ft: '0', tf: '0' }])
+    setParticulars((prev) => [...prev, { category: '', np: '', ft: '', tf: '' }])
   }
 
   const removeParticularRow = (index) => {
@@ -209,7 +209,7 @@ export default function Disbursements() {
       setParticularJevNo('')
       setParticularDate(new Date().toISOString().split('T')[0])
       setParticulars([
-        { category: '', np: '0', ft: '0', tf: '0' },
+        { category: '', np: '', ft: '', tf: '' },
       ])
       setOfficer(initialOfficer)
     } catch (err) {
@@ -688,13 +688,12 @@ export default function Disbursements() {
             </label>
             <label>
               <span>Status</span>
-              <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                {statusOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
+              <input
+                value={status}
+                readOnly
+                disabled
+                placeholder="Auto-filled by your account"
+                />
             </label>
             <span>&nbsp;</span> 
             <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
@@ -761,7 +760,7 @@ export default function Disbursements() {
                         value={item.category}
                         onChange={(e) => handleParticularChange(idx, 'category', e.target.value)}
                         placeholder="Category name"
-                      />
+                        />
                     </td>
                     <td className="table-column-center">
                       <input
@@ -770,7 +769,7 @@ export default function Disbursements() {
                         value={item.np}
                         onChange={(e) => handleParticularChange(idx, 'np', e.target.value)}
                         placeholder="0.00"
-                      />
+                        />
                     </td>
                     <td className="table-column-center">
                       <input
@@ -788,7 +787,7 @@ export default function Disbursements() {
                         value={item.tf}
                         onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)}
                         placeholder="0.00"
-                      />
+                        />
                     </td>
                     <td className="table-column-center">
                       <button type="button" className="btn-danger btn-small" onClick={() => removeParticularRow(idx)}>
@@ -894,12 +893,6 @@ export default function Disbursements() {
 
                     {isAccountant && (
                       <>
-                        <button className="btn-danger btn-small" onClick={async () => {
-                          await deleteItem(d.id)
-                        }}>
-                          <ion-icon name="trash"></ion-icon> Delete
-                        </button>
-
                         <button
                           className="btn-archive btn-small"
                           onClick={async () => {

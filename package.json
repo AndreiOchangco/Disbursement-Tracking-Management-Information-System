@@ -20,11 +20,7 @@
     "react-router-dom": "^7.13.1",
     "react-toastify": "^11.0.5",
     "recharts": "^3.8.1",
-<<<<<<< HEAD
     "sweetalert2": "^11.26.24"
-=======
-    "sweetalert": "^2.1.2"
->>>>>>> 9159b458879bc26e892b0e42f64a430764999593
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
