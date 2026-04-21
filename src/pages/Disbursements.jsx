@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { apiRequest, getCurrentUser } from '../api'
 import Modal from '../components/Modal'
 import ReactModal from '../components/ReactModal'
+import Swal from 'sweetalert2'
 
 const user = JSON.parse(localStorage.getItem("user"))
 const statusOptions = ['Pending', 'Approved', 'Rejected']
@@ -236,25 +237,147 @@ export default function Disbursements() {
 }
 
   const approveItem = async (item) => {
-    if (!confirm('Approve this disbursement?')) return
+    const result = await Swal.fire({
+      title: 'Approve Disbursement?',
+      text: `Are you sure you want to approve this disbursement voucher?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Approve',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6b7280',
+      background: '#F0F4FF',
+      color: '#1f2937',
+      didOpen: (modal) => {
+        modal.style.fontFamily = "'Inter', sans-serif"
+        const confirmBtn = modal.querySelector('.swal2-confirm')
+        const cancelBtn = modal.querySelector('.swal2-cancel')
+        if (confirmBtn) {
+          confirmBtn.style.fontWeight = '500'
+          confirmBtn.style.borderRadius = '6px'
+          confirmBtn.style.padding = '8px 24px'
+        }
+        if (cancelBtn) {
+          cancelBtn.style.fontWeight = '500'
+          cancelBtn.style.borderRadius = '6px'
+          cancelBtn.style.padding = '8px 24px'
+        }
+      }
+    })
+    
+    if (!result.isConfirmed) return
+    
     try {
       await apiRequest(`/dv/${item.id}/approve/`, 'POST')
+      await Swal.fire({
+        title: 'Success!',
+        text: 'Disbursement approved successfully.',
+        icon: 'success',
+        confirmButtonColor: '#0052CC',
+        background: '#F0F4FF',
+        color: '#1f2937',
+        didOpen: (modal) => {
+          modal.style.fontFamily = "'Inter', sans-serif"
+        }
+      })
       await reload()
     } catch (err) {
       console.error('Approve failed', err)
-      alert(err?.message || 'Approve failed')
+      await Swal.fire({
+        title: 'Error!',
+        text: err?.message || 'Approve failed',
+        icon: 'error',
+        confirmButtonColor: '#e11d48',
+        background: '#F0F4FF',
+        color: '#1f2937',
+        didOpen: (modal) => {
+          modal.style.fontFamily = "'Inter', sans-serif"
+        }
+      })
     }
   }
 
   const rejectItem = async (item) => {
-    const remarks = prompt('Enter remarks for rejection:')
-    if (!remarks) return alert('Rejection remarks are required')
+    const result = await Swal.fire({
+      title: 'Reject Disbursement?',
+      input: 'textarea',
+      inputLabel: 'Rejection Remarks',
+      inputPlaceholder: 'Enter your remarks for rejection...',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Reject',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#6b7280',
+      background: '#F0F4FF',
+      color: '#1f2937',
+      inputAttributes: {
+        style: 'min-height: 100px; font-family: Inter, sans-serif; border-radius: 6px; border: 1px solid #C5D3FF;'
+      },
+      didOpen: (modal) => {
+        modal.style.fontFamily = "'Inter', sans-serif"
+        const confirmBtn = modal.querySelector('.swal2-confirm')
+        const cancelBtn = modal.querySelector('.swal2-cancel')
+        const textarea = modal.querySelector('textarea')
+        if (textarea) {
+          textarea.style.fontFamily = "'Inter', sans-serif"
+        }
+        if (confirmBtn) {
+          confirmBtn.style.fontWeight = '500'
+          confirmBtn.style.borderRadius = '6px'
+          confirmBtn.style.padding = '8px 24px'
+        }
+        if (cancelBtn) {
+          cancelBtn.style.fontWeight = '500'
+          cancelBtn.style.borderRadius = '6px'
+          cancelBtn.style.padding = '8px 24px'
+        }
+      }
+    })
+    
+    if (!result.isConfirmed) return
+    if (!result.value?.trim()) {
+      await Swal.fire({
+        title: 'Required!',
+        text: 'Rejection remarks are required',
+        icon: 'warning',
+        confirmButtonColor: '#f97316',
+        background: '#F0F4FF',
+        color: '#1f2937',
+        didOpen: (modal) => {
+          modal.style.fontFamily = "'Inter', sans-serif"
+        }
+      })
+      return
+    }
+    
     try {
-      await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks })
+      await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: result.value })
+      await Swal.fire({
+        title: 'Rejected!',
+        text: 'Disbursement rejected successfully.',
+        icon: 'success',
+        confirmButtonColor: '#0052CC',
+        background: '#F0F4FF',
+        color: '#1f2937',
+        didOpen: (modal) => {
+          modal.style.fontFamily = "'Inter', sans-serif"
+        }
+      })
       await reload()
     } catch (err) {
       console.error('Reject failed', err)
-      alert(err?.message || 'Reject failed')
+      await Swal.fire({
+        title: 'Error!',
+        text: err?.message || 'Reject failed',
+        icon: 'error',
+        confirmButtonColor: '#e11d48',
+        background: '#F0F4FF',
+        color: '#1f2937',
+        didOpen: (modal) => {
+          modal.style.fontFamily = "'Inter', sans-serif"
+        }
+      })
     }
   }
 
@@ -291,12 +414,51 @@ export default function Disbursements() {
     const statusLower = String(item.status || '').toLowerCase()
     const allowed = statusLower === 'pending' || (currentUser?.department === 'accounting' && statusLower === 'pending' && item.current_step === 1)
     if (!allowed || item.current_step !== currentUserStep) {
-      return alert('You cannot approve this Disbursement Voucher at this stage.')
+      return await Swal.fire({
+        title: 'Not Allowed!',
+        text: 'You cannot approve this Disbursement Voucher at this stage.',
+        icon: 'error',
+        confirmButtonColor: '#e11d48',
+        background: '#F0F4FF',
+        color: '#1f2937',
+        didOpen: (modal) => {
+          modal.style.fontFamily = "'Inter', sans-serif"
+        }
+      })
     }
 
     if (!isApproved) {
       // Approve
-      if (!confirm('Approve this disbursement?')) return
+      const result = await Swal.fire({
+        title: 'Approve Disbursement?',
+        text: `Are you sure you want to approve this disbursement voucher?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Approve',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#6b7280',
+        background: '#F0F4FF',
+        color: '#1f2937',
+        didOpen: (modal) => {
+          modal.style.fontFamily = "'Inter', sans-serif"
+          const confirmBtn = modal.querySelector('.swal2-confirm')
+          const cancelBtn = modal.querySelector('.swal2-cancel')
+          if (confirmBtn) {
+            confirmBtn.style.fontWeight = '500'
+            confirmBtn.style.borderRadius = '6px'
+            confirmBtn.style.padding = '8px 24px'
+          }
+          if (cancelBtn) {
+            cancelBtn.style.fontWeight = '500'
+            cancelBtn.style.borderRadius = '6px'
+            cancelBtn.style.padding = '8px 24px'
+          }
+        }
+      })
+      
+      if (!result.isConfirmed) return
+      
       try {
         const updated = await apiRequest(`/dv/${item.id}/approve/`, 'POST')
         if (updated) {
@@ -304,24 +466,117 @@ export default function Disbursements() {
         } else {
           await reload()
         }
+        await Swal.fire({
+          title: 'Success!',
+          text: 'Disbursement approved successfully.',
+          icon: 'success',
+          confirmButtonColor: '#0052CC',
+          background: '#F0F4FF',
+          color: '#1f2937',
+          didOpen: (modal) => {
+            modal.style.fontFamily = "'Inter', sans-serif"
+          }
+        })
       } catch (err) {
         console.error('Approve failed', err)
-        alert(err?.message || 'Approve failed')
+        await Swal.fire({
+          title: 'Error!',
+          text: err?.message || 'Approve failed',
+          icon: 'error',
+          confirmButtonColor: '#e11d48',
+          background: '#F0F4FF',
+          color: '#1f2937',
+          didOpen: (modal) => {
+            modal.style.fontFamily = "'Inter', sans-serif"
+          }
+        })
       }
     } else {
       // Reject (disapprove) — require remarks
-      const remarks = prompt('Enter remarks for rejection:')
-      if (!remarks) return alert('Rejection remarks are required')
+      const result = await Swal.fire({
+        title: 'Reject Disbursement?',
+        input: 'textarea',
+        inputLabel: 'Rejection Remarks',
+        inputPlaceholder: 'Enter your remarks for rejection...',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Reject',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#e11d48',
+        cancelButtonColor: '#6b7280',
+        background: '#F0F4FF',
+        color: '#1f2937',
+        inputAttributes: {
+          style: 'min-height: 100px; font-family: Inter, sans-serif; border-radius: 6px; border: 1px solid #C5D3FF;'
+        },
+        didOpen: (modal) => {
+          modal.style.fontFamily = "'Inter', sans-serif"
+          const confirmBtn = modal.querySelector('.swal2-confirm')
+          const cancelBtn = modal.querySelector('.swal2-cancel')
+          const textarea = modal.querySelector('textarea')
+          if (textarea) {
+            textarea.style.fontFamily = "'Inter', sans-serif"
+          }
+          if (confirmBtn) {
+            confirmBtn.style.fontWeight = '500'
+            confirmBtn.style.borderRadius = '6px'
+            confirmBtn.style.padding = '8px 24px'
+          }
+          if (cancelBtn) {
+            cancelBtn.style.fontWeight = '500'
+            cancelBtn.style.borderRadius = '6px'
+            cancelBtn.style.padding = '8px 24px'
+          }
+        }
+      })
+      
+      if (!result.isConfirmed) return
+      if (!result.value?.trim()) {
+        await Swal.fire({
+          title: 'Required!',
+          text: 'Rejection remarks are required',
+          icon: 'warning',
+          confirmButtonColor: '#f97316',
+          background: '#F0F4FF',
+          color: '#1f2937',
+          didOpen: (modal) => {
+            modal.style.fontFamily = "'Inter', sans-serif"
+          }
+        })
+        return
+      }
+      
       try {
-        const updated = await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks })
+        const updated = await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: result.value })
         if (updated) {
           setDisbursements((prev) => prev.map((d) => (d.id === item.id ? updated : d)))
         } else {
           await reload()
         }
+        await Swal.fire({
+          title: 'Rejected!',
+          text: 'Disbursement rejected successfully.',
+          icon: 'success',
+          confirmButtonColor: '#0052CC',
+          background: '#F0F4FF',
+          color: '#1f2937',
+          didOpen: (modal) => {
+            modal.style.fontFamily = "'Inter', sans-serif"
+          }
+        })
       } catch (err) {
         console.error('Reject failed', err)
-        alert(err?.message || 'Reject failed')
+        await Swal.fire({
+          title: 'Error!',
+          text: err?.message || 'Reject failed',
+          icon: 'error',
+          confirmButtonColor: '#e11d48',
+          background: '#F0F4FF',
+          color: '#1f2937',
+          didOpen: (modal) => {
+            modal.style.fontFamily = "'Inter', sans-serif"
+          }
+        })
       }
     }
   }
@@ -639,17 +894,48 @@ export default function Disbursements() {
 
                     {isAccountant && (
                       <>
-                        <button className="btn-archive btn-small" onClick={async () => {
-                          if (!confirm('Archive this disbursement?')) return
-                          const reason = prompt('Reason for archiving:')
-                          if (!reason) return alert('Reason is required')
-                          try {
-                            await apiRequest(`/dv/${d.id}/archive/`, 'POST', { reason })
-                            await reload()
-                          } catch (e) {
-                            console.error('Archive error', e)
-                          }
+                        <button className="btn-danger btn-small" onClick={async () => {
+                          await deleteItem(d.id)
                         }}>
+                          <ion-icon name="trash"></ion-icon> Delete
+                        </button>
+
+                        <button
+                          className="btn-archive btn-small"
+                          onClick={async () => {
+                            const result = await Swal.fire({
+                              title: 'Archive disbursement?',
+                              text: 'Please enter a reason for archiving.',
+                              input: 'text',
+                              inputPlaceholder: 'Enter reason...',
+                              showCancelButton: true,
+                              confirmButtonText: 'Archive',
+                              cancelButtonText: 'Cancel',
+                              inputValidator: (value) => {
+                                if (!value) {
+                                  return 'Reason is required'}}
+                            })
+                            if (!result.isConfirmed) return
+                            try {
+                              await apiRequest(`/dv/${d.id}/archive/`, 'POST', {
+                                reason: result.value
+                              })
+                              await Swal.fire({
+                                icon: 'success',
+                                title: 'Archived!',
+                                text: 'Disbursement archived successfully.'
+                              })
+                              await reload()
+                            } catch (e) {
+                              console.error('Archive error', e)
+                              Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to archive disbursement.'
+                              })
+                            }
+                          }}
+                        >
                           <ion-icon name="archive"></ion-icon> Archive
                         </button>
                       </>
