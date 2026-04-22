@@ -29,10 +29,10 @@
 }
 
 .noselect {
-  user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  user-select: none;
 }
 
 html, body, #root {
@@ -435,7 +435,6 @@ button {
   border: 1px solid rgba(44, 93, 255, 0.15);
   transition: all 0.3s ease;
   min-width: -webkit-fit-available;
-  min-width: fit-content;
 }
 
 .header-actions span:hover {
@@ -1039,7 +1038,6 @@ tbody tr:hover {
     align-items: center;
     gap: 0.5rem;
     min-width: -webkit-fit-available;
-    min-width: fit-content;
   }
 
   .sidebar-brand h1 {
