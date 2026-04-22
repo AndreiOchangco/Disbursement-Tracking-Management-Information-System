@@ -399,13 +399,25 @@ export default function Disbursements() {
 
   const isActionable = (d) => {
     const statusLower = String(d.status || '').toLowerCase()
-    // Allow accountants to act regardless of workflow stage (but not on archived/completed)
+    
     if (currentUserDeptKey === 'accounting') {
-      return statusLower !== 'archived' && statusLower !== 'completed'
+      return false
     }
-    const allowed = statusLower === 'pending'
-    return allowed && d.current_step === currentUserStep
+
+    return statusLower === 'pending' && d.current_step === currentUserStep
   }
+
+  const canArchive = (d) => {
+  const statusLower = String(d.status || '').toLowerCase();
+
+  // 1. Only Accounting can archive
+  if (currentUserDeptKey !== 'accounting') return false;
+
+  // 2. Hide if already archived
+  if (statusLower === 'archived') return false;
+
+  return true;
+};
 
   const toggleDecision = async (item) => {
     const isApproved = String(item.status || '').toLowerCase() === 'approved'
@@ -789,11 +801,13 @@ export default function Disbursements() {
                         placeholder="0.00"
                         />
                     </td>
-                    <td className="table-column-center">
-                      <button type="button" className="btn-danger btn-small" onClick={() => removeParticularRow(idx)}>
-                        <ion-icon name="trash" style={{ fontSize: '20px' }}></ion-icon>
-                      </button>
-                    </td>
+                    {idx > 0 && (
+                      <td className="table-column-center">
+                        <button type="button" className="btn-danger btn-small" onClick={() => removeParticularRow(idx)}>
+                          <ion-icon name="trash" style={{ fontSize: '20px' }}></ion-icon>
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -858,41 +872,29 @@ export default function Disbursements() {
                   <td>{d.dv_no !== undefined && d.dv_no !== null && d.dv_no !== '' ? Number(d.dv_no).toString() : '-'}</td>
                   <td className="table-column-center">
                     <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-') }>
-                      {d.status} ({d.current_step})
+                      {d.status === 'completed' ? d.status : `${d.status} (${d.current_step})`}
                     </span>
                   </td>
                   <td className='table-column-center'>{formatDateMMDDYYYY(d.created_date)}</td>
                   <td>{d.accounting_name}</td>
                   <td className="table-column-center">
                     <div className="action-buttons">
-                    {/* Actions: Approve/Reject for non-admin users; Delete/Archive for Accounting */}
-                    {currentUser?.department !== 'admin' && (
-                      <>
-                        {/* Separate Approve and Reject buttons */}
+                      
+                      {/* APPROVE / REJECT: Hidden if Completed, Archived, or not your turn */}
+                      {isActionable(d) && (
                         <>
-                          <button
-                            className="btn-primary btn-small"
-                            onClick={() => approveItem(d)}
-                            disabled={!isActionable(d)}
-                            title={!isActionable(d) ? 'Not actionable at your stage' : 'Approve'}
-                          >
+                          <button className="btn-primary btn-small" onClick={() => approveItem(d)}>
                             <ion-icon name="checkmark-circle"></ion-icon> Approve
                           </button>
 
-                          <button
-                            className="btn-danger btn-small"
-                            onClick={() => rejectItem(d)}
-                            disabled={!isActionable(d)}
-                            title={!isActionable(d) ? 'Not actionable at your stage' : 'Reject'}
-                          >
+                          <button className="btn-danger btn-small" onClick={() => rejectItem(d)}>
                             <ion-icon name="close-circle"></ion-icon> Reject
                           </button>
                         </>
-                      </>
-                    )}
+                      )}
 
-                    {isAccountant && (
-                      <>
+                      {/* ARCHIVE: Only visible to Accounting AND if not already Archived/Completed */}
+                      {canArchive(d) && (
                         <button
                           className="btn-archive btn-small"
                           onClick={async () => {
@@ -905,34 +907,24 @@ export default function Disbursements() {
                               confirmButtonText: 'Archive',
                               cancelButtonText: 'Cancel',
                               inputValidator: (value) => {
-                                if (!value) {
-                                  return 'Reason is required'}}
-                            })
-                            if (!result.isConfirmed) return
+                                if (!value) return 'Reason is required';
+                              }
+                            });
+                            
+                            if (!result.isConfirmed) return;
+                            
                             try {
-                              await apiRequest(`/dv/${d.id}/archive/`, 'POST', {
-                                reason: result.value
-                              })
-                              await Swal.fire({
-                                icon: 'success',
-                                title: 'Archived!',
-                                text: 'Disbursement archived successfully.'
-                              })
-                              await reload()
+                              await apiRequest(`/dv/${d.id}/archive/`, 'POST', { reason: result.value });
+                              await Swal.fire({ icon: 'success', title: 'Archived!' });
+                              await reload();
                             } catch (e) {
-                              console.error('Archive error', e)
-                              Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Failed to archive disbursement.'
-                              })
+                              Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to archive.' });
                             }
                           }}
                         >
                           <ion-icon name="archive"></ion-icon> Archive
                         </button>
-                      </>
-                    )}
+                      )}
                     </div>
                   </td>
                 </tr>
