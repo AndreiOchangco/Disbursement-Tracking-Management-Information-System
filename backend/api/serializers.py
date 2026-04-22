@@ -137,10 +137,19 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
 
         dv = DV.objects.create(**validated_data)
 
+        # Handle Payments
         for p in payments_data:
             DVPayment.objects.create(dv=dv, **p)
+            
+        # Handle Particulars and their Category Values
         for part in particulars_data:
-            DVParticulars.objects.create(dv=dv, **part)
+            category_values_data = part.pop('category_values', [])
+            particular_obj = DVParticulars.objects.create(dv=dv, **part)
+            
+            for val in category_values_data:
+                DVParticularValue.objects.create(particulars=particular_obj, **val)
+
+        # Handle Journal Entries
         for je in je_data:
             DVJE.objects.create(dv=dv, **je)
 
@@ -163,7 +172,11 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
         if particulars_data is not None:
             instance.particulars.all().delete()
             for part in particulars_data:
-                DVParticulars.objects.create(dv=instance, **part)
+                category_values_data = part.pop('category_values', [])
+                particular_obj = DVParticulars.objects.create(dv=instance, **part)
+                
+                for val in category_values_data:
+                    DVParticularValue.objects.create(particulars=particular_obj, **val)
 
         if je_data is not None:
             instance.journal_entries.all().delete()
