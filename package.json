@@ -7,8 +7,7 @@
     "dev": "vite",
     "dev:fullstack": "pwsh -ExecutionPolicy Bypass -File ./start-all.ps1",
     "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "lint": "eslint ."
   },
   "dependencies": {
     "chart.js": "^4.5.1",

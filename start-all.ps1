@@ -55,25 +55,25 @@ function Can-Restart {
 # Uses WMI to find child processes by ParentProcessId and kills them depth-first.
 # ================================
 function Kill-ProcessTree {
-    param([int]$pid)
+    param([int]$processId)
 
-    if (-not $pid) { return }
+    if (-not $processId) { return }
 
     try {
-        $children = Get-CimInstance Win32_Process -Filter "ParentProcessId = $pid" -ErrorAction SilentlyContinue
+        $children = Get-CimInstance Win32_Process -Filter "ParentProcessId = $processId" -ErrorAction SilentlyContinue
     } catch {
         $children = @()
     }
 
     foreach ($child in $children) {
-        Kill-ProcessTree -pid $child.ProcessId
+        Kill-ProcessTree -processId $child.ProcessId
     }
 
     try {
-        $p = Get-Process -Id $pid -ErrorAction SilentlyContinue
+        $p = Get-Process -Id $processId -ErrorAction SilentlyContinue
         if ($p) {
-            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
-            Log "SYSTEM" "Killed process $pid ($($p.ProcessName))" Yellow
+            Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+            Log "SYSTEM" "Killed process $processId ($($p.ProcessName))" Yellow
         }
     } catch {}
 }
