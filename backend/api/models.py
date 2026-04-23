@@ -103,7 +103,8 @@ class DV(models.Model):
     tin = models.CharField(max_length=50, blank=True, null=True)
     status = models.CharField(max_length=20, choices=DV_STATUS_CHOICES, default='pending')
     # current_step: 1=Accounting, 2=Budget, 3=Treasurer, 4=BAC/GSO, 5=Mayor's Office, 6=Completed
-    current_step = models.IntegerField(default=1, blank=True, null=True)
+    # Default changed to 2 so new DVs start forwarded to Budget
+    current_step = models.IntegerField(default=2, blank=True, null=True)
     last_disapproved_step = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

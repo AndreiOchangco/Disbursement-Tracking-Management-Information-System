@@ -155,6 +155,7 @@ export default function Disbursements() {
         payee,
         office: officer,
         created_date: new Date().toISOString().split('T')[0],
+        current_step: 2,
         fund_source: fundSource,
         tin,
         payments: [
