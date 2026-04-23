@@ -50,11 +50,40 @@ function Can-Restart {
 }
 
 # ================================
+# PROCESS TREE KILLER
+# Recursively kills a process and its children (closes cmd windows).
+# Uses WMI to find child processes by ParentProcessId and kills them depth-first.
+# ================================
+function Kill-ProcessTree {
+    param([int]$pid)
+
+    if (-not $pid) { return }
+
+    try {
+        $children = Get-CimInstance Win32_Process -Filter "ParentProcessId = $pid" -ErrorAction SilentlyContinue
+    } catch {
+        $children = @()
+    }
+
+    foreach ($child in $children) {
+        Kill-ProcessTree -pid $child.ProcessId
+    }
+
+    try {
+        $p = Get-Process -Id $pid -ErrorAction SilentlyContinue
+        if ($p) {
+            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            Log "SYSTEM" "Killed process $pid ($($p.ProcessName))" Yellow
+        }
+    } catch {}
+}
+
+# ================================
 # START DJANGO
 # ================================
 function Start-Django {
     if ($djangoProcess -and !$djangoProcess.HasExited) {
-        Stop-Process -Id $djangoProcess.Id -Force
+        Kill-ProcessTree -pid $djangoProcess.Id
         Log "DJANGO" "Restarting..." Yellow
     }
 
@@ -73,7 +102,7 @@ function Start-Django {
 # ================================
 function Start-Frontend {
     if ($frontendProcess -and !$frontendProcess.HasExited) {
-        Stop-Process -Id $frontendProcess.Id -Force
+        Kill-ProcessTree -pid $frontendProcess.Id
         Log "VITE" "Restarting..." Yellow
     }
 
@@ -211,21 +240,39 @@ Write-Host "Press CTRL+C to stop everything..."
 $cleanup = {
     Log "SYSTEM" "Shutting down..." Red
 
-    if ($djangoProcess -and !$djangoProcess.HasExited) {
-        Stop-Process -Id $djangoProcess.Id -Force
+    try {
+        if ($djangoProcess -and !$djangoProcess.HasExited) {
+            Log "SYSTEM" "Killing django PID $($djangoProcess.Id) with taskkill" Yellow
+            Start-Process -FilePath "taskkill" -ArgumentList "/PID",$djangoProcess.Id,"/T","/F" -NoNewWindow -Wait -ErrorAction SilentlyContinue | Out-Null
+        }
+    } catch {
+        Log "SYSTEM" "Failed to taskkill django PID $($djangoProcess.Id)" Yellow
     }
 
-    if ($frontendProcess -and !$frontendProcess.HasExited) {
-        Stop-Process -Id $frontendProcess.Id -Force
+    try {
+        if ($frontendProcess -and !$frontendProcess.HasExited) {
+            Log "SYSTEM" "Killing frontend PID $($frontendProcess.Id) with taskkill" Yellow
+            Start-Process -FilePath "taskkill" -ArgumentList "/PID",$frontendProcess.Id,"/T","/F" -NoNewWindow -Wait -ErrorAction SilentlyContinue | Out-Null
+        }
+    } catch {
+        Log "SYSTEM" "Failed to taskkill frontend PID $($frontendProcess.Id)" Yellow
     }
 
-    Get-Job | Stop-Job | Remove-Job
+    Log "SYSTEM" "Stopping any remaining background jobs..." Yellow
+    try {
+        Get-Job | Where-Object { $_.State -ne 'Completed' } | ForEach-Object { Stop-Job -Job $_ -ErrorAction SilentlyContinue }
+        Get-Job | Remove-Job -ErrorAction SilentlyContinue
+    } catch {}
 
     Log "SYSTEM" "All processes stopped." Red
 }
 
 Register-EngineEvent PowerShell.Exiting -Action $cleanup | Out-Null
 
-while ($true) {
-    Start-Sleep 1
+try {
+    while ($true) {
+        Start-Sleep 1
+    }
+} finally {
+    & $cleanup
 }
