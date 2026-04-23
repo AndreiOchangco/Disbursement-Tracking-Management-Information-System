@@ -1,16 +1,16 @@
 # Django Admin
-Username: lguluna
+Username: lguluna </br>
 Password: DTMIS2026
 
 # React Admin
-E-Mail: lguluna@luna.gov.ph
+E-Mail: lguluna@luna.gov.ph </br>
 Password: DTMIS2026
 
 # All main user accounts
-accounting@luna.gov.ph
-budget@luna.gov.ph
-treasurer@luna.gov.ph
-bac.gso@luna.gov.ph
+accounting@luna.gov.ph </br>
+budget@luna.gov.ph </br>
+treasurer@luna.gov.ph </br>
+bac.gso@luna.gov.ph </br>
 mayor.secretary@luna.gov.ph
 
 
@@ -18,10 +18,10 @@ mayor.secretary@luna.gov.ph
 
 # thod: POST
 Description: API para sa Login
-Sample Request:
-{
-  "email": "fullname@gmail.com",
-  "password": "pogiako123"
+Sample Request: </br>
+{ </br>
+  "email": "fullname@gmail.com", </br>
+  "password": "pogiako123" </br>
 }
 
 # Sample Response:
