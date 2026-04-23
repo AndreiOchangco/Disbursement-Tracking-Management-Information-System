@@ -3,8 +3,15 @@ Username: lguluna
 Password: DTMIS2026
 
 # React Admin
-E-Mail: lguluna@gmail.com
+E-Mail: lguluna@luna.gov.ph
 Password: DTMIS2026
+
+# All main user accounts
+accounting@luna.gov.ph
+budget@luna.gov.ph
+treasurer@luna.gov.ph
+bac.gso@luna.gov.ph
+mayor.secretary@luna.gov.ph
 
 
 # All Users password: pogiako123
