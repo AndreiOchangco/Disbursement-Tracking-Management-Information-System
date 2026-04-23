@@ -129,7 +129,7 @@ export default function Login() {
         )}
 
         {/* Form */}
-        <form onSubmit={onSubmit} className="space-y-5">
+        <form onSubmit={onSubmit} className="space-y-5" autoComplete="off">
 
           {/* Email Field */}
           <div>
@@ -172,7 +172,8 @@ export default function Login() {
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
-                autoComplete="current-password"
+                autoComplete="new-password"
+                name="no-password"
                 className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium pr-10"
                 style={{ 
                   backgroundColor: '#F9FAFB'

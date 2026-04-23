@@ -31,8 +31,8 @@ export default function UserManagement() {
     { value: 'accounting', label: 'Accountant', icon: 'bar-chart' },
     { value: 'budget', label: 'Budget Officer', icon: 'cash' },
     { value: 'treasurer', label: 'Treasurer', icon: 'business' },
-    { value: 'bac_gso', label: 'Technical Officer', icon: 'clipboard' },
-    { value: 'mayors_office', label: 'Secretary', icon: 'business' },
+    { value: 'bac_gso', label: 'BAC/GSO Officer', icon: 'clipboard' },
+    { value: 'mayors_office', label: 'Mayor\'s Secretary', icon: 'business' },
   ]
 
   // Load users
@@ -253,7 +253,10 @@ export default function UserManagement() {
               {editingUser ? 'Update user information' : 'Create a new user account'}
             </p>
           </div>
-          <form className="form-grid" onSubmit={handleSubmit}>
+          <form className="form-grid" onSubmit={handleSubmit} autoComplete="off">
+            {/* Hidden dummy fields to deter browser autofill */}
+            <input type="text" name="fake-username" autoComplete="username" style={{ display: 'none' }} />
+            <input type="password" name="fake-password" autoComplete="new-password" style={{ display: 'none' }} />
             <label>
               <span style={{ color: '#2c5dff', fontWeight: '600' }}>Full Name *</span>
               <input
@@ -267,6 +270,8 @@ export default function UserManagement() {
               <span style={{ color: '#2c5dff', fontWeight: '600' }}>Email *</span>
               <input
                 type="email"
+                autoComplete="off"
+                name="no-email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="Enter email"
@@ -277,6 +282,8 @@ export default function UserManagement() {
                 <span style={{ color: '#2c5dff', fontWeight: '600' }}>Password * (New users only)</span>
                 <input
                   type="password"
+                  autoComplete="new-password"
+                  name="no-password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="Enter password"
@@ -288,6 +295,8 @@ export default function UserManagement() {
                 <span style={{ color: '#2c5dff', fontWeight: '600' }}>Password (Leave blank to keep current)</span>
                 <input
                   type="password"
+                  autoComplete="new-password"
+                  name="no-password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="Enter new password (optional)"
