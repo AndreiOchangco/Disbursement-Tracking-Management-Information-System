@@ -395,11 +395,11 @@ def dv_detail(request, pk):
                 {'error': 'Only Accounting personnel can edit Disbursement Vouchers.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        if dv.status not in ['completed', 'disapproved']:
+        if dv.status not in ['pending','disapproved']:
             return Response(
                 {'error': f'Cannot edit a DV with status "{dv.status}".'},
                 status=status.HTTP_400_BAD_REQUEST
-            )
+        )
 
         serializer = DVCreateUpdateSerializer(dv, data=request.data, partial=True)
         if serializer.is_valid():
@@ -568,8 +568,6 @@ def dv_archive(request, pk):
     if dv.status == 'archived':
         return Response({'error': 'Disbursement Voucher is already archived.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    if dv.status == 'completed':
-        return Response({'error': 'Completed Disbursement Vouchers cannot be archived.'}, status=status.HTTP_400_BAD_REQUEST)
 
     reason = request.data.get('reason', '').strip()
     if not reason:

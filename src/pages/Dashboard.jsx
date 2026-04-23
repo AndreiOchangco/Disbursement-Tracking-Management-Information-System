@@ -17,7 +17,6 @@ export default function Dashboard() {
     approved: 0,
     completed: 0,
     pending: 0,
-    draft: 0,
     archived: 0,
     rejected: 0,
   })
@@ -50,7 +49,6 @@ export default function Dashboard() {
       const approved = res.filter(d => d.status === 'approved').length
       const completed = res.filter(d => d.status === 'completed').length
       const pending = res.filter(d => d.status === 'pending').length
-      const draft = res.filter(d => d.status === 'draft').length
       const archived = res.filter(d => d.status === 'archived').length
       const rejected = res.filter(d => d.status === 'rejected').length
 
@@ -59,7 +57,6 @@ export default function Dashboard() {
         approved,
         completed,
         pending,
-        draft,
         archived,
         rejected,
       })
@@ -88,11 +85,11 @@ export default function Dashboard() {
 
   // <ion-icon name="bar-chart"></ion-icon> STATUS DATA
   const statusData = {
-    labels: ['Completed', 'Pending', 'Draft', 'Archived'],
+    labels: ['Completed', 'Pending', 'Archived'],
     datasets: [
       {
         label: 'Disbursements',
-        data: [stats.completed, stats.pending, stats.draft, stats.archived],
+        data: [stats.completed, stats.pending, stats.archived],
         backgroundColor: [
           'rgba(5, 150, 105, 0.7)', // Success Green
           'rgba(0, 82, 204, 0.7)',   // Primary Blue
@@ -323,11 +320,9 @@ export default function Dashboard() {
                       textTransform: 'capitalize',
                       background: dv.status === 'completed' ? 'rgba(5, 150, 105, 0.2)' : 
                                  dv.status === 'pending' ? 'rgba(0, 82, 204, 0.2)' :
-                                 dv.status === 'draft' ? 'rgba(249, 115, 22, 0.2)' :
                                  'rgba(107, 114, 128, 0.2)',
                       color: dv.status === 'completed' ? '#059669' :
                              dv.status === 'pending' ? '#0052CC' :
-                             dv.status === 'draft' ? '#f97316' :
                              '#6b7280'
                     }}>
                       {dv.status}

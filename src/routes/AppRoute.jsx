@@ -6,7 +6,6 @@ import UserManagement from '../pages/UserManagement'
 import Disbursements from '../pages/Disbursements'
 import DisbursementDetail from '../pages/DisbursementDetail'
 import ArchivedDisbursements from '../pages/ArchivedDisbursements'
-import Journals from '../pages/Journals'
 import NotFound from '../pages/NotFound'
 import ReportGeneration from '../pages/ReportGeneration'
 import PrivateRoute from './PrivateRoute'
@@ -114,14 +113,6 @@ function AppLayout() {
                   <span className="nav-text">Voucher Entry</span>
                 </Link>
 
-                <Link
-                  className={`nav-link ${isActive('/journals') ? 'active' : ''}`}
-                  to="/journals"
-                  title="Manage Journals"
-                >
-                  <span className="nav-icon">📔</span>
-                  <span className="nav-text">Journal Entry</span>
-                </Link>
 
                 {/* Accountant gets report generation link */}
                 {isAccountant && (
@@ -234,16 +225,6 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
-
-      {
-        path: 'journals',
-        element: (
-          <PrivateRoute>
-            <Journals />
-          </PrivateRoute>
-        ),
-      },
-
       { path: '*', element: <NotFound /> },
     ],
   },
