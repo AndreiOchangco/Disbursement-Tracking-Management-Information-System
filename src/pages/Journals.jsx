@@ -1,207 +1,275 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { apiRequest, getCurrentUser } from '../api'
-
-const user = JSON.parse(localStorage.getItem("user"))
-const statusOptions = ['Pending', 'Approved', 'Rejected']
+import ReactModal from '../components/ReactModal'
+import Swal from 'sweetalert2'
 
 export default function Journals() {
   const navigate = useNavigate()
   const currentUser = getCurrentUser()
   const [journals, setJournals] = useState([])
   const [search, setSearch] = useState('')
+  
+  // Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [allDVs, setAllDVs] = useState([]) 
+  const [dvSearch, setDvSearch] = useState('')
+  const [selectedDV, setSelectedDV] = useState(null)
+  const [jeRows, setJeRows] = useState([
+    { account_code: '', particulars: '', debit: 0, credit: 0 }
+  ])
 
-  // Redirect admin to dashboard
   useEffect(() => {
     if (currentUser?.department === 'admin') {
       navigate('/admin/dashboard', { replace: true })
     }
   }, [currentUser, navigate])
 
-  // 🔥 Load data from Django backend
-  useEffect(() => {
-    async function load() {
-      const data = await apiRequest('/journals/')
-      if (data) setJournals(data)
-    }
-    load()
-  }, [])
+  const load = async () => {
+    const data = await apiRequest('/dv/')
+    if (data) setJournals(data)
+  }
 
-  // 🔍 Search filter
+  useEffect(() => { load() }, [])
+
+  // Fetch all DVs when modal is opened for "Add" mode
+  useEffect(() => {
+    if (isModalOpen && !isEditMode) {
+      const fetchDVs = async () => {
+        const data = await apiRequest('/dv/')
+        if (data) setAllDVs(data)
+      }
+      fetchDVs()
+    }
+  }, [isModalOpen, isEditMode])
+
+  // Filter only DVs that HAVE journal entries for the main table
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase()
-    if (!query) return journals
+    const withEntries = journals.filter(j => j.journal_entries && j.journal_entries.length > 0)
 
-    return journals.filter((j) =>
-      (
-        String(j.trackingno) +
-        j.status +
-        j.officer
-      )
-        .toLowerCase()
-        .includes(query)
+    if (!query) return withEntries
+
+    return withEntries.filter((j) =>
+      (String(j.tracking_no || '') + String(j.dv_no || '') + String(j.payee || '')).toLowerCase().includes(query)
     )
   }, [search, journals])
 
-  // 🔄 Update Status (persisted)
-  const updateStatus = async (item, newStatus) => {
-  try {
-    const updated = await apiRequest(`/journals/${item.id}/`, 'PUT', {
-      ...item,
-      status: newStatus,
-    })
-
-    setJournals((prev) =>
-      prev.map((j) => (j.id === item.id ? updated : j))
-    )
-  } catch (err) {
-    console.error(err)
-    alert("Action not allowed")
+  // --- Logic for Edit/Add ---
+  
+  const handleOpenAdd = () => {
+    setIsEditMode(false)
+    resetForm()
+    setIsModalOpen(true)
   }
-}
 
-  // ❌ Delete
-  const deleteItem = async (id) => {
-    if (!confirm('Delete this journal?')) return
+  const handleEdit = (dv) => {
+    setIsEditMode(true)
+    setSelectedDV(dv)
+    setDvSearch(dv.dv_no)
+    // Populate rows with existing journal entries
+    setJeRows(dv.journal_entries.map(je => ({
+      account_code: je.account_code,
+      particulars: je.particulars,
+      debit: je.debit,
+      credit: je.credit
+    })))
+    setIsModalOpen(true)
+  }
 
+  const handleAddRow = () => {
+    setJeRows([...jeRows, { account_code: '', particulars: '', debit: 0, credit: 0 }])
+  }
+
+  const handleRemoveRow = (index) => {
+    setJeRows(jeRows.filter((_, i) => i !== index))
+  }
+
+  const handleRowChange = (index, field, value) => {
+    const updated = [...jeRows]
+    updated[index][field] = value
+    setJeRows(updated)
+  }
+
+  const resetForm = () => {
+    setSelectedDV(null)
+    setDvSearch('')
+    setJeRows([{ account_code: '', particulars: '', debit: 0, credit: 0 }])
+  }
+
+  const handleSaveJE = async () => {
+    if (!selectedDV) return Swal.fire('Error', 'Please select a Disbursement Voucher.', 'error')
+    
     try {
-      await apiRequest(`/journals/${id}/`, 'DELETE')
-      setJournals((prev) => prev.filter((j) => j.id !== id))
+      const payload = { journal_entries: jeRows }
+      // Use PUT to update the specific DV's journal entries
+      const response = await apiRequest(`/dv/${selectedDV.id}/`, 'PUT', payload)
+      
+      if (response) {
+        Swal.fire('Success', `Journal entries ${isEditMode ? 'updated' : 'saved'} successfully.`, 'success')
+        setIsModalOpen(false)
+        resetForm()
+        load() 
+      }
     } catch (err) {
-      console.error('Delete failed', err)
+      Swal.fire('Error', err.message, 'error')
     }
   }
+
+  const selectableDVs = allDVs.filter(dv => 
+    (dv.dv_no || '').toLowerCase().includes(dvSearch.toLowerCase()) || 
+    (dv.tracking_no || '').toLowerCase().includes(dvSearch.toLowerCase())
+  )
 
   return (
     <div>
       <div className="page-header">
         <div>
-          <h2><ion-icon name="book-outline"></ion-icon> Journal Entry Management</h2>
-          <p>Track journal entries, approvals, and posting statuses.</p>
+          <h2><ion-icon name="book-outline"></ion-icon> Journal Entries</h2>
+          <p>Manage and edit disbursement journal sheets.</p>
         </div>
       </div>
 
-      {/* 📊 JOURNAL ENTRIES TABLE */}
       <section className="panel">
         <div className="table-toolbar">
           <div>
-            <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> All Journal Entries</h3>
-            <p style={{ color: '#4b5563', marginTop: '0.3rem' }}>{filtered.length} records found</p>
+            <h3 style={{ color: '#2c5dff' }}><ion-icon name="list-outline"></ion-icon> Journal Sheet Records</h3>
+            <p style={{ color: '#4b5563', marginTop: '0.3rem' }}>{filtered.length} records with existing entries</p>
           </div>
+           <div className="toolbar-actions">
+            <button className="btn-archive btn-small" onClick={handleOpenAdd} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ion-icon name="add-circle-outline"></ion-icon> Add Journal Entry
+          </button>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by tracking #, JE #, status, or officer..."
+            placeholder="Search by tracking no, DV no, or payee..."
             className="search"
           />
+           </div>
+          
         </div>
 
         <div className="table-wrap">
           <table>
-            <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
-              <tr>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> Journal Entry #</th>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Officer</th>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Actions</th>
+            <thead>
+               <tr>
+                <th>Tracking #</th>
+                <th>DV Number</th>
+                <th>Payee</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
-
             <tbody>
-              {filtered.map((j) => (
-                <tr 
-                  key={j.id} 
-                  style={{ 
-                    borderBottom: '1px solid #fef3c7', 
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer'
-                  }} 
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%)'
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(251, 191, 36, 0.15)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'white'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  <td style={{ fontWeight: '600', color: '#2c5dff' }}>
-                    <span style={{ background: 'rgba(44, 93, 255, 0.1)', padding: '0.4rem 0.8rem', borderRadius: '6px' }}>
-                      {j.trackingno}
-                    </span>
-                  </td>
-                  <td style={{ fontWeight: '500', color: '#1f2937' }}>
-                    <span style={{ background: 'rgba(251, 191, 36, 0.1)', padding: '0.4rem 0.8rem', borderRadius: '6px' }}>
-                      {j.jeno}
-                    </span>
-                  </td>
-
-                  <td className="table-column-center">
-                    <span 
-                      className={'status-badge status-' + (j.status || '').toLowerCase()}
-                      style={{ 
-                        display: 'inline-block',
-                        padding: '0.4rem 0.85rem',
-                        borderRadius: '20px',
-                        fontSize: '0.8rem',
-                        fontWeight: '700',
-                        textTransform: 'capitalize',
-                        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)'
-                      }}
-                    >
+              {filtered.map(j => (
+                <tr key={j.id}>
+                  <td className="table-strong">{j.tracking_no}</td>
+                  <td>{j.dv_no}</td>
+                  <td>{j.payee || '-'}</td>
+                  <td>
+                    <span className={`status-badge status-${(j.status || 'pending').toLowerCase()}`}>
                       {j.status}
                     </span>
                   </td>
-
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1.2rem' }}><ion-icon name="person"></ion-icon></span>
-                      <span style={{ fontWeight: '500' }}>{j.officer}</span>
-                    </div>
-                  </td>
-
-                  <td className="table-column-center">
-                    <button
-                      className="btn-primary"
-                      style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', marginRight: '0.5rem' }}
-                      onClick={() => {
-                        let newStatus = j.status
-                        if (j.status === 'Pending') newStatus = 'Approved'
-                        else if (j.status === 'Approved') newStatus = 'Posted'
-                        else if (j.status === 'Posted') newStatus = 'Completed'
-                        updateStatus(j, newStatus)
-                      }}
+                    <button 
+                      className="btn-archive"
+                      style={{display: 'flex', alignItems: 'center', gap: '0.3rem', margin: '0 auto'}}
+                      onClick={() => handleEdit(j)}
                     >
-                      {j.status === 'Pending' && <><ion-icon name="checkmark-circle"></ion-icon> Approve</> }
-                      {j.status === 'Approved' && <><ion-icon name="airplane"></ion-icon> Post</> }
-                      {j.status === 'Posted' && <><ion-icon name="checkmark"></ion-icon> Complete</> }
-                      {j.status === 'Completed' && <><ion-icon name="lock-closed"></ion-icon> Lock</> }
-                      {j.status === 'Rejected' && <><ion-icon name="close-circle"></ion-icon> Rejected</> }
-                    </button>
-                    <button
-                      className="btn-danger"
-                      style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
-                      onClick={() => deleteItem(j.id)}
-                    >
-                      <ion-icon name="trash"></ion-icon> Delete
+                      <ion-icon name="create-outline"></ion-icon> Edit
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-
           {filtered.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#4b5563' }}>
-              <p style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}><ion-icon name="mail-unread"></ion-icon></p>
-              <p style={{ margin: 0, fontStyle: 'italic' }}>No journal entries found.</p>
-              <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem' }}>Try adjusting your search filters.</p>
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+              <p>No records found.</p>
             </div>
           )}
         </div>
       </section>
+
+      {/* REACT MODAL */}
+      <ReactModal
+        isOpen={isModalOpen}
+        onClose={() => { setIsModalOpen(false); resetForm(); }}
+        title={isEditMode ? `Edit Journal Sheet: DV No. ${selectedDV?.dv_no}` : "New Journal Sheet Input"}
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <button className="btn-primary" onClick={handleSaveJE}>
+              {isEditMode ? 'Update Entry' : 'Save Entry'}
+            </button>
+          </div>
+        }
+      >
+        <div style={{ width: '850px', maxWidth: '100%'}}>
+          {/* Searchable DV Selector - Only show in Add mode */}
+          {!isEditMode && (
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Select Target DV Number</label>
+              <input
+                type="text"
+                placeholder="Type DV Number to search..."
+                className="search"
+                style={{ width: '100%', marginBottom: '10px' }}
+                value={dvSearch}
+                onChange={(e) => setDvSearch(e.target.value)}
+              />
+              <div style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid #C5D3FF', borderRadius: '8px' }}>
+                {selectableDVs.map(dv => (
+                  <div 
+                    key={dv.id}
+                    onClick={() => { setSelectedDV(dv); setDvSearch(dv.dv_no); }}
+                    style={{ 
+                      padding: '10px', 
+                      cursor: 'pointer', 
+                      background: selectedDV?.id === dv.id ? '#E8F0FF' : 'white',
+                      borderBottom: '1px solid #eee'
+                    }}
+                  >
+                    <strong>{dv.dv_no}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <h4 style={{ marginBottom: '12px', color: '#0052CC', borderBottom: '2px solid #E8F0FF', paddingBottom: '8px' }}>Journal Sheet</h4>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ textAlign: 'left', background: '#F0F4FF' }}>
+                <th style={{ padding: '12px', border: '1px solid #C5D3FF' }}>Account Code</th>
+                <th style={{ padding: '12px', border: '1px solid #C5D3FF' }}>Particulars</th>
+                <th style={{ padding: '12px', border: '1px solid #C5D3FF' }}>Debit</th>
+                <th style={{ padding: '12px', border: '1px solid #C5D3FF' }}>Credit</th>
+                <th style={{ width: '40px' }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {jeRows.map((row, index) => (
+                <tr key={index}>
+                  <td style={{ border: '1px solid #ddd' }}><input type="text" value={row.account_code} onChange={(e) => handleRowChange(index, 'account_code', e.target.value)} style={{ width: '100%', border: 'none', padding: '8px' }} /></td>
+                  <td style={{ border: '1px solid #ddd' }}><input type="text" value={row.particulars} onChange={(e) => handleRowChange(index, 'particulars', e.target.value)} style={{ width: '100%', border: 'none', padding: '8px' }} /></td>
+                  <td style={{ border: '1px solid #ddd' }}><input type="number" value={row.debit} onChange={(e) => handleRowChange(index, 'debit', parseFloat(e.target.value) || 0)} style={{ width: '100%', border: 'none', padding: '8px' }} /></td>
+                  <td style={{ border: '1px solid #ddd' }}><input type="number" value={row.credit} onChange={(e) => handleRowChange(index, 'credit', parseFloat(e.target.value) || 0)} style={{ width: '100%', border: 'none', padding: '8px' }} /></td>
+                  <td style={{ textAlign: 'center' }}>
+                    <button onClick={() => handleRemoveRow(index)} style={{ color: '#e11d48', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button className="btn-primary" style={{ marginTop: '15px' }} onClick={handleAddRow}>+ Add Line Item</button>
+        </div>
+      </ReactModal>
     </div>
   )
 }

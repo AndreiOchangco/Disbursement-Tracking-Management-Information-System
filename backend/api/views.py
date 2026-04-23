@@ -395,7 +395,7 @@ def dv_detail(request, pk):
                 {'error': 'Only Accounting personnel can edit Disbursement Vouchers.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        if dv.status not in ['draft', 'disapproved']:
+        if dv.status not in ['completed', 'disapproved']:
             return Response(
                 {'error': f'Cannot edit a DV with status "{dv.status}".'},
                 status=status.HTTP_400_BAD_REQUEST

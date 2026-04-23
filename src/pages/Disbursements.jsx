@@ -417,6 +417,9 @@ export default function Disbursements() {
   // 2. Hide if already archived
   if (statusLower === 'archived') return false;
 
+  // 3. Only show if status is completed
+  if (statusLower !== 'completed') return false;
+
   return true;
 };
 
@@ -832,12 +835,13 @@ export default function Disbursements() {
             {isAccountant && (
               <button
                 className="btn-archive btn-small"
+                style={{display: 'flex', alignItems: 'center', gap: '0.3rem'}}
                 onClick={() => setShowCreateModal(true)}
               >
                 <ion-icon name="add"></ion-icon> Create DV
               </button>
             )}
-            <Link to="/disbursements/archived" className="btn-archive btn-small">
+            <Link to="/disbursements/archived" className="btn-archive btn-small" style={{display: 'flex', alignItems: 'center', gap: '0.3rem'}}>
               <ion-icon name="archive"></ion-icon> Archived
             </Link>
             <input
@@ -884,11 +888,11 @@ export default function Disbursements() {
                       {/* APPROVE / REJECT: Hidden if Completed, Archived, or not your turn */}
                       {isActionable(d) && (
                         <>
-                          <button className="btn-primary btn-small" onClick={() => approveItem(d)}>
+                          <button style={{display: 'flex', alignItems: 'center', gap: '0.3rem'}} className="btn-primary btn-small" onClick={() => approveItem(d)}>
                             <ion-icon name="checkmark-circle"></ion-icon> Approve
                           </button>
 
-                          <button className="btn-danger btn-small" onClick={() => rejectItem(d)}>
+                          <button style={{display: 'flex', alignItems: 'center', gap: '0.3rem'}} className="btn-danger btn-small" onClick={() => rejectItem(d)}>
                             <ion-icon name="close-circle"></ion-icon> Reject
                           </button>
                         </>
@@ -897,6 +901,7 @@ export default function Disbursements() {
                       {/* ARCHIVE: Only visible to Accounting AND if not already Archived/Completed */}
                       {canArchive(d) && (
                         <button
+                        style={{display: 'flex', alignItems: 'center', gap: '0.3rem'}}
                           className="btn-archive btn-small"
                           onClick={async () => {
                             const result = await Swal.fire({
