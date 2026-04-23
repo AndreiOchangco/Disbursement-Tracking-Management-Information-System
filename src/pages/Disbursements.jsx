@@ -979,149 +979,149 @@ const handleView = (dv) => {
       </section>
 
        {/* 👀 VIEW DISBURSEMENT MODAL */}
-<ReactModal 
-  isOpen={showViewModal} 
-  onClose={() => setShowViewModal(false)} 
-  title={`Voucher Preview: DV No. ${selectedDV?.dv_no || 'N/A'}`}
->
-  {selectedDV && (
-    <section className="panel panel-alt noselect">
-      {/* TOP FORM GRID - All Disabled */}
-      <div className="form-grid form-grid--split noselect">
-        <label>
-          <span>Tracking Number</span>
-          <input type="text" value={selectedDV.tracking_no || ''} disabled />
-        </label>
-        <label>
-          <span>DV Number</span>
-          <input type="text" value={selectedDV.dv_no || ''} disabled />
-        </label>
-        <label>
-          <span>Payee</span>
-          <input type="text" value={selectedDV.payee || ''} disabled />
-        </label>
-        <label>
-          <span>ID # / TIN</span>
-          <input type="text" value={selectedDV.tin || ''} disabled />
-        </label>
-        <label>
-          <span>Fund Source</span>
-          <select value={selectedDV.fund_source || ''} disabled>
-            <option value={selectedDV.fund_source}>{selectedDV.fund_source}</option>
-          </select>
-        </label>
-        <label>
-          <span>Mode of Payment</span>
-          <select value={selectedDV.mode_of_payment || ''} disabled>
-            <option value={selectedDV.mode_of_payment}>
-              {selectedDV.mode_of_payment}
-            </option>
-          </select>
-        </label>
-        {selectedDV.mode_of_payment === 'OTHERS' && (
-          <label>
-            <span>Specify Payment Mode</span>
-            <input type="text" value={selectedDV.mop_others || ''} disabled />
-          </label>
-        )}
-        <label>
-          <span>Date</span>
-          <input type="text" value={selectedDV.created_date || ''} disabled />
-        </label>
-        <label>
-          <span>Created By</span>
-          <input value={selectedDV.office || ''} disabled />
-        </label>
-        <label>
-          <span>Status</span>
-          <input value={selectedDV.status || ''} disabled />
-        </label>
-      </div>
-
-      {/* --- PARTICULARS SECTION --- */}
-      <section className="panel-section" style={{ marginTop: '2rem' }}>
-        <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars Section</h4>
-        
-        {selectedDV.particulars && selectedDV.particulars.length > 0 ? (
-          selectedDV.particulars.map((part, pIdx) => (
-            <div key={pIdx} style={{ marginBottom: '1.5rem' }}>
-              <div className="form-grid form-grid--split" style={{ marginBottom: '1rem' }}>
+      <ReactModal 
+        isOpen={showViewModal} 
+        onClose={() => setShowViewModal(false)} 
+        title={`Voucher Preview: DV No. ${selectedDV?.dv_no || 'N/A'}`}
+      >
+        {selectedDV && (
+          <section className="panel panel-alt noselect">
+            {/* TOP FORM GRID - All Disabled */}
+            <div className="form-grid form-grid--split noselect">
+              <label>
+                <span>Tracking Number</span>
+                <input type="text" value={selectedDV.tracking_no || ''} disabled />
+              </label>
+              <label>
+                <span>DV Number</span>
+                <input type="text" value={selectedDV.dv_no || ''} disabled />
+              </label>
+              <label>
+                <span>Payee</span>
+                <input type="text" value={selectedDV.payee || ''} disabled />
+              </label>
+              <label>
+                <span>ID # / TIN</span>
+                <input type="text" value={selectedDV.tin || ''} disabled />
+              </label>
+              <label>
+                <span>Fund Source</span>
+                <select value={selectedDV.fund_source || ''} disabled>
+                  <option value={selectedDV.fund_source}>{selectedDV.fund_source}</option>
+                </select>
+              </label>
+              <label>
+                <span>Mode of Payment</span>
+                <select value={selectedDV.mode_of_payment || ''} disabled>
+                  <option value={selectedDV.mode_of_payment}>
+                    {selectedDV.mode_of_payment}
+                  </option>
+                </select>
+              </label>
+              {selectedDV.mode_of_payment === 'OTHERS' && (
                 <label>
-                  <span>General Description</span>
-                  <textarea 
-                    value={part.description || ''} 
-                    disabled 
-                    style={{gridColumn: 'span 2', minHeight: '80px', backgroundColor: 'var(--bg-light)'}} 
-                  />
+                  <span>Specify Payment Mode</span>
+                  <input type="text" value={selectedDV.mop_others || ''} disabled />
                 </label>
-              </div>
-              <div className="table-wrap">
-                <table className="particulars-table">
-                  <thead>
-                    <tr>
-                      <th>Category / Particulars</th>
-                      <th>Net Pay</th>
-                      <th>15th</th>
-                      <th>31st</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {part.category_values?.map((val, vIdx) => (
-                      <tr key={vIdx}>
-                        <td><input className="particulars-input" value={val.category || ''} disabled /></td>
-                        <td><input className="particulars-input" value={val.np || ''} disabled /></td>
-                        <td><input className="particulars-input" value={val.ft || ''} disabled /></td>
-                        <td><input className="particulars-input" value={val.tf || ''} disabled /></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              )}
+              <label>
+                <span>Date</span>
+                <input type="text" value={selectedDV.created_date || ''} disabled />
+              </label>
+              <label>
+                <span>Created By</span>
+                <input value={selectedDV.office || ''} disabled />
+              </label>
+              <label>
+                <span>Status</span>
+                <input value={selectedDV.status || ''} disabled />
+              </label>
             </div>
-          ))
-        ) : (
-          <p className="empty empty--center" style={{ padding: '20px', border: '1px dashed var(--border-color)', borderRadius: '8px' }}>
-            <ion-icon name="information-circle-outline"></ion-icon> No particulars provided.
-          </p>
-        )}
-      </section>
 
-      {/* --- JOURNAL ENTRY SECTION --- */}
-      <section className="panel-section" style={{ marginTop: '2.5rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.5rem' }}>
-        <h4 className="section-title"><ion-icon name="journal-outline"></ion-icon> Journal Entry Section</h4>
-        
-        {selectedDV.journal_entries && selectedDV.journal_entries.length > 0 ? (
-          <div className="table-wrap">
-            <table className="particulars-table">
-              <thead>
-                <tr>
-                  <th>Account Code</th>
-                  <th>Particulars</th>
-                  <th>Debit</th>
-                  <th>Credit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedDV.journal_entries.map((row, index) => (
-                  <tr key={index}>
-                    <td><input className="particulars-input" value={row.account_code || ''} disabled /></td>
-                    <td><input className="particulars-input" value={row.particulars || ''} disabled /></td>
-                    <td><input className="particulars-input" value={row.debit || '0.00'} disabled /></td>
-                    <td><input className="particulars-input" value={row.credit || '0.00'} disabled /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="empty empty--center" style={{ padding: '20px', border: '1px dashed var(--border-color)', borderRadius: '8px', width: '50rem'}}>
-            <ion-icon name="information-circle-outline"></ion-icon> No journal entries provided.
-          </p>
+            {/* --- PARTICULARS SECTION --- */}
+            <section className="panel-section" style={{ marginTop: '2rem' }}>
+              <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars Section</h4>
+              
+              {selectedDV.particulars && selectedDV.particulars.length > 0 ? (
+                selectedDV.particulars.map((part, pIdx) => (
+                  <div key={pIdx} style={{ marginBottom: '1.5rem' }}>
+                    <div className="form-grid form-grid--split" style={{ marginBottom: '1rem' }}>
+                      <label>
+                        <span>General Description</span>
+                        <textarea 
+                          value={part.description || ''} 
+                          disabled 
+                          style={{gridColumn: 'span 2', minHeight: '80px', backgroundColor: 'var(--bg-light)'}} 
+                        />
+                      </label>
+                    </div>
+                    <div className="table-wrap">
+                      <table className="particulars-table">
+                        <thead>
+                          <tr>
+                            <th>Category / Particulars</th>
+                            <th>Net Pay</th>
+                            <th>15th</th>
+                            <th>31st</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {part.category_values?.map((val, vIdx) => (
+                            <tr key={vIdx}>
+                              <td><input className="particulars-input" value={val.category || ''} disabled /></td>
+                              <td><input className="particulars-input" value={val.np || ''} disabled /></td>
+                              <td><input className="particulars-input" value={val.ft || ''} disabled /></td>
+                              <td><input className="particulars-input" value={val.tf || ''} disabled /></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="empty empty--center" style={{ padding: '20px', border: '1px dashed var(--border-color)', borderRadius: '8px' }}>
+                  <ion-icon name="information-circle-outline"></ion-icon> No particulars provided.
+                </p>
+              )}
+            </section>
+
+            {/* --- JOURNAL ENTRY SECTION --- */}
+            <section className="panel-section" style={{ marginTop: '2.5rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.5rem' }}>
+              <h4 className="section-title"><ion-icon name="journal-outline"></ion-icon> Journal Entry Section</h4>
+              
+              {selectedDV.journal_entries && selectedDV.journal_entries.length > 0 ? (
+                <div className="table-wrap">
+                  <table className="particulars-table">
+                    <thead>
+                      <tr>
+                        <th>Account Code</th>
+                        <th>Particulars</th>
+                        <th>Debit</th>
+                        <th>Credit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedDV.journal_entries.map((row, index) => (
+                        <tr key={index}>
+                          <td><input className="particulars-input" value={row.account_code || ''} disabled /></td>
+                          <td><input className="particulars-input" value={row.particulars || ''} disabled /></td>
+                          <td><input className="particulars-input" value={row.debit || '0.00'} disabled /></td>
+                          <td><input className="particulars-input" value={row.credit || '0.00'} disabled /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="empty empty--center" style={{ padding: '20px', border: '1px dashed var(--border-color)', borderRadius: '8px', width: '50rem'}}>
+                  <ion-icon name="information-circle-outline"></ion-icon> No journal entries provided.
+                </p>
+              )}
+            </section>
+          </section>
         )}
-      </section>
-    </section>
-  )}
-</ReactModal>
+      </ReactModal>
     </div>
   )
 }
