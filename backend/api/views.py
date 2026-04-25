@@ -363,7 +363,7 @@ def dv_list(request):
             # Log creation in workflow
             DVWorkflow.objects.create(
                 dv=dv, step=1, status='submitted',
-                action_by=request.user, remarks='DV created as draft.'
+                action_by=request.user, remarks='DV created.'
             )
             return Response(DVSerializer(dv).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

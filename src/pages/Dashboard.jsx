@@ -14,7 +14,6 @@ export default function Dashboard() {
   const [users, setUsers] = useState([])
   const [stats, setStats] = useState({
     total: 0,
-    approved: 0,
     completed: 0,
     pending: 0,
     archived: 0,
@@ -46,15 +45,13 @@ export default function Dashboard() {
       setData(res)
 
       // Separate status counts based on your API response
-      const approved = res.filter(d => d.status === 'approved').length
       const completed = res.filter(d => d.status === 'completed').length
       const pending = res.filter(d => d.status === 'pending').length
       const archived = res.filter(d => d.status === 'archived').length
-      const rejected = res.filter(d => d.status === 'rejected').length
+      const rejected = res.filter(d => d.status === 'disapproved').length
 
       setStats({
         total: res.length,
-        approved,
         completed,
         pending,
         archived,
@@ -263,8 +260,8 @@ export default function Dashboard() {
             <div className="stat-card stat-approved">
               <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
               <div className="stat-content">
-                <p className="stat-label">Approved</p>
-                <h3 className="stat-value">{stats.approved}</h3>
+                <p className="stat-label">Completed</p>
+                <h3 className="stat-value">{stats.completed}</h3>
               </div>
             </div>
 

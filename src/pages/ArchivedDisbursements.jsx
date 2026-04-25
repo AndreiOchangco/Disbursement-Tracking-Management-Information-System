@@ -190,7 +190,7 @@ export default function ArchivedDisbursements() {
       <ReactModal 
         isOpen={showViewModal} 
         onClose={() => setShowViewModal(false)} 
-        title={`Voucher Preview: DV No. ${selectedDV?.dv_no || 'N/A'}`}
+        title="Disbursement Voucher Details"
       >
         {selectedDV && (
           <section className="panel panel-alt noselect">
@@ -344,7 +344,43 @@ export default function ArchivedDisbursements() {
                 </p>
               )}
             </section>
+            {/* --- REMARKS HISTORY SECTION (READ-ONLY) --- */}
+              <section className="panel-section" style={{ marginTop: '3rem', borderTop: '2px solid #eee', paddingTop: '1.5rem' }}>
+                <h4 className="section-title" style={{ color: '#555' }}>
+                  <ion-icon name="git-branch-outline" style={{ marginRight: '8px' }}></ion-icon>
+                  Workflow History
+                </h4>
+                <div className="table-wrap">
+                  <table className="particulars-table">
+                    <thead style={{ backgroundColor: '#f9f9f9' }}>
+                      <tr>
+                        <th style={{ width: '20%' }}>Date</th>
+                        <th style={{ width: '20%' }}>Department</th>
+                        <th>Remarks / Observation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedDV.workflow_steps && selectedDV.workflow_steps.length > 0 ? (
+                        selectedDV.workflow_steps.map((step, i) => (
+                          <tr key={i}>
+                            <td style={{ fontSize: '0.85rem' }}>{new Date(step.action_date).toLocaleString()}</td>
+                            <td style={{ textTransform: 'capitalize', fontWeight: 'bold' }}>{step.action_by_department?.replace('_', ' ')}</td>
+                            <td style={{ color: step.status === 'disapproved' ? '#FF4D45' : 'black' }}>
+                              {step.remarks || 'Approved by ' + step.action_by_department?.replace('_', ' ')}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="3" style={{ textAlign: 'center', padding: '15px' }}>No history recorded.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
           </section>
+          
         )}
       </ReactModal>
     </div>

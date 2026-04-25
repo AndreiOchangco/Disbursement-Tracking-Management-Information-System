@@ -12,6 +12,7 @@ const user = JSON.parse(localStorage.getItem("user"))
 const statusOptions = ['Pending', 'Approved', 'Rejected']
 
 const formatDateMMDDYYYY = (date) => {
+   if (!date) return '-';
    const parts = date.split('-'); 
    const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
    return dateObj.toLocaleDateString('en-US', {
@@ -53,6 +54,21 @@ export default function Disbursements() {
   const [jeRows, setJeRows] = useState([
   { account_code: '', particulars: '', debit: 0, credit: 0 }
 ]);
+  
+  // EDIT STATES
+  const [isEditable, setIsEditable] = useState(false);
+  const [editTrackingNo, setEditTrackingNo] = useState('');
+  const [editDVNo, setEditDVNo] = useState('');
+  const [editPayee, setEditPayee] = useState('');
+  const [editTin, setEditTin] = useState('');
+  const [editFundSource, setEditFundSource] = useState('GF');
+  const [editModeOfPayment, setEditModeOfPayment] = useState('CASH');
+  const [editMopOthers, setEditMopOthers] = useState('');
+  const [editCreatedDate, setEditCreatedDate] = useState('');
+  const [editOffice, setEditOffice] = useState('');
+  const [editStatus, setEditStatus] = useState('');
+  const [editParticulars, setEditParticulars] = useState([]);
+  const [editJeRows, setEditJeRows] = useState([]);
 
   const initialOfficer = (() => {
     const u = getCurrentUser()
@@ -71,7 +87,7 @@ export default function Disbursements() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedDV, setSelectedDV] = useState(null);
 
-  // Normalize department keys to match backend choices (be tolerant of label variants)
+  // Normalize department keys to match backend choices
   const normalizeDept = (d) => {
     if (!d) return null
     const v = String(d).toLowerCase().trim()
@@ -95,7 +111,6 @@ export default function Disbursements() {
   }
   const currentUserStep = DEPT_STEP[currentUserDeptKey] || null
 
-  // 🔥 Load data from Django backend
   useEffect(() => {
     async function load() {
       const data = await apiRequest('/dv/')
@@ -127,19 +142,15 @@ export default function Disbursements() {
     setParticulars((prev) => prev.filter((_, i) => i !== index))
   }
 
-  // 🔍 Search filter - Updated to exclude archived status
   const filtered = useMemo(() => {
-  // First, filter out any items that have a status of 'archived'
   const activeDisbursements = disbursements.filter(
     (d) => String(d.status || '').toLowerCase() !== 'archived'
   );
 
   const query = search.trim().toLowerCase();
   
-  // If no search query, return all active (non-archived) disbursements
   if (!query) return activeDisbursements;
 
-  // Otherwise, apply search filter on the active disbursements list
   return activeDisbursements.filter((d) =>
     (
       String(d.tracking_no || '') +
@@ -154,7 +165,6 @@ export default function Disbursements() {
   );
 }, [search, disbursements]);
 
-  // ➕ Create Disbursement
   const addDisbursement = async (e) => {
     e.preventDefault()
 
@@ -208,11 +218,11 @@ export default function Disbursements() {
       if (newItem) {
         toast.success('Disbursement voucher entry added successfully!')
         setDisbursements((prev) => [newItem, ...prev])
+        setShowCreateModal(false)
       } else {
         toast.error('Failed to add entry. Please check your inputs.');
       }
 
-      // reset form
       setTrackingNo('')
       setDVno('')
       setStatus('Pending')
@@ -238,23 +248,21 @@ export default function Disbursements() {
     }
   }
 
-  // 🔄 Update Status (persisted)
   const updateStatus = async (item, newStatus) => {
-  try {
-    const updated = await apiRequest(`/dv/${item.id}/`, 'PUT', {
-      ...item,
-      status: newStatus,
-    })
+    try {
+      const updated = await apiRequest(`/dv/${item.id}/`, 'PUT', {
+        ...item,
+        status: newStatus,
+      })
 
-    setDisbursements((prev) =>
-      prev.map((d) => (d.id === item.id ? updated : d))
-    )
-  } catch (err) {
-    console.error(err)
-    alert("Action not allowed")
+      setDisbursements((prev) =>
+        prev.map((d) => (d.id === item.id ? updated : d))
+      )
+    } catch (err) {
+      console.error(err)
+      alert("Action not allowed")
+    }
   }
-
-}
 
   const approveItem = async (item) => {
     const result = await Swal.fire({
@@ -268,21 +276,6 @@ export default function Disbursements() {
       cancelButtonColor: '#6b7280',
       background: '#F0F4FF',
       color: '#1f2937',
-      didOpen: (modal) => {
-        modal.style.fontFamily = "'Inter', sans-serif"
-        const confirmBtn = modal.querySelector('.swal2-confirm')
-        const cancelBtn = modal.querySelector('.swal2-cancel')
-        if (confirmBtn) {
-          confirmBtn.style.fontWeight = '500'
-          confirmBtn.style.borderRadius = '6px'
-          confirmBtn.style.padding = '8px 24px'
-        }
-        if (cancelBtn) {
-          cancelBtn.style.fontWeight = '500'
-          cancelBtn.style.borderRadius = '6px'
-          cancelBtn.style.padding = '8px 24px'
-        }
-      }
     })
     
     if (!result.isConfirmed) return
@@ -296,9 +289,6 @@ export default function Disbursements() {
         confirmButtonColor: '#0052CC',
         background: '#F0F4FF',
         color: '#1f2937',
-        didOpen: (modal) => {
-          modal.style.fontFamily = "'Inter', sans-serif"
-        }
       })
       await reload()
     } catch (err) {
@@ -310,9 +300,6 @@ export default function Disbursements() {
         confirmButtonColor: '#e11d48',
         background: '#F0F4FF',
         color: '#1f2937',
-        didOpen: (modal) => {
-          modal.style.fontFamily = "'Inter', sans-serif"
-        }
       })
     }
   }
@@ -331,28 +318,6 @@ export default function Disbursements() {
       cancelButtonColor: '#6b7280',
       background: '#F0F4FF',
       color: '#1f2937',
-      inputAttributes: {
-        style: 'min-height: 100px; font-family: Inter, sans-serif; border-radius: 6px; border: 1px solid #C5D3FF;'
-      },
-      didOpen: (modal) => {
-        modal.style.fontFamily = "'Inter', sans-serif"
-        const confirmBtn = modal.querySelector('.swal2-confirm')
-        const cancelBtn = modal.querySelector('.swal2-cancel')
-        const textarea = modal.querySelector('textarea')
-        if (textarea) {
-          textarea.style.fontFamily = "'Inter', sans-serif"
-        }
-        if (confirmBtn) {
-          confirmBtn.style.fontWeight = '500'
-          confirmBtn.style.borderRadius = '6px'
-          confirmBtn.style.padding = '8px 24px'
-        }
-        if (cancelBtn) {
-          cancelBtn.style.fontWeight = '500'
-          cancelBtn.style.borderRadius = '6px'
-          cancelBtn.style.padding = '8px 24px'
-        }
-      }
     })
     
     if (!result.isConfirmed) return
@@ -364,15 +329,12 @@ export default function Disbursements() {
         confirmButtonColor: '#f97316',
         background: '#F0F4FF',
         color: '#1f2937',
-        didOpen: (modal) => {
-          modal.style.fontFamily = "'Inter', sans-serif"
-        }
       })
       return
     }
     
     try {
-      await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: result.value })
+      await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: result.value || 'No remarks provided.' })
       await Swal.fire({
         title: 'Rejected!',
         text: 'Disbursement rejected successfully.',
@@ -380,9 +342,6 @@ export default function Disbursements() {
         confirmButtonColor: '#0052CC',
         background: '#F0F4FF',
         color: '#1f2937',
-        didOpen: (modal) => {
-          modal.style.fontFamily = "'Inter', sans-serif"
-        }
       })
       await reload()
     } catch (err) {
@@ -394,252 +353,149 @@ export default function Disbursements() {
         confirmButtonColor: '#e11d48',
         background: '#F0F4FF',
         color: '#1f2937',
-        didOpen: (modal) => {
-          modal.style.fontFamily = "'Inter', sans-serif"
-        }
       })
-    }
-  }
-
-  const handleDecision = async (item) => {
-    const input = prompt('Type A to approve, or enter rejection remarks to reject:')
-    if (!input) return
-    if (input.trim().toLowerCase() === 'a') {
-      await approveItem(item)
-    } else {
-      try {
-        await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: input })
-        await reload()
-      } catch (err) {
-        console.error('Reject failed', err)
-        alert('Reject failed')
-      }
     }
   }
 
   const isActionable = (d) => {
     const statusLower = String(d.status || '').toLowerCase()
-    
-    if (currentUserDeptKey === 'accounting') {
-      return false
-    }
-
+    if (currentUserDeptKey === 'accounting') return false
     return statusLower === 'pending' && d.current_step === currentUserStep
   }
 
   const canArchive = (d) => {
-  const statusLower = String(d.status || '').toLowerCase();
-
-  // 1. Only Accounting can archive
-  if (currentUserDeptKey !== 'accounting') return false;
-
-  // 2. Hide if already archived
-  if (statusLower === 'archived') return false;
-
-  // 3. Only show if status is completed
-  if (statusLower !== 'completed') return false;
-
-  return true;
-};
-
-  const toggleDecision = async (item) => {
-    const isApproved = String(item.status || '').toLowerCase() === 'approved'
-
-    // Client-side guard: allow when pending, or for Accounting allow pending at step 2
-    const statusLower = String(item.status || '').toLowerCase()
-    const allowed = statusLower === 'pending' || (currentUser?.department === 'accounting' && statusLower === 'pending' && item.current_step === 2)
-    if (!allowed || item.current_step !== currentUserStep) {
-      return await Swal.fire({
-        title: 'Not Allowed!',
-        text: 'You cannot approve this Disbursement Voucher at this stage.',
-        icon: 'error',
-        confirmButtonColor: '#e11d48',
-        background: '#F0F4FF',
-        color: '#1f2937',
-        didOpen: (modal) => {
-          modal.style.fontFamily = "'Inter', sans-serif"
-        }
-      })
-    }
-
-    if (!isApproved) {
-      // Approve
-      const result = await Swal.fire({
-        title: 'Approve Disbursement?',
-        text: `Are you sure you want to approve this disbursement voucher?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Approve',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#059669',
-        cancelButtonColor: '#6b7280',
-        background: '#F0F4FF',
-        color: '#1f2937',
-        didOpen: (modal) => {
-          modal.style.fontFamily = "'Inter', sans-serif"
-          const confirmBtn = modal.querySelector('.swal2-confirm')
-          const cancelBtn = modal.querySelector('.swal2-cancel')
-          if (confirmBtn) {
-            confirmBtn.style.fontWeight = '600'
-            confirmBtn.style.borderRadius = '8px'
-            confirmBtn.style.padding = '12px 28px'
-            confirmBtn.style.minWidth = '140px'
-          }
-          if (cancelBtn) {
-            cancelBtn.style.fontWeight = '600'
-            cancelBtn.style.borderRadius = '8px'
-            cancelBtn.style.padding = '12px 28px'
-            cancelBtn.style.minWidth = '140px'
-          }
-        }
-      })
-      
-      if (!result.isConfirmed) return
-      
-      try {
-        const updated = await apiRequest(`/dv/${item.id}/approve/`, 'POST')
-        if (updated) {
-          setDisbursements((prev) => prev.map((d) => (d.id === item.id ? updated : d)))
-        } else {
-          await reload()
-        }
-        await Swal.fire({
-          title: 'Success!',
-          text: 'Disbursement approved successfully.',
-          icon: 'success',
-          confirmButtonColor: '#0052CC',
-          background: '#F0F4FF',
-          color: '#1f2937',
-          didOpen: (modal) => {
-            modal.style.fontFamily = "'Inter', sans-serif"
-          }
-        })
-      } catch (err) {
-        console.error('Approve failed', err)
-        await Swal.fire({
-          title: 'Error!',
-          text: err?.message || 'Approve failed',
-          icon: 'error',
-          confirmButtonColor: '#e11d48',
-          background: '#F0F4FF',
-          color: '#1f2937',
-          didOpen: (modal) => {
-            modal.style.fontFamily = "'Inter', sans-serif"
-          }
-        })
-      }
-    } else {
-      // Reject (disapprove) — require remarks
-      const result = await Swal.fire({
-        title: 'Reject Disbursement?',
-        input: 'textarea',
-        inputLabel: 'Rejection Remarks',
-        inputPlaceholder: 'Enter your remarks for rejection...',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Reject',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#e11d48',
-        cancelButtonColor: '#6b7280',
-        background: '#F0F4FF',
-        color: '#1f2937',
-        inputAttributes: {
-          style: 'min-height: 100px; font-family: Inter, sans-serif; border-radius: 6px; border: 1px solid #C5D3FF;'
-        },
-        didOpen: (modal) => {
-          modal.style.fontFamily = "'Inter', sans-serif"
-          const confirmBtn = modal.querySelector('.swal2-confirm')
-          const cancelBtn = modal.querySelector('.swal2-cancel')
-          const textarea = modal.querySelector('textarea')
-          if (textarea) {
-            textarea.style.fontFamily = "'Inter', sans-serif"
-          }
-          if (confirmBtn) {
-            confirmBtn.style.fontWeight = '600'
-            confirmBtn.style.borderRadius = '8px'
-            confirmBtn.style.padding = '12px 28px'
-            confirmBtn.style.minWidth = '140px'
-          }
-          if (cancelBtn) {
-            cancelBtn.style.fontWeight = '600'
-            cancelBtn.style.borderRadius = '8px'
-            cancelBtn.style.padding = '12px 28px'
-            cancelBtn.style.minWidth = '140px'
-          }
-        }
-      })
-      
-      if (!result.isConfirmed) return
-      if (!result.value?.trim()) {
-        await Swal.fire({
-          title: 'Required!',
-          text: 'Rejection remarks are required',
-          icon: 'warning',
-          confirmButtonColor: '#f97316',
-          background: '#F0F4FF',
-          color: '#1f2937',
-          didOpen: (modal) => {
-            modal.style.fontFamily = "'Inter', sans-serif"
-          }
-        })
-        return
-      }
-      
-      try {
-        const updated = await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: result.value })
-        if (updated) {
-          setDisbursements((prev) => prev.map((d) => (d.id === item.id ? updated : d)))
-        } else {
-          await reload()
-        }
-        await Swal.fire({
-          title: 'Rejected!',
-          text: 'Disbursement rejected successfully.',
-          icon: 'success',
-          confirmButtonColor: '#0052CC',
-          background: '#F0F4FF',
-          color: '#1f2937',
-          didOpen: (modal) => {
-            modal.style.fontFamily = "'Inter', sans-serif"
-          }
-        })
-      } catch (err) {
-        console.error('Reject failed', err)
-        await Swal.fire({
-          title: 'Error!',
-          text: err?.message || 'Reject failed',
-          icon: 'error',
-          confirmButtonColor: '#e11d48',
-          background: '#F0F4FF',
-          color: '#1f2937',
-          didOpen: (modal) => {
-            modal.style.fontFamily = "'Inter', sans-serif"
-          }
-        })
-      }
-    }
-  }
+    const statusLower = String(d.status || '').toLowerCase();
+    if (currentUserDeptKey !== 'accounting') return false;
+    if (statusLower === 'archived') return false;
+    if (statusLower !== 'completed') return false;
+    return true;
+  };
 
   const handleJeRowChange = (index, field, value) => {
-  const updated = [...jeRows];
-  updated[index][field] = value;
-  setJeRows(updated);
-};
+    const updated = [...jeRows];
+    updated[index][field] = value;
+    setJeRows(updated);
+  };
 
-const addJeRow = () => {
-  setJeRows([...jeRows, { account_code: '', particulars: '', debit: 0, credit: 0 }]);
-};
+  const addJeRow = () => {
+    setJeRows([...jeRows, { account_code: '', particulars: '', debit: 0, credit: 0 }]);
+  };
 
-const removeJeRow = (index) => {
-  if (jeRows.length > 1) {
-    setJeRows(jeRows.filter((_, i) => i !== index));
-  }
-};
+  const removeJeRow = (index) => {
+    if (jeRows.length > 1) {
+      setJeRows(jeRows.filter((_, i) => i !== index));
+    }
+  };
 
-const handleView = (dv) => {
-  setSelectedDV(dv);
-  setShowViewModal(true);
-};
+  // --- EDIT HANDLERS FOR VIEW MODAL ---
+  const handleEditParticularDescription = (pIdx, value) => {
+    const updated = [...editParticulars];
+    updated[pIdx] = { ...updated[pIdx], description: value };
+    setEditParticulars(updated);
+  };
+
+  const handleEditParticularValue = (pIdx, vIdx, field, value) => {
+    const updated = [...editParticulars];
+    const updatedVals = [...updated[pIdx].category_values];
+    updatedVals[vIdx] = { ...updatedVals[vIdx], [field]: value };
+    updated[pIdx] = { ...updated[pIdx], category_values: updatedVals };
+    setEditParticulars(updated);
+  };
+
+  // Add Row to View Modal Particulars
+  const handleAddEditParticularValue = (pIdx) => {
+    const updated = [...editParticulars];
+    if (!updated[pIdx].category_values) {
+      updated[pIdx].category_values = [];
+    }
+    updated[pIdx].category_values.push({ category: '', np: '', ft: '', tf: '' });
+    setEditParticulars(updated);
+  };
+
+  // Remove Row from View Modal Particulars
+  const handleRemoveEditParticularValue = (pIdx, vIdx) => {
+    const updated = [...editParticulars];
+    updated[pIdx].category_values = updated[pIdx].category_values.filter((_, i) => i !== vIdx);
+    setEditParticulars(updated);
+  };
+
+  const handleEditJeRowChange = (index, field, value) => {
+    const updated = [...editJeRows];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditJeRows(updated);
+  };
+
+  // Add Row to View Modal Journal Entries
+  const handleAddEditJeRow = () => {
+    setEditJeRows([...editJeRows, { account_code: '', particulars: '', debit: 0, credit: 0 }]);
+  };
+
+  // Remove Row from View Modal Journal Entries
+  const handleRemoveEditJeRow = (index) => {
+    setEditJeRows(editJeRows.filter((_, i) => i !== index));
+  };
+
+  const handleView = (dv) => {
+    setSelectedDV(dv);
+    const canEdit = currentUserDeptKey === 'accounting' && dv.status?.toLowerCase() === 'disapproved';
+    setIsEditable(canEdit);
+
+    setEditTrackingNo(dv.tracking_no || '');
+    setEditDVNo(dv.dv_no || '');
+    setEditPayee(dv.payee || '');
+    setEditTin(dv.tin || '');
+    setEditFundSource(dv.fund_source || 'GF');
+    setEditModeOfPayment(dv.payments?.[0]?.mop || 'CASH');
+    setEditMopOthers(dv.payments?.[0]?.mop_specify || '');
+    setEditCreatedDate(dv.created_date || '');
+    setEditOffice(dv.office || '');
+    setEditStatus(dv.status || '');
+    
+    setEditParticulars(dv.particulars ? JSON.parse(JSON.stringify(dv.particulars)) : []);
+    setEditJeRows(dv.journal_entries ? JSON.parse(JSON.stringify(dv.journal_entries)) : []);
+    
+    setShowViewModal(true);
+  };
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+    if (!isEditable) return;
+
+    try {
+      const payload = {
+        tracking_no: editTrackingNo,
+        dv_no: editDVNo,
+        payee: editPayee,
+        tin: editTin,
+        fund_source: editFundSource,
+        created_date: editCreatedDate,
+        particulars: editParticulars,
+        journal_entries: editJeRows,
+        payments: [
+          {
+            ...(selectedDV.payments?.[0] || {}),
+            mop: editModeOfPayment,
+            mop_specify: editMopOthers
+          }
+        ]
+      };
+
+      const updated = await apiRequest(`/dv/${selectedDV.id}/`, 'PUT', payload);
+      
+      if (updated) {
+        await apiRequest(`/dv/${selectedDV.id}/resubmit/`, 'POST', {
+          remarks: 'Corrected and resubmitted by Accounting.'
+        });
+
+        toast.success('Disbursement Voucher updated and resubmitted successfully!');
+        setShowViewModal(false);
+        reload(); // Refresh the table
+      }
+    } catch (err) {
+      console.error("Resubmit error:", err);
+      toast.error(err?.message || 'Failed to update and resubmit the Disbursement Voucher');
+    }
+  };
   
   return (
     <div className='noselect'>
@@ -651,180 +507,179 @@ const handleView = (dv) => {
       </div>
 
       {/* ➕ NEW ENTRY FORM MODAL */}
-      {/* ➕ NEW ENTRY FORM MODAL */}
-{isAccountant && (
-  <ReactModal 
-    isOpen={showCreateModal} 
-    onClose={() => setShowCreateModal(false)} 
-    title="New Disbursement Voucher Entry"
-  >
-    <section className="panel panel-alt noselect">
-      <form onSubmit={addDisbursement}>
-        {/* TOP FORM GRID */}
-        <div className="form-grid form-grid--split noselect">
-          <label>
-            <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
-            <input type="number" value={trackingno} onChange={(e) => setTrackingNo(e.target.value)} placeholder="Enter tracking number" />
-          </label>
-          <label>
-            <span>DV Number<span style={{ color: 'red' }}>*</span></span>
-            <input type="text" value={dvno} onChange={(e) => setDVno(e.target.value)} placeholder="Enter DV number" />
-          </label>
-          <label>
-            <span>Payee<span style={{ color: 'red' }}>*</span></span>
-            <input type="text" value={payee} onChange={(e) => setPayee(e.target.value)} placeholder="Enter payee name" />
-          </label>
-          <label>
-            <span>ID # / TIN<span style={{ color: 'red' }}>*</span></span>
-            <input type="text" value={tin} onChange={(e) => setTin(e.target.value)} placeholder="Enter TIN or ID number" />
-          </label>
-          <label>
-            <span>Fund Source<span style={{ color: 'red' }}>*</span></span>
-            <select value={fundSource} onChange={(e) => setFundSource(e.target.value)}>
-              <option value="GF">GF</option>
-              <option value="20% DF">20% DF</option>
-              <option value="5% DRRM">5% DRRM</option>
-              <option value="GAD">GAD</option>
-              <option value="RA7171">RA7171</option>
-              <option value="SEF">SEF</option>
-              <option value="TF">TF</option>
-              <option value="PHILHEALTH">PHILHEALTH</option>
-              <option value="CALAMITY">CALAMITY</option>
-            </select>
-          </label>
-          <label>
-            <span>Mode of Payment</span>
-            <select value={modeOfPayment} onChange={(e) => setModeOfPayment(e.target.value)}>
-              <option value="CASH">Cash</option>
-              <option value="CHECK">Check</option>
-              <option value="OTHERS">Others</option>
-            </select>
-          </label>
-          {modeOfPayment === 'OTHERS' && (
-            <label>
-              <span>Specify Payment Mode</span>
-              <input type="text" value={paymentMopSpecify} onChange={(e) => setPaymentMopSpecify(e.target.value)} placeholder="Specify payment mode" />
-            </label>
-          )}
-          <label>
-            <span>Date<span style={{ color: 'red' }}>*</span></span>
-            <input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} />
-          </label>
-          <label>
-            <span>Created By</span>
-            <input value={officer} readOnly disabled placeholder="Auto-filled by your account" />
-          </label>
-          <label>
-            <span>Status</span>
-            <input value={status} readOnly disabled />
-          </label>
-        </div>
+      {isAccountant && (
+        <ReactModal 
+          isOpen={showCreateModal} 
+          onClose={() => setShowCreateModal(false)} 
+          title="New Disbursement Voucher Entry"
+        >
+          <section className="panel panel-alt noselect">
+            <form onSubmit={addDisbursement}>
+              {/* TOP FORM GRID */}
+              <div className="form-grid form-grid--split noselect">
+                <label>
+                  <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
+                  <input type="number" value={trackingno} onChange={(e) => setTrackingNo(e.target.value)} placeholder="Enter tracking number" />
+                </label>
+                <label>
+                  <span>DV Number<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={dvno} onChange={(e) => setDVno(e.target.value)} placeholder="Enter DV number" />
+                </label>
+                <label>
+                  <span>Payee<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={payee} onChange={(e) => setPayee(e.target.value)} placeholder="Enter payee name" />
+                </label>
+                <label>
+                  <span>ID # / TIN<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={tin} onChange={(e) => setTin(e.target.value)} placeholder="Enter TIN or ID number" />
+                </label>
+                <label>
+                  <span>Fund Source<span style={{ color: 'red' }}>*</span></span>
+                  <select value={fundSource} onChange={(e) => setFundSource(e.target.value)}>
+                    <option value="GF">GF</option>
+                    <option value="20% DF">20% DF</option>
+                    <option value="5% DRRM">5% DRRM</option>
+                    <option value="GAD">GAD</option>
+                    <option value="RA7171">RA7171</option>
+                    <option value="SEF">SEF</option>
+                    <option value="TF">TF</option>
+                    <option value="PHILHEALTH">PHILHEALTH</option>
+                    <option value="CALAMITY">CALAMITY</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Mode of Payment</span>
+                  <select value={modeOfPayment} onChange={(e) => setModeOfPayment(e.target.value)}>
+                    <option value="CASH">Cash</option>
+                    <option value="CHECK">Check</option>
+                    <option value="OTHERS">Others</option>
+                  </select>
+                </label>
+                {modeOfPayment === 'OTHERS' && (
+                  <label>
+                    <span>Specify Payment Mode</span>
+                    <input type="text" value={paymentMopSpecify} onChange={(e) => setPaymentMopSpecify(e.target.value)} placeholder="Specify payment mode" />
+                  </label>
+                )}
+                <label>
+                  <span>Date<span style={{ color: 'red' }}>*</span></span>
+                  <input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} />
+                </label>
+                <label>
+                  <span>Created By</span>
+                  <input value={officer} readOnly disabled placeholder="Auto-filled by your account" />
+                </label>
+                <label>
+                  <span>Status</span>
+                  <input value={status} readOnly disabled />
+                </label>
+              </div>
 
-        {/* --- PARTICULARS SECTION --- */}
-        <section className="panel-section" style={{ marginTop: '2rem' }}>
-          <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars Section</h4>
-            <div className="general-description-wrapper">
-              <label className="general-label">
-                <span>General Description</span>
-              </label>
+              {/* --- PARTICULARS SECTION --- */}
+              <section className="panel-section" style={{ marginTop: '2rem' }}>
+                <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars Section</h4>
+                  <div className="general-description-wrapper">
+                    <label className="general-label">
+                      <span>General Description</span>
+                    </label>
 
-              <textarea
-                className="general-description"
-                value={particularDescription}
-                onChange={(e) => setParticularDescription(e.target.value)}
-                placeholder="Enter overall description of the voucher..."
-              />
-            </div>
-          <div className="table-wrap">
-            <table className="particulars-table">
-              <thead>
-                <tr>
-                  <th>Category / Particulars</th>
-                  <th>Net Pay</th>
-                  <th>15th</th>
-                  <th>31st</th>
-                  <th style={{ width: '50px' }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {particulars.map((item, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <input className="particulars-input" type="text" value={item.category} onChange={(e) => handleParticularChange(idx, 'category', e.target.value)} placeholder="Category name" />
-                    </td>
-                    <td><input className="particulars-input" type="number" value={item.np} onChange={(e) => handleParticularChange(idx, 'np', e.target.value)} placeholder="0.00" /></td>
-                    <td><input className="particulars-input" type="number" value={item.ft} onChange={(e) => handleParticularChange(idx, 'ft', e.target.value)} placeholder="0.00" /></td>
-                    <td><input className="particulars-input" type="number" value={item.tf} onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)} placeholder="0.00" /></td>
-                    <td className="table-column-center">
-                      {idx > 0 && (
-                        <button type="button" className="btn-danger btn-small" onClick={() => removeParticularRow(idx)}>
-                          <ion-icon name="trash"></ion-icon>
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <button type="button" className="btn-primary btn-small" onClick={addParticularRow} style={{ marginTop: '1rem' }}>
-              + Add Category Row
-            </button>
-          </div>
-        </section>
+                    <textarea
+                      className="general-description"
+                      value={particularDescription}
+                      onChange={(e) => setParticularDescription(e.target.value)}
+                      placeholder="Enter overall description of the voucher..."
+                    />
+                  </div>
+                <div className="table-wrap">
+                  <table className="particulars-table">
+                    <thead>
+                      <tr>
+                        <th>Category / Particulars</th>
+                        <th>Net Pay</th>
+                        <th>15th</th>
+                        <th>31st</th>
+                        <th style={{ width: '50px' }}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {particulars.map((item, idx) => (
+                        <tr key={idx}>
+                          <td>
+                            <input className="particulars-input" type="text" value={item.category} onChange={(e) => handleParticularChange(idx, 'category', e.target.value)} placeholder="Category name" />
+                          </td>
+                          <td><input className="particulars-input" type="number" value={item.np} onChange={(e) => handleParticularChange(idx, 'np', e.target.value)} placeholder="0.00" /></td>
+                          <td><input className="particulars-input" type="number" value={item.ft} onChange={(e) => handleParticularChange(idx, 'ft', e.target.value)} placeholder="0.00" /></td>
+                          <td><input className="particulars-input" type="number" value={item.tf} onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)} placeholder="0.00" /></td>
+                          <td className="table-column-center">
+                            {idx > 0 && (
+                              <button type="button" className="btn-danger btn-small" onClick={() => removeParticularRow(idx)}>
+                                <ion-icon name="trash"></ion-icon>
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <button type="button" className="btn-primary btn-small" onClick={addParticularRow} style={{ marginTop: '1rem' }}>
+                    + Add Category Row
+                  </button>
+                </div>
+              </section>
 
-        {/* --- JOURNAL ENTRY SECTION --- */}
-        <section className="panel-section" style={{ marginTop: '2.5rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.5rem' }}>
-          <h4 className="section-title"><ion-icon name="journal-outline"></ion-icon> Journal Entry Section</h4>
-          <div className="table-wrap">
-            <table className="particulars-table">
-              <thead>
-                <tr>
-                  <th>Account Code</th>
-                  <th>Particulars</th>
-                  <th>Debit</th>
-                  <th>Credit</th>
-                  <th style={{ width: '50px' }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {jeRows.map((row, index) => (
-                  <tr key={index}>
-                    <td>
-                      <input className="particulars-input" type="text" value={row.account_code} onChange={(e) => handleJeRowChange(index, 'account_code', e.target.value)} placeholder="Code" />
-                    </td>
-                    <td>
-                      <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Description" />
-                    </td>
-                    <td><input className="particulars-input" type="number" value={row.debit} onChange={(e) => handleJeRowChange(index, 'debit', e.target.value)} placeholder="0.00" /></td>
-                    <td><input className="particulars-input" type="number" value={row.credit} onChange={(e) => handleJeRowChange(index, 'credit', e.target.value)} placeholder="0.00" /></td>
-                    <td className="table-column-center">
-                      {index > 0 && (
-                        <button type="button" className="btn-danger btn-small" onClick={() => removeJeRow(index)}>
-                          <ion-icon name="trash"></ion-icon>
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <button type="button" className="btn-primary btn-small" onClick={addJeRow} style={{ marginTop: '1rem' }}>
-              + Add Journal Row
-            </button>
-          </div>
-        </section>
+              {/* --- JOURNAL ENTRY SECTION --- */}
+              <section className="panel-section" style={{ marginTop: '2.5rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.5rem' }}>
+                <h4 className="section-title"><ion-icon name="journal-outline"></ion-icon> Journal Entry Section</h4>
+                <div className="table-wrap">
+                  <table className="particulars-table">
+                    <thead>
+                      <tr>
+                        <th>Account Code</th>
+                        <th>Particulars</th>
+                        <th>Debit</th>
+                        <th>Credit</th>
+                        <th style={{ width: '50px' }}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {jeRows.map((row, index) => (
+                        <tr key={index}>
+                          <td>
+                            <input className="particulars-input" type="text" value={row.account_code} onChange={(e) => handleJeRowChange(index, 'account_code', e.target.value)} placeholder="Code" />
+                          </td>
+                          <td>
+                            <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Description" />
+                          </td>
+                          <td><input className="particulars-input" type="number" value={row.debit} onChange={(e) => handleJeRowChange(index, 'debit', e.target.value)} placeholder="0.00" /></td>
+                          <td><input className="particulars-input" type="number" value={row.credit} onChange={(e) => handleJeRowChange(index, 'credit', e.target.value)} placeholder="0.00" /></td>
+                          <td className="table-column-center">
+                            {index > 0 && (
+                              <button type="button" className="btn-danger btn-small" onClick={() => removeJeRow(index)}>
+                                <ion-icon name="trash"></ion-icon>
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <button type="button" className="btn-primary btn-small" onClick={addJeRow} style={{ marginTop: '1rem' }}>
+                    + Add Journal Row
+                  </button>
+                </div>
+              </section>
 
-        {/* --- MODAL FOOTER (BOTTOM RIGHT) --- */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #eee' }}>
-          <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
-            <ion-icon name="add-circle-outline"></ion-icon>
-            Submit DV
-          </button>
-        </div>
-      </form>
-    </section>
-  </ReactModal>
-)}
+              {/* --- MODAL FOOTER --- */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #eee' }}>
+                <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
+                  <ion-icon name="add-circle-outline"></ion-icon>
+                  Submit DV
+                </button>
+              </div>
+            </form>
+          </section>
+        </ReactModal>
+      )}
 
       {/* 📋 VOUCHERS TABLE */}
       <section className="panel">
@@ -883,13 +738,12 @@ const handleView = (dv) => {
                     </span>
                   </td>
                   <td className='table-column-center'>{formatDateMMDDYYYY(d.created_date)}</td>
-                  <td>{d.accounting_name}</td>
+                  <td>{d.accounting_name || d.office || 'N/A'}</td>
                   <td className="table-column-center">
                     <div className="action-buttons">
                       <button className="btn-archive btn-small flex justify-center items-center gap-1" onClick={() => handleView(d)}>
                           <ion-icon name="eye-outline"></ion-icon> View
                       </button>
-                      {/* APPROVE / REJECT: Hidden if Completed, Archived, or not your turn */}
                       {isActionable(d) && (
                         <>
                           <button className="btn-primary btn-small flex justify-center items-center gap-1" onClick={() => approveItem(d)}>
@@ -902,7 +756,6 @@ const handleView = (dv) => {
                         </>
                       )}
 
-                      {/* ARCHIVE: Only visible to Accounting AND if not already Archived/Completed */}
                       {canArchive(d) && (
                         <button
                           className="btn-archive btn-small flex justify-center items-center gap-1"
@@ -992,164 +845,249 @@ const handleView = (dv) => {
         )}
       </section>
 
-       {/* 👀 VIEW DISBURSEMENT MODAL */}
+       {/* 👀 VIEW/EDIT DISBURSEMENT MODAL */}
       <ReactModal 
         isOpen={showViewModal} 
         onClose={() => setShowViewModal(false)} 
-        title={`Voucher Preview: DV No. ${selectedDV?.dv_no || 'N/A'}`}
+        title="Disbursement Voucher Details"
       >
         {selectedDV && (
           <section className="panel panel-alt noselect">
-            {/* TOP FORM GRID - All Disabled */}
-            <div className="form-grid form-grid--split noselect">
-              <label>
-                <span>Tracking Number</span>
-                <input type="text" value={selectedDV.tracking_no || ''} disabled />
-              </label>
-              <label>
-                <span>DV Number</span>
-                <input type="text" value={selectedDV.dv_no || ''} disabled />
-              </label>
-              <label>
-                <span>Payee</span>
-                <input type="text" value={selectedDV.payee || ''} disabled />
-              </label>
-              <label>
-                <span>ID # / TIN</span>
-                <input type="text" value={selectedDV.tin || ''} disabled />
-              </label>
-              <label>
-                <span>Fund Source</span>
-                <select value={selectedDV.fund_source || ''} disabled>
-                  <option value={selectedDV.fund_source}>{selectedDV.fund_source}</option>
-                </select>
-              </label>
-              <label>
-                <span>Mode of Payment</span>
-                <select value={selectedDV.mode_of_payment || ''} disabled>
-                  <option value={selectedDV.mode_of_payment}>
-                    {selectedDV.mode_of_payment}
-                  </option>
-                </select>
-              </label>
-              {selectedDV.mode_of_payment === 'OTHERS' && (
+            <form onSubmit={handleUpdateSubmit}>
+              <div className="form-grid form-grid--split noselect">
                 <label>
-                  <span>Specify Payment Mode</span>
-                  <input type="text" value={selectedDV.mop_others || ''} disabled />
+                  <span>Tracking Number</span>
+                  <input type="text" value={editTrackingNo} onChange={(e) => setEditTrackingNo(e.target.value)} disabled={!isEditable} />
                 </label>
-              )}
-              <label>
-                <span>Date</span>
-                <input type="text" value={selectedDV.created_date || ''} disabled />
-              </label>
-              <label>
-                <span>Created By</span>
-                <input value={selectedDV.office || ''} disabled />
-              </label>
-              <label>
-                <span>Status</span>
-                <input value={selectedDV.status || ''} disabled />
-              </label>
-            </div>
+                <label>
+                  <span>DV Number</span>
+                  <input type="text" value={editDVNo} onChange={(e) => setEditDVNo(e.target.value)} disabled={!isEditable} />
+                </label>
+                <label>
+                  <span>Payee</span>
+                  <input type="text" value={editPayee} onChange={(e) => setEditPayee(e.target.value)} disabled={!isEditable} />
+                </label>
+                <label>
+                  <span>ID # / TIN</span>
+                  <input type="text" value={editTin} onChange={(e) => setEditTin(e.target.value)} disabled={!isEditable} />
+                </label>
+                <label>
+                  <span>Fund Source</span>
+                  <select value={editFundSource} onChange={(e) => setEditFundSource(e.target.value)} disabled={!isEditable}>
+                    <option value="GF">GF</option>
+                    <option value="20% DF">20% DF</option>
+                    <option value="5% DRRM">5% DRRM</option>
+                    <option value="GAD">GAD</option>
+                    <option value="RA7171">RA7171</option>
+                    <option value="SEF">SEF</option>
+                    <option value="TF">TF</option>
+                    <option value="PHILHEALTH">PHILHEALTH</option>
+                    <option value="CALAMITY">CALAMITY</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Mode of Payment</span>
+                  <select value={editModeOfPayment} onChange={(e) => setEditModeOfPayment(e.target.value)} disabled={!isEditable}>
+                    <option value="CASH">Cash</option>
+                    <option value="CHECK">Check</option>
+                    <option value="OTHERS">Others</option>
+                  </select>
+                </label>
+                {editModeOfPayment === 'OTHERS' && (
+                  <label>
+                    <span>Specify Payment Mode</span>
+                    <input type="text" value={editMopOthers} onChange={(e) => setEditMopOthers(e.target.value)} disabled={!isEditable} />
+                  </label>
+                )}
+                <label>
+                  <span>Date</span>
+                  <input type="date" value={editCreatedDate} onChange={(e) => setEditCreatedDate(e.target.value)} disabled={!isEditable} />
+                </label>
+                <label>
+                  <span>Created By</span>
+                  <input value={editOffice} onChange={(e) => setEditOffice(e.target.value)} disabled={!isEditable} />
+                </label>
+                <label>
+                  <span>Status</span>
+                  <input value={editStatus} disabled={true} />
+                </label>
+              </div>
 
-            {/* --- PARTICULARS SECTION --- */}
-            <section className="panel-section" style={{ marginTop: '2rem' }}>
-              <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars Section</h4>
-              
-              {selectedDV.particulars && selectedDV.particulars.length > 0 ? (
-                selectedDV.particulars.map((part, pIdx) => (
-                  <div key={pIdx} style={{ marginBottom: '1.5rem' }}>
-                    {/* Matches creation form wrapper for General Description */}
-                    <div className="general-description-wrapper">
-                      <label className="general-label">
-                        <span>General Description</span>
-                      </label>
+              {/* --- PARTICULARS SECTION --- */}
+              <section className="panel-section" style={{ marginTop: '2rem' }}>
+                <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars Section</h4>
+                
+                {editParticulars && editParticulars.length > 0 ? (
+                  editParticulars.map((part, pIdx) => (
+                    <div key={pIdx} style={{ marginBottom: '1.5rem' }}>
+                      <div className="general-description-wrapper">
+                        <label className="general-label">
+                          <span>General Description</span>
+                        </label>
+                        <textarea
+                          className="general-description"
+                          value={part.description || ''}
+                          onChange={(e) => handleEditParticularDescription(pIdx, e.target.value)}
+                          disabled={!isEditable}
+                          style={{ 
+                            backgroundColor: isEditable ? '#fff' : '#f9fafb', 
+                            color: part.description ? 'inherit' : '#9ca3af',
+                            fontStyle: part.description ? 'normal' : 'italic'
+                          }}
+                        />
+                      </div>
 
-                      <textarea
-                        className="general-description"
-                        value={part.description || 'No particular description provided'}
-                        disabled
-                        style={{ 
-                          backgroundColor: '#f9fafb', 
-                          color: part.description ? 'inherit' : '#9ca3af',
-                          fontStyle: part.description ? 'normal' : 'italic'
-                        }}
-                      />
-                    </div>
-
-                    <div className="table-wrap">
-                      <table className="particulars-table">
-                        <thead>
-                          <tr>
-                            <th>Category / Particulars</th>
-                            <th>Net Pay</th>
-                            <th>15th</th>
-                            <th>31st</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {part.category_values && part.category_values.length > 0 ? (
-                            part.category_values.map((val, vIdx) => (
-                              <tr key={vIdx}>
-                                <td><input className="particulars-input" value={val.category || ''} disabled /></td>
-                                <td><input className="particulars-input" value={val.np || '0.00'} disabled /></td>
-                                <td><input className="particulars-input" value={val.ft || '0.00'} disabled /></td>
-                                <td><input className="particulars-input" value={val.tf || '0.00'} disabled /></td>
-                              </tr>
-                            ))
-                          ) : (
-                            /* Fallback for missing categories */
+                      <div className="table-wrap">
+                        <table className="particulars-table">
+                          <thead>
                             <tr>
-                              <td colSpan="4" style={{ textAlign: 'center', padding: '1.5rem', color: '#9ca3af', fontStyle: 'italic' }}>
-                                <ion-icon name="information-circle-outline"></ion-icon> No Particular Categories provided.
-                              </td>
+                              <th>Category / Particulars</th>
+                              <th>Net Pay</th>
+                              <th>15th</th>
+                              <th>31st</th>
+                              {isEditable && <th style={{ width: '50px' }}></th>}
                             </tr>
-                          )}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {part.category_values && part.category_values.length > 0 ? (
+                              part.category_values.map((val, vIdx) => (
+                                <tr key={vIdx}>
+                                  <td><input className="particulars-input" value={val.category || ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'category', e.target.value)} disabled={!isEditable} /></td>
+                                  <td><input className="particulars-input" type="number" value={val.np !== undefined ? val.np : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'np', e.target.value)} disabled={!isEditable} /></td>
+                                  <td><input className="particulars-input" type="number" value={val.ft !== undefined ? val.ft : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'ft', e.target.value)} disabled={!isEditable} /></td>
+                                  <td><input className="particulars-input" type="number" value={val.tf !== undefined ? val.tf : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'tf', e.target.value)} disabled={!isEditable} /></td>
+                                  {isEditable && (
+                                    <td className="table-column-center">
+                                      <button type="button" className="btn-danger btn-small" onClick={() => handleRemoveEditParticularValue(pIdx, vIdx)}>
+                                        <ion-icon name="trash"></ion-icon>
+                                      </button>
+                                    </td>
+                                  )}
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={isEditable ? "5" : "4"} style={{ textAlign: 'center', padding: '1.5rem', color: '#9ca3af', fontStyle: 'italic' }}>
+                                  <ion-icon name="information-circle-outline"></ion-icon> No Particular Categories provided.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                        {isEditable && (
+                          <button type="button" className="btn-primary btn-small" onClick={() => handleAddEditParticularValue(pIdx)} style={{ marginTop: '1rem' }}>
+                            + Add Category Row
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <p className="empty empty--center" style={{ padding: '20px', border: '1px dashed var(--border-color)', borderRadius: '8px' }}>
-                  <ion-icon name="information-circle-outline"></ion-icon> No particulars provided.
-                </p>
-              )}
-            </section>
+                  ))
+                ) : (
+                  <p className="empty empty--center" style={{ padding: '20px', border: '1px dashed var(--border-color)', borderRadius: '8px' }}>
+                    <ion-icon name="information-circle-outline"></ion-icon> No particulars provided.
+                  </p>
+                )}
+              </section>
 
-            {/* --- JOURNAL ENTRY SECTION --- */}
-            <section className="panel-section" style={{ marginTop: '2.5rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.5rem' }}>
-              <h4 className="section-title"><ion-icon name="journal-outline"></ion-icon> Journal Entry Section</h4>
-              
-              {selectedDV.journal_entries && selectedDV.journal_entries.length > 0 ? (
+              {/* --- JOURNAL ENTRY SECTION --- */}
+              <section className="panel-section" style={{ marginTop: '2.5rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.5rem' }}>
+                <h4 className="section-title"><ion-icon name="journal-outline"></ion-icon> Journal Entry Section</h4>
+                
+                {editJeRows && editJeRows.length > 0 ? (
+                  <div className="table-wrap">
+                    <table className="particulars-table">
+                      <thead>
+                        <tr>
+                          <th>Account Code</th>
+                          <th>Particulars</th>
+                          <th>Debit</th>
+                          <th>Credit</th>
+                          {isEditable && <th style={{ width: '50px' }}></th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {editJeRows.map((row, index) => (
+                          <tr key={index}>
+                            <td><input className="particulars-input" value={row.account_code || ''} onChange={(e) => handleEditJeRowChange(index, 'account_code', e.target.value)} disabled={!isEditable} /></td>
+                            <td><input className="particulars-input" value={row.particulars || ''} onChange={(e) => handleEditJeRowChange(index, 'particulars', e.target.value)} disabled={!isEditable} /></td>
+                            <td><input className="particulars-input" type="number" value={row.debit !== undefined ? row.debit : ''} onChange={(e) => handleEditJeRowChange(index, 'debit', e.target.value)} disabled={!isEditable} /></td>
+                            <td><input className="particulars-input" type="number" value={row.credit !== undefined ? row.credit : ''} onChange={(e) => handleEditJeRowChange(index, 'credit', e.target.value)} disabled={!isEditable} /></td>
+                            {isEditable && (
+                              <td className="table-column-center">
+                                <button type="button" className="btn-danger btn-small" onClick={() => handleRemoveEditJeRow(index)}>
+                                  <ion-icon name="trash"></ion-icon>
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {isEditable && (
+                      <button type="button" className="btn-primary btn-small" onClick={handleAddEditJeRow} style={{ marginTop: '1rem' }}>
+                        + Add Journal Row
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <p className="empty empty--center" style={{ padding: '20px 22rem', border: '1px dashed var(--border-color)', borderRadius: '8px'}}>
+                      <ion-icon name="information-circle-outline"></ion-icon> No journal entries provided.
+                    </p>
+                    {isEditable && (
+                      <button type="button" className="btn-primary btn-small" onClick={handleAddEditJeRow} style={{ marginTop: '1rem' }}>
+                        + Add Journal Row
+                      </button>
+                    )}
+                  </>
+                )}
+              </section>
+
+              {/* --- REMARKS HISTORY SECTION (READ-ONLY) --- */}
+              <section className="panel-section" style={{ marginTop: '3rem', borderTop: '2px solid #eee', paddingTop: '1.5rem' }}>
+                <h4 className="section-title" style={{ color: '#555' }}>
+                  <ion-icon name="git-branch-outline" style={{ marginRight: '8px' }}></ion-icon>
+                  Workflow History
+                </h4>
                 <div className="table-wrap">
                   <table className="particulars-table">
-                    <thead>
+                    <thead style={{ backgroundColor: '#f9f9f9' }}>
                       <tr>
-                        <th>Account Code</th>
-                        <th>Particulars</th>
-                        <th>Debit</th>
-                        <th>Credit</th>
+                        <th style={{ width: '20%' }}>Date</th>
+                        <th style={{ width: '20%' }}>Department</th>
+                        <th>Remarks / Observation</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedDV.journal_entries.map((row, index) => (
-                        <tr key={index}>
-                          <td><input className="particulars-input" value={row.account_code || ''} disabled /></td>
-                          <td><input className="particulars-input" value={row.particulars || ''} disabled /></td>
-                          <td><input className="particulars-input" value={row.debit || '0.00'} disabled /></td>
-                          <td><input className="particulars-input" value={row.credit || '0.00'} disabled /></td>
+                      {selectedDV.workflow_steps && selectedDV.workflow_steps.length > 0 ? (
+                        selectedDV.workflow_steps.map((step, i) => (
+                          <tr key={i}>
+                            <td style={{ fontSize: '0.85rem' }}>{new Date(step.action_date).toLocaleString()}</td>
+                            <td style={{ textTransform: 'capitalize', fontWeight: 'bold' }}>{step.action_by_department?.replace('_', ' ')}</td>
+                            <td style={{ color: step.status === 'disapproved' ? '#FF4D45' : 'black' }}>
+                              {step.remarks || 'Approved by ' + step.action_by_department?.replace('_', ' ')}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="3" style={{ textAlign: 'center', padding: '15px' }}>No history recorded.</td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
-              ) : (
-                <p className="empty empty--center" style={{ padding: '20px', border: '1px dashed var(--border-color)', borderRadius: '8px', width: '50rem'}}>
-                  <ion-icon name="information-circle-outline"></ion-icon> No journal entries provided.
-                </p>
+              </section>
+
+              {/* --- DYNAMIC SUBMIT BUTTON --- */}
+              {isEditable && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #eee', gap: '10px' }}>
+                  <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
+                    <ion-icon name="send-outline"></ion-icon> Resubmit DV
+                  </button>
+                </div>
               )}
-            </section>
+            </form>
           </section>
         )}
       </ReactModal>
