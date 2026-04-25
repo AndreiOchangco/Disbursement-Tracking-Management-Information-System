@@ -471,14 +471,16 @@ export default function Disbursements() {
           const confirmBtn = modal.querySelector('.swal2-confirm')
           const cancelBtn = modal.querySelector('.swal2-cancel')
           if (confirmBtn) {
-            confirmBtn.style.fontWeight = '500'
-            confirmBtn.style.borderRadius = '6px'
-            confirmBtn.style.padding = '8px 24px'
+            confirmBtn.style.fontWeight = '600'
+            confirmBtn.style.borderRadius = '8px'
+            confirmBtn.style.padding = '12px 28px'
+            confirmBtn.style.minWidth = '140px'
           }
           if (cancelBtn) {
-            cancelBtn.style.fontWeight = '500'
-            cancelBtn.style.borderRadius = '6px'
-            cancelBtn.style.padding = '8px 24px'
+            cancelBtn.style.fontWeight = '600'
+            cancelBtn.style.borderRadius = '8px'
+            cancelBtn.style.padding = '12px 28px'
+            cancelBtn.style.minWidth = '140px'
           }
         }
       })
@@ -544,14 +546,16 @@ export default function Disbursements() {
             textarea.style.fontFamily = "'Inter', sans-serif"
           }
           if (confirmBtn) {
-            confirmBtn.style.fontWeight = '500'
-            confirmBtn.style.borderRadius = '6px'
-            confirmBtn.style.padding = '8px 24px'
+            confirmBtn.style.fontWeight = '600'
+            confirmBtn.style.borderRadius = '8px'
+            confirmBtn.style.padding = '12px 28px'
+            confirmBtn.style.minWidth = '140px'
           }
           if (cancelBtn) {
-            cancelBtn.style.fontWeight = '500'
-            cancelBtn.style.borderRadius = '6px'
-            cancelBtn.style.padding = '8px 24px'
+            cancelBtn.style.fontWeight = '600'
+            cancelBtn.style.borderRadius = '8px'
+            cancelBtn.style.padding = '12px 28px'
+            cancelBtn.style.minWidth = '140px'
           }
         }
       })
