@@ -31,4 +31,8 @@ class DVArchivedAdmin(admin.ModelAdmin):
 admin.site.register(DVPayment)
 admin.site.register(DVParticulars)
 admin.site.register(DVJE)
-admin.site.register(DVReport)
+@admin.register(DVReport)
+class DVReportAdmin(admin.ModelAdmin):
+    # Use actual model fields: `created_at` stores when the report was generated.
+    list_display = ['dv', 'created_at']
+    list_filter = ['created_at']

@@ -290,11 +290,6 @@ export default function Disbursements() {
         background: '#F0F4FF',
         color: '#1f2937',
       })
-      // If this approval completed the workflow or was auto-archived, navigate to report generation
-      if (res && (res.status === 'completed' || res.status === 'archived')) {
-        navigate('/reports')
-        return
-      }
       await reload()
     } catch (err) {
       console.error('Approve failed', err)
