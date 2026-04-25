@@ -19,7 +19,9 @@ const defaultStyles = {
     maxWidth: '95vw',          // Prevents it from going off-screen on mobile
     minWidth: '300px',         // Ensures it's not too tiny for small content
     maxHeight: '90vh',         // Keeps it within vertical bounds
-    overflow: 'auto',          // Adds scrollbars if content is taller than screen
+    overflow: 'hidden',          // Adds scrollbars if content is taller than screen
+    display: 'flex',
+    flexDirection: 'column',
     // --- KEY CHANGES END ---
     border: 'none',
     boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
@@ -42,7 +44,7 @@ function ReactModal({ isOpen, onClose, title, children, footer }) {
       {title && (
         <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', height: '40px' }}>
           <h2 style={{ margin: 0, fontSize: '1.25rem' }}>{title}</h2>
-          <button onClick={onClose} className="modal-close-btn" style={{ cursor: 'pointer', background: 'none', border: 'none', fontSize: '1rem' }}>
+          <button onClick={onClose} className="modal-close-btn">
             ✕
           </button>
         </div>

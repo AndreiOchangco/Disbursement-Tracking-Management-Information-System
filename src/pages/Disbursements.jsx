@@ -7,6 +7,7 @@ import Modal from '../components/Modal'
 import ReactModal from '../components/ReactModal'
 import Swal from 'sweetalert2'
 
+
 const user = JSON.parse(localStorage.getItem("user"))
 const statusOptions = ['Pending', 'Approved', 'Rejected']
 
@@ -714,17 +715,18 @@ const handleView = (dv) => {
         {/* --- PARTICULARS SECTION --- */}
         <section className="panel-section" style={{ marginTop: '2rem' }}>
           <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars Section</h4>
-          <div className="form-grid form-grid--split" style={{ marginBottom: '1.5rem' }}>
-            <label>
-              <span>General Description</span>
-              <textarea 
-                value={particularDescription} 
-                onChange={(e) => setParticularDescription(e.target.value)} 
+            <div className="general-description-wrapper">
+              <label className="general-label">
+                <span>General Description</span>
+              </label>
+
+              <textarea
+                className="general-description"
+                value={particularDescription}
+                onChange={(e) => setParticularDescription(e.target.value)}
                 placeholder="Enter overall description of the voucher..."
-                style={{ gridColumn: 'span 2', minHeight: '80px' }}
               />
-            </label>
-          </div>
+            </div>
           <div className="table-wrap">
             <table className="particulars-table">
               <thead>
