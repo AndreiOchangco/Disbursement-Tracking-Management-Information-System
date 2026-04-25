@@ -355,10 +355,12 @@ def dv_list(request):
 
         serializer = DVCreateUpdateSerializer(data=request.data)
         if serializer.is_valid():
+            # Let the serializer/model default or provided payload determine the
+            # initial `current_step`. Previously this was hard-coded to 1 which
+            # prevented newly created DVs from starting at step 2 (Budget).
             dv = serializer.save(
                 accounting=request.user,
-                status='pending',
-                current_step=1
+                status='pending'
             )
             # Log creation in workflow
             DVWorkflow.objects.create(
