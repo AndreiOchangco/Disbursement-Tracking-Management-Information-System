@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:fullstack": "pwsh -ExecutionPolicy Bypass -File ./start-all.ps1",
+    "both": "powershell -ExecutionPolicy Bypass -File ./start-all.ps1",
     "build": "vite build",
     "lint": "eslint ."
   },

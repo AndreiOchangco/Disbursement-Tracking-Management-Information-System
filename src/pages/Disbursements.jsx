@@ -127,24 +127,32 @@ export default function Disbursements() {
     setParticulars((prev) => prev.filter((_, i) => i !== index))
   }
 
-  // 🔍 Search filter
+  // 🔍 Search filter - Updated to exclude archived status
   const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase()
-    if (!query) return disbursements
+  // First, filter out any items that have a status of 'archived'
+  const activeDisbursements = disbursements.filter(
+    (d) => String(d.status || '').toLowerCase() !== 'archived'
+  );
 
-    return disbursements.filter((d) =>
-      (
-        String(d.tracking_no || '') +
-        String(d.dv_no || '') +
-        String(d.status || '') +
-        String(d.payee || '') +
-        String(d.office || '') +
-        String(d.fund_source || '')
-      )
-        .toLowerCase()
-        .includes(query)
+  const query = search.trim().toLowerCase();
+  
+  // If no search query, return all active (non-archived) disbursements
+  if (!query) return activeDisbursements;
+
+  // Otherwise, apply search filter on the active disbursements list
+  return activeDisbursements.filter((d) =>
+    (
+      String(d.tracking_no || '') +
+      String(d.dv_no || '') +
+      String(d.status || '') +
+      String(d.payee || '') +
+      String(d.office || '') +
+      String(d.fund_source || '')
     )
-  }, [search, disbursements])
+      .toLowerCase()
+      .includes(query)
+  );
+}, [search, disbursements]);
 
   // ➕ Create Disbursement
   const addDisbursement = async (e) => {
@@ -1051,16 +1059,24 @@ const handleView = (dv) => {
               {selectedDV.particulars && selectedDV.particulars.length > 0 ? (
                 selectedDV.particulars.map((part, pIdx) => (
                   <div key={pIdx} style={{ marginBottom: '1.5rem' }}>
-                    <div className="form-grid form-grid--split" style={{ marginBottom: '1rem' }}>
-                      <label>
+                    {/* Matches creation form wrapper for General Description */}
+                    <div className="general-description-wrapper">
+                      <label className="general-label">
                         <span>General Description</span>
-                        <textarea 
-                          value={part.description || ''} 
-                          disabled 
-                          style={{gridColumn: 'span 2', minHeight: '80px', backgroundColor: 'var(--bg-light)'}} 
-                        />
                       </label>
+
+                      <textarea
+                        className="general-description"
+                        value={part.description || 'No particular description provided'}
+                        disabled
+                        style={{ 
+                          backgroundColor: '#f9fafb', 
+                          color: part.description ? 'inherit' : '#9ca3af',
+                          fontStyle: part.description ? 'normal' : 'italic'
+                        }}
+                      />
                     </div>
+
                     <div className="table-wrap">
                       <table className="particulars-table">
                         <thead>
@@ -1072,14 +1088,23 @@ const handleView = (dv) => {
                           </tr>
                         </thead>
                         <tbody>
-                          {part.category_values?.map((val, vIdx) => (
-                            <tr key={vIdx}>
-                              <td><input className="particulars-input" value={val.category || ''} disabled /></td>
-                              <td><input className="particulars-input" value={val.np || ''} disabled /></td>
-                              <td><input className="particulars-input" value={val.ft || ''} disabled /></td>
-                              <td><input className="particulars-input" value={val.tf || ''} disabled /></td>
+                          {part.category_values && part.category_values.length > 0 ? (
+                            part.category_values.map((val, vIdx) => (
+                              <tr key={vIdx}>
+                                <td><input className="particulars-input" value={val.category || ''} disabled /></td>
+                                <td><input className="particulars-input" value={val.np || '0.00'} disabled /></td>
+                                <td><input className="particulars-input" value={val.ft || '0.00'} disabled /></td>
+                                <td><input className="particulars-input" value={val.tf || '0.00'} disabled /></td>
+                              </tr>
+                            ))
+                          ) : (
+                            /* Fallback for missing categories */
+                            <tr>
+                              <td colSpan="4" style={{ textAlign: 'center', padding: '1.5rem', color: '#9ca3af', fontStyle: 'italic' }}>
+                                <ion-icon name="information-circle-outline"></ion-icon> No Particular Categories provided.
+                              </td>
                             </tr>
-                          ))}
+                          )}
                         </tbody>
                       </table>
                     </div>
