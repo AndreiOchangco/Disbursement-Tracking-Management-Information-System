@@ -157,9 +157,24 @@ class DVParticulars(models.Model):
     description = models.TextField()
     jev_no = models.CharField(max_length=100, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
-   
+    
     class Meta:
         db_table = 'dv_particulars'
+
+
+class DVReport(models.Model):
+    """Snapshot of a completed DV for report generation and archival.
+
+    Stores the serialized DV payload so report generation can operate
+    independently of the live DV rows.
+    """
+    dv = models.OneToOneField(DV, on_delete=models.CASCADE, related_name='report')
+    payload = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'dv_report'
+   
 
 class DVParticularValue(models.Model):
     particulars = models.ForeignKey(DVParticulars, on_delete=models.CASCADE, related_name='category_values')

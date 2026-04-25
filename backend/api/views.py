@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
-from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE
+from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVReport
 from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DVWorkflowSerializer, DVArchivedSerializer
 from .authentication import JWTAuthentication
 from django.contrib.auth import authenticate as django_authenticate
@@ -473,14 +473,34 @@ def dv_approve(request, pk):
         action_by=request.user,
         remarks=request.data.get('remarks', '')
     )
-
     if user_step == 5:  # Mayor's Office - final step
-        dv.status = 'completed'
+        # Final approval: mark as archived so it moves to Archived view
+        dv.status = 'archived'
         dv.current_step = 6
     else:
         dv.current_step = user_step + 1
 
     dv.save()
+
+    # If the DV just reached final (archived), create a report snapshot and archive record
+    if dv.status == 'archived' and user_step == 5:
+        try:
+            DVReport.objects.update_or_create(dv=dv, defaults={'payload': DVSerializer(dv).data})
+        except Exception:
+            pass
+
+        try:
+            DVArchived.objects.update_or_create(dv=dv, defaults={'reason_of_archive': 'Archived after final approval.'})
+        except Exception:
+            pass
+
+        try:
+            DVWorkflow.objects.create(
+                dv=dv, step=user_step, status='archived',
+                action_by=request.user, remarks='Auto-archived after final approval.'
+            )
+        except Exception:
+            pass
     return Response(DVSerializer(dv).data)
 
 
@@ -512,8 +532,17 @@ def dv_disapprove(request, pk):
         action_by=request.user, remarks=remarks
     )
 
-    dv.status = 'disapproved'
-    dv.current_step = 1  # Back to Accounting
+    # Immediately archive the disapproved DV so it is moved to the
+    # archived records/view. Use the rejection remarks as the reason.
+    DVArchived.objects.update_or_create(dv=dv, defaults={'reason_of_archive': remarks})
+
+    DVWorkflow.objects.create(
+        dv=dv, step=user_step, status='archived',
+        action_by=request.user, remarks='Auto-archived after disapproval.'
+    )
+
+    dv.status = 'archived'
+    dv.current_step = 1
     dv.last_disapproved_step = user_step
     dv.save()
 
@@ -634,6 +663,179 @@ def dashboard_stats(request):
     recent = DVSerializer(recent_dvs, many=True).data
 
     return Response({**stats, 'recent_dvs': recent})
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def dv_reports_list(request):
+    """List generated DV report snapshots (accounting and admin only)."""
+    if request.user.department not in ('accounting', 'admin'):
+        return Response({'error': 'Only Accounting or Admin can access generated reports.'}, status=status.HTTP_403_FORBIDDEN)
+    # Filters
+    dv_no = request.query_params.get('dv_no', '').strip()
+    date_from = request.query_params.get('date_from', '').strip()
+    date_to = request.query_params.get('date_to', '').strip()
+
+    reports_qs = DVReport.objects.all().order_by('-created_at')
+
+    if dv_no:
+        reports_qs = reports_qs.filter(dv__dv_no__icontains=dv_no)
+
+    if date_from:
+        try:
+            reports_qs = reports_qs.filter(created_at__date__gte=date_from)
+        except Exception:
+            pass
+
+    if date_to:
+        try:
+            reports_qs = reports_qs.filter(created_at__date__lte=date_to)
+        except Exception:
+            pass
+
+    # Pagination
+    try:
+        page = int(request.query_params.get('page', '1'))
+        page_size = int(request.query_params.get('page_size', '10'))
+    except ValueError:
+        page = 1
+        page_size = 10
+
+    from django.core.paginator import Paginator, EmptyPage
+    paginator = Paginator(reports_qs, max(1, min(page_size, 100)))
+    try:
+        page_obj = paginator.page(page)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    from .serializers import DVReportSerializer
+    serializer = DVReportSerializer(page_obj.object_list, many=True)
+
+    return Response({
+        'results': serializer.data,
+        'count': paginator.count,
+        'page': page_obj.number,
+        'total_pages': paginator.num_pages,
+    })
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def dv_report_detail(request, dv_id):
+    """Return a single DVReport snapshot by DV id (accounting/admin only)."""
+    if request.user.department not in ('accounting', 'admin'):
+        return Response({'error': 'Only Accounting or Admin can access generated reports.'}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        report = DVReport.objects.get(dv__id=dv_id)
+    except DVReport.DoesNotExist:
+        return Response({'error': 'Report not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    from .serializers import DVReportSerializer
+    serializer = DVReportSerializer(report)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def dv_report_pdf(request, dv_id):
+    """Generate a PDF for a single DVReport snapshot."""
+    if request.user.department not in ('accounting', 'admin'):
+        return Response({'error': 'Only Accounting or Admin can access generated reports.'}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        report = DVReport.objects.get(dv__id=dv_id)
+    except DVReport.DoesNotExist:
+        return Response({'error': 'Report not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Build an HTML representation from the stored payload
+    payload = report.payload or {}
+    rows = []
+    # Try to show details: particulars and JE rows
+    particulars = payload.get('particulars', [])
+    for part in particulars:
+        desc = part.get('description', '')
+        jev = part.get('jev_no', '')
+        date = part.get('date', '')
+        rows.append(f"<tr><td>{jev or '-'}</td><td>{date or '-'}</td><td>{desc or '-'}</td></tr>")
+
+    html = f"""
+    <html>
+      <head>
+        <meta charset='utf-8'/>
+        <style>
+          body {{ font-family: Arial, sans-serif; font-size: 12px; }}
+          table {{ width:100%; border-collapse: collapse; margin-bottom:1rem }}
+          th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+          th {{ background: #f3f4f6; }}
+          h2 {{ color: #2c5dff; }}
+        </style>
+      </head>
+      <body>
+        <h2>Disbursement Voucher Report</h2>
+        <p><strong>DV#:</strong> {payload.get('dv_no', '-') } &nbsp; <strong>Tracking#:</strong> {payload.get('tracking_no','-')}</p>
+        <p><strong>Payee:</strong> {payload.get('payee','-')} &nbsp; <strong>Office:</strong> {payload.get('office','-')}</p>
+        <h3>Particulars</h3>
+        <table>
+          <thead><tr><th>JEV#</th><th>Date</th><th>Description</th></tr></thead>
+          <tbody>{''.join(rows) or '<tr><td colspan="3">No particulars</td></tr>'}</tbody>
+        </table>
+      </body>
+    </html>
+    """
+
+    try:
+        try:
+            import pdfkit
+        except ModuleNotFoundError:
+            return Response({'error': 'Python package "pdfkit" is not installed.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        options = {'enable-local-file-access': None}
+        wkhtmltopdf_path = getattr(settings, 'WKHTMLTOPDF_PATH', None) or os.environ.get('WKHTMLTOPDF_PATH')
+        if not wkhtmltopdf_path:
+            candidate = Path(settings.BASE_DIR) / 'wkhtmltopdf' / 'bin' / 'wkhtmltopdf.exe'
+            if candidate.exists():
+                wkhtmltopdf_path = str(candidate)
+
+        config = None
+        if wkhtmltopdf_path:
+            try:
+                config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
+            except Exception:
+                config = None
+
+        pdf_bytes = pdfkit.from_string(html, False, options=options, configuration=config)
+    except Exception as e:
+        return Response({'error': 'Failed to generate PDF.', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="dv_report_{report.dv.id}.pdf"'
+    return response
+
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def dv_reports_backfill(request):
+    """Admin-only: create DVReport snapshots for completed DVs missing them."""
+    if request.user.department != 'admin':
+        return Response({'error': 'Only Admin can run backfill.'}, status=status.HTTP_403_FORBIDDEN)
+
+    completed = DV.objects.filter(status='completed')
+    created = 0
+    for dv in completed:
+        try:
+            if not hasattr(dv, 'report'):
+                DVReport.objects.create(dv=dv, payload=DVSerializer(dv).data)
+                created += 1
+        except Exception:
+            # ignore individual failures
+            continue
+
+    return Response({'created': created, 'checked': completed.count()})
 
 
 

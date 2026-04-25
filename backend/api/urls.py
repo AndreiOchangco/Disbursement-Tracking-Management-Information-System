@@ -30,6 +30,10 @@ urlpatterns = [
     path('dashboard/', views.dashboard_stats, name='dashboard-stats'),
     # PDF report for approved disbursements
     path('dv/approved/report/pdf/', views.approved_dv_pdf, name='dv-approved-pdf'),
+    path('dv/reports/', views.dv_reports_list, name='dv-reports'),
+    path('dv/reports/<int:dv_id>/', views.dv_report_detail, name='dv-report-detail'),
+    path('dv/reports/<int:dv_id>/pdf/', views.dv_report_pdf, name='dv-report-pdf'),
+    path('dv/reports/backfill/', views.dv_reports_backfill, name='dv-reports-backfill'),
     # wkhtmltopdf diagnostic
     path('health/wkhtmltopdf/', views.wkhtmltopdf_health, name='wkhtmltopdf-health'),
 ]

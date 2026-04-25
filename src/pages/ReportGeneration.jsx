@@ -20,6 +20,14 @@ export default function ReportGeneration() {
   const currentUser = getCurrentUser()
   const [approved, setApproved] = useState([])
   const [loading, setLoading] = useState(false)
+  const [reports, setReports] = useState([])
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalCount, setTotalCount] = useState(0)
+  const [filterDvNo, setFilterDvNo] = useState('')
+  const [filterFrom, setFilterFrom] = useState('')
+  const [filterTo, setFilterTo] = useState('')
 
   // Redirect admin to dashboard
   useEffect(() => {
@@ -29,15 +37,26 @@ export default function ReportGeneration() {
   }, [currentUser, navigate])
 
   useEffect(() => {
-    loadApproved()
+    fetchReports()
   }, [])
 
-  const loadApproved = async () => {
+  const fetchReports = async (p = 1) => {
     setLoading(true)
     try {
-      const all = await apiRequest('/dv/')
-      const approvedList = (all || []).filter(d => String(d.status).toLowerCase() === 'approved')
-      setApproved(approvedList)
+      const qs = new URLSearchParams()
+      qs.set('page', p)
+      qs.set('page_size', pageSize)
+      if (filterDvNo) qs.set('dv_no', filterDvNo)
+      if (filterFrom) qs.set('date_from', filterFrom)
+      if (filterTo) qs.set('date_to', filterTo)
+
+      const res = await apiRequest(`/dv/reports/?${qs.toString()}`)
+      if (res) {
+        setReports(res.results || [])
+        setTotalCount(res.count || 0)
+        setPage(res.page || p)
+        setTotalPages(res.total_pages || 0)
+      }
     } catch (err) {
       console.error(err)
     } finally {
@@ -98,22 +117,18 @@ export default function ReportGeneration() {
       <section className="panel">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <div>
-            <h3 style={{ color: '#2c5dff' }}>Approved Disbursement Vouchers</h3>
-            <p style={{ margin: 0, color: '#4b5563' }}>{approved.length} approved records</p>
+            <h3 style={{ color: '#2c5dff' }}>Generated Reports</h3>
+            <p style={{ margin: 0, color: '#4b5563' }}>{totalCount} generated reports</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button className="btn-primary" onClick={() => downloadJSON(approved)} disabled={approved.length === 0 || loading}>
+            <button className="btn-primary" onClick={() => downloadJSON(reports)} disabled={reports.length === 0 || loading}>
               ⤓ Export JSON
             </button>
-            <button className="btn-primary" onClick={downloadPDF} disabled={approved.length === 0 || loading}>
+            <button className="btn-primary" onClick={downloadPDF} disabled={reports.length === 0 || loading}>
               ⤓ Export PDF
             </button>
-            <button className="btn-archive" onClick={loadApproved} disabled={loading}>
+            <button className="btn-archive" onClick={() => fetchReports(1)} disabled={loading}>
               🔄 Refresh
-            </button>
-            {/* ===== BUTTON ===== */}
-            <button onClick={openModal}>
-              Open Modal
             </button>
 
             {/* ===== MODAL ===== */}
@@ -133,6 +148,12 @@ export default function ReportGeneration() {
               {/* BODY CONTENT */}
               <p>This is your modal content.</p>
             </ReactModal>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginLeft: '1rem' }}>
+              <input placeholder="Filter DV#" value={filterDvNo} onChange={e => setFilterDvNo(e.target.value)} />
+              <input type="date" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
+              <input type="date" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
+              <button className="btn-primary" onClick={() => fetchReports(1)} disabled={loading}>Apply</button>
+            </div>
           </div>
         </div>
 
@@ -145,21 +166,78 @@ export default function ReportGeneration() {
                 <th className="table-column-center table-column-border">Amount</th>
                 <th className="table-column-center table-column-border">Approved Date</th>
                 <th className="table-column-center table-column-border">Prepared By</th>
+                  <th className="table-column-center table-column-border">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {approved.map((d) => (
-                <tr key={d.id}>
-                  <td style={{ fontWeight: 600 }}>{d.tracking_no}</td>
-                  <td>{d.dv_no ?? '-'}</td>
-                  <td>{d.amount ?? '-'}</td>
-                  <td className="table-column-center">{d.approved_date ?? d.created_date ?? '-'}</td>
-                  <td>{d.accounting_name ?? '-'}</td>
-                </tr>
-              ))}
+              {reports.map((r) => {
+                const p = r.payload || {}
+                // Try to compute amount if present (fallback '-')
+                let amount = '-'
+                if (p.amount) amount = p.amount
+                else if (p.particulars && Array.isArray(p.particulars)) {
+                  try {
+                    const sum = p.particulars.reduce((acc, part) => {
+                      if (!part.category_values) return acc
+                      return acc + part.category_values.reduce((s, v) => s + (parseFloat(v.np || 0) || 0) + (parseFloat(v.ft || 0) || 0) + (parseFloat(v.tf || 0) || 0), 0)
+                    }, 0)
+                    amount = sum ? sum.toFixed(2) : '-'
+                  } catch (e) { amount = '-' }
+                }
+
+                return (
+                  <tr key={r.id}>
+                    <td style={{ fontWeight: 600 }}>{p.tracking_no ?? '-'}</td>
+                    <td>{r.dv_no ?? (p.dv_no ?? '-')}</td>
+                    <td>{amount}</td>
+                    <td className="table-column-center">{p.approved_date ?? p.created_date ?? (r.created_at ?? '-')}</td>
+                      <td>{p.accounting_name ?? '-'}</td>
+                      <td>
+                        <button className="btn-primary" onClick={async () => {
+                          try {
+                            const token = getToken()
+                            const res = await fetch(`${BASE_URL}/dv/reports/${r.dv}/pdf/`, {
+                              method: 'GET',
+                              headers: {
+                                ...(token && { Authorization: `Bearer ${token}` })
+                              }
+                            })
+                            if (!res.ok) throw new Error('Failed to generate PDF')
+                            const blob = await res.blob()
+                            const url = URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = `dv_report_${r.dv}.pdf`
+                            document.body.appendChild(a)
+                            a.click()
+                            a.remove()
+                            URL.revokeObjectURL(url)
+                          } catch (err) {
+                            console.error(err)
+                            alert('Failed to download report PDF')
+                          }
+                        }}>PDF</button>
+                      </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
-          {approved.length === 0 && <p className="empty" style={{ textAlign: 'center', padding: '2rem', color: '#4b5563' }}>{loading ? 'Loading...' : 'No approved disbursements yet.'}</p>}
+          {reports.length === 0 && <p className="empty" style={{ textAlign: 'center', padding: '2rem', color: '#4b5563' }}>{loading ? 'Loading...' : 'No generated reports yet.'}</p>}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
+          <div>
+            Page {page} of {totalPages} — {totalCount} total
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button onClick={() => { if (page > 1) fetchReports(page - 1) }} disabled={page <= 1 || loading}>Prev</button>
+            <button onClick={() => { if (page < totalPages) fetchReports(page + 1) }} disabled={page >= totalPages || loading}>Next</button>
+            <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); fetchReports(1) }}>
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+            </select>
+          </div>
         </div>
       </section>
     </div>

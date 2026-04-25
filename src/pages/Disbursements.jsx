@@ -281,7 +281,7 @@ export default function Disbursements() {
     if (!result.isConfirmed) return
     
     try {
-      await apiRequest(`/dv/${item.id}/approve/`, 'POST')
+      const res = await apiRequest(`/dv/${item.id}/approve/`, 'POST')
       await Swal.fire({
         title: 'Success!',
         text: 'Disbursement approved successfully.',
@@ -290,6 +290,11 @@ export default function Disbursements() {
         background: '#F0F4FF',
         color: '#1f2937',
       })
+      // If this approval completed the workflow or was auto-archived, navigate to report generation
+      if (res && (res.status === 'completed' || res.status === 'archived')) {
+        navigate('/reports')
+        return
+      }
       await reload()
     } catch (err) {
       console.error('Approve failed', err)
@@ -365,7 +370,6 @@ export default function Disbursements() {
 
   const canArchive = (d) => {
     const statusLower = String(d.status || '').toLowerCase();
-    if (currentUserDeptKey !== 'accounting') return false;
     if (statusLower === 'archived') return false;
     if (statusLower !== 'completed') return false;
     return true;

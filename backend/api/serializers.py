@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVParticularValue
+from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVParticularValue, DVReport
 
 
 STEP_LABELS = {
@@ -184,3 +184,11 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
                 DVJE.objects.create(dv=instance, **je)
 
         return instance
+
+
+class DVReportSerializer(serializers.ModelSerializer):
+    dv_no = serializers.CharField(source='dv.dv_no', read_only=True)
+
+    class Meta:
+        model = DVReport
+        fields = ['id', 'dv', 'dv_no', 'payload', 'created_at']

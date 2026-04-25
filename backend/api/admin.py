@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE
+from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVReport
 
 
 @admin.register(User)
@@ -31,3 +31,4 @@ class DVArchivedAdmin(admin.ModelAdmin):
 admin.site.register(DVPayment)
 admin.site.register(DVParticulars)
 admin.site.register(DVJE)
+admin.site.register(DVReport)
