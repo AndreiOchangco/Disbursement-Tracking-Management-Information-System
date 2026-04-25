@@ -82,11 +82,11 @@ export default function Dashboard() {
 
   // <ion-icon name="bar-chart"></ion-icon> STATUS DATA
   const statusData = {
-    labels: ['Completed', 'Pending', 'Archived'],
+    labels: ['Completed', 'Pending', 'Archived', 'Rejected'],
     datasets: [
       {
-        label: 'Disbursements',
-        data: [stats.completed, stats.pending, stats.archived],
+        label: 'Disbursements by Status',
+        data: [stats.completed, stats.pending, stats.archived, stats.rejected],
         backgroundColor: [
           'rgba(5, 150, 105, 0.7)', // Success Green
           'rgba(0, 82, 204, 0.7)',   // Primary Blue
@@ -283,55 +283,55 @@ export default function Dashboard() {
           </div>
 
           <section className="panel" style={{ marginBottom: '2rem' }}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="receipt"></ion-icon> Recent Disbursements</h3>
-          <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Latest 5 disbursement vouchers</p>
-        </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="receipt"></ion-icon> Recent Disbursements</h3>
+              <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>Latest 5 disbursement vouchers</p>
+            </div>
 
-        <div className="table-wrap">
-          <table>
-            <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
-              <tr>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> DV Number</th>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Payee</th>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="calendar"></ion-icon> Created Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data
-                .slice((dvCurrentPage - 1) * dvPerPage, dvCurrentPage * dvPerPage)
-                .map((dv) => (
-                <tr key={dv.id} style={{ borderBottom: '1px solid #fef3c7' }}>
-                  <td style={{ fontWeight: '500' }}>{dv.tracking_no}</td>
-                  <td>{dv.dv_no || '-'}</td>
-                  <td>{dv.payee}</td>
-                  <td className='table-column-center'>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '0.3rem 0.6rem',
-                      borderRadius: '4px',
-                      fontSize: '0.8rem',
-                      fontWeight: '600',
-                      textTransform: 'capitalize',
-                      background: dv.status === 'completed' ? 'rgba(5, 150, 105, 0.2)' : 
-                                 dv.status === 'pending' ? 'rgba(0, 82, 204, 0.2)' :
-                                 'rgba(107, 114, 128, 0.2)',
-                      color: dv.status === 'completed' ? '#059669' :
-                             dv.status === 'pending' ? '#0052CC' :
-                             '#6b7280'
-                    }}>
-                      {dv.status}
-                    </span>
-                  </td>
-                  <td className='table-column-center'>{dv.created_date ? new Date(dv.created_date).toLocaleDateString() : '-'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+            <div className="table-wrap">
+              <table>
+                <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
+                  <tr>
+                    <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
+                    <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bookmark"></ion-icon> DV Number</th>
+                    <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Payee</th>
+                    <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                    <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="calendar"></ion-icon> Created Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data
+                    .slice((dvCurrentPage - 1) * dvPerPage, dvCurrentPage * dvPerPage)
+                    .map((dv) => (
+                    <tr key={dv.id} style={{ borderBottom: '1px solid #fef3c7' }}>
+                      <td style={{ fontWeight: '500' }}>{dv.tracking_no}</td>
+                      <td>{dv.dv_no || '-'}</td>
+                      <td>{dv.payee}</td>
+                      <td className='table-column-center'>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '4px',
+                          fontSize: '0.8rem',
+                          fontWeight: '600',
+                          textTransform: 'capitalize',
+                          background: dv.status === 'completed' ? 'rgba(5, 150, 105, 0.2)' : 
+                                    dv.status === 'pending' ? 'rgba(0, 82, 204, 0.2)' :
+                                    'rgba(107, 114, 128, 0.2)',
+                          color: dv.status === 'completed' ? '#059669' :
+                                dv.status === 'pending' ? '#0052CC' :
+                                '#6b7280'
+                        }}>
+                          {dv.status}
+                        </span>
+                      </td>
+                      <td className='table-column-center'>{dv.created_date ? new Date(dv.created_date).toLocaleDateString() : '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
 
           {/* 📊 CHARTS */}
           <div className="charts-grid">
