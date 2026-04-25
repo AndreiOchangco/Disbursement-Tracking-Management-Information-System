@@ -52,7 +52,7 @@ export default function Disbursements() {
     { category: '', np: '', ft: '', tf: '' },
   ])
   const [jeRows, setJeRows] = useState([
-  { account_code: '', particulars: '', debit: 0, credit: 0 }
+  { account_code: '', particulars: '', debit: '', credit: '' }
 ]);
   
   // EDIT STATES
