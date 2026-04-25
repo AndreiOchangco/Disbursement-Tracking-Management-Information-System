@@ -378,7 +378,7 @@ export default function Disbursements() {
   };
 
   const addJeRow = () => {
-    setJeRows([...jeRows, { account_code: '', particulars: '', debit: 0, credit: 0 }]);
+    setJeRows([...jeRows, { account_code: '', particulars: '', debit: '', credit: '' }]);
   };
 
   const removeJeRow = (index) => {
