@@ -190,7 +190,7 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
 
 class DVReportSerializer(serializers.ModelSerializer):
     dv_no = serializers.CharField(source='dv.dv_no', read_only=True)
-
     class Meta:
         model = DVReport
-        fields = ['id', 'dv_no', 'dv_date', 'payee', 'tracking_no', 'transaction_no', 'status', 'created_at']
+        # Expose only fields that exist on DVReport; include `dv_no` and full `payload`
+        fields = ['id', 'dv', 'dv_no', 'payload', 'created_at']

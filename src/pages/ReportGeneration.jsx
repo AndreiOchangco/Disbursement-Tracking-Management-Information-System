@@ -65,6 +65,39 @@ export default function ReportGeneration() {
     }
   }
 
+  const getApprovedDate = (p, r) => {
+    try {
+      // Prefer the report snapshot creation time as the "completed/forwarded" date
+      if (r && r.created_at) return formatDate(r.created_at)
+
+      if (p.workflow_steps && Array.isArray(p.workflow_steps)) {
+        const approved = p.workflow_steps.filter(s => (s.status || '').toLowerCase() === 'approved')
+        if (approved.length) {
+          // find latest by action_date
+          const latest = approved.reduce((a, b) => new Date(a.action_date) > new Date(b.action_date) ? a : b)
+          return formatDate(latest.action_date)
+        }
+      }
+    } catch (e) {
+      // ignore and fallback
+    }
+    return formatDate(p.approved_date ?? p.created_date ?? (r.created_at ?? '-'))
+  }
+
+  const formatDate = (val) => {
+    if (!val) return '-'
+    try {
+      const d = new Date(val)
+      if (isNaN(d)) return val
+      const mm = String(d.getMonth() + 1).padStart(2, '0')
+      const dd = String(d.getDate()).padStart(2, '0')
+      const yyyy = d.getFullYear()
+      return `${mm}/${dd}/${yyyy}`
+    } catch (e) {
+      return val
+    }
+  }
+
   const downloadJSON = (data) => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -125,9 +158,6 @@ export default function ReportGeneration() {
             <button className="btn-primary" onClick={() => downloadJSON(reports)} disabled={reports.length === 0 || loading}>
               ⤓ Export JSON
             </button>
-            <button className="btn-primary" onClick={downloadPDF} disabled={reports.length === 0 || loading}>
-              ⤓ Export PDF
-            </button>
             <button className="btn-archive" onClick={() => fetchReports(1)} disabled={loading}>
               🔄 Refresh
             </button>
@@ -164,14 +194,14 @@ export default function ReportGeneration() {
               <tr>
                 <th className="table-column-center table-column-border">Tracking #</th>
                 <th className="table-column-center table-column-border">DV Number</th>
-                <th className="table-column-center table-column-border">Amount</th>
+                <th className="table-column-center table-column-border">Date Submitted</th>
                 <th className="table-column-center table-column-border">Approved Date</th>
                 <th className="table-column-center table-column-border">Prepared By</th>
                   <th className="table-column-center table-column-border">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {reports.map((r) => {
+                {reports.map((r) => {
                 const p = r.payload || {}
                 // Try to compute amount if present (fallback '-')
                 let amount = '-'
@@ -190,10 +220,10 @@ export default function ReportGeneration() {
                   <tr key={r.id}>
                     <td style={{ fontWeight: 600 }}>{p.tracking_no ?? '-'}</td>
                     <td>{r.dv_no ?? (p.dv_no ?? '-')}</td>
-                    <td>{amount}</td>
-                    <td className="table-column-center">{p.approved_date ?? p.created_date ?? (r.created_at ?? '-')}</td>
+                    <td className="table-column-center">{formatDate(p.created_date ?? (r.created_at ?? '-'))}</td>
+                    <td className="table-column-center">{getApprovedDate(p, r)}</td>
                       <td>{p.accounting_name ?? '-'}</td>
-                      <td>
+                      <td className='table-column-center'>
                         <button className="btn-primary" onClick={async () => {
                           try {
                             const token = getToken()
@@ -217,7 +247,7 @@ export default function ReportGeneration() {
                             console.error(err)
                             alert('Failed to download report PDF')
                           }
-                        }}>PDF</button>
+                        }}>⤓ Export PDF</button>
                       </td>
                   </tr>
                 )
