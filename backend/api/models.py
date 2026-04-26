@@ -88,8 +88,11 @@ class User(models.Model):
 
 
 class DV(models.Model):
-    dv_no = models.CharField(max_length=100, unique=True)
+    dv_no = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    dv_date = models.DateField(blank=True, null=True)
     tracking_no = models.CharField(max_length=100, unique=True)
+    transaction_no = models.CharField(max_length=100, blank=True, null=True)
+    transaction_date = models.DateField(blank=True, null=True)
     accounting = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name='created_dvs'
     )
@@ -98,6 +101,7 @@ class DV(models.Model):
     cafoa_no = models.CharField(max_length=100, blank=True, null=True)
     created_date = models.DateField()
     advice_no = models.CharField(max_length=100, blank=True, null=True)
+    advice_date = models.DateField(blank=True, null=True)
     responsibility_center = models.CharField(max_length=255, blank=True, null=True)
     fund_source = models.CharField(max_length=50, choices=FUND_SOURCE_CHOICES)
     tin = models.CharField(max_length=50, blank=True, null=True)

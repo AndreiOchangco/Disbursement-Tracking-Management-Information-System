@@ -343,6 +343,7 @@ def dv_list(request):
             dvs = dvs.filter(
                 Q(dv_no__icontains=search) |
                 Q(tracking_no__icontains=search) |
+                Q(transaction_no__icontains=search) |
                 Q(payee__icontains=search) |
                 Q(office__icontains=search)
             )
@@ -396,17 +397,6 @@ def dv_detail(request, pk):
         return Response(DVSerializer(dv).data)
 
     elif request.method == 'PUT':
-        if request.user.department != 'accounting':
-            return Response(
-                {'error': 'Only Accounting personnel can edit Disbursement Vouchers.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        if dv.status not in ['disapproved']:
-            return Response(
-                {'error': f'Cannot edit a DV with status "{dv.status}".'},
-                status=status.HTTP_400_BAD_REQUEST
-        )
-
         serializer = DVCreateUpdateSerializer(dv, data=request.data, partial=True)
         if serializer.is_valid():
             dv = serializer.save()
