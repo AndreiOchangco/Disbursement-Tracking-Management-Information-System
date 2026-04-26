@@ -742,7 +742,6 @@ def dv_report_pdf(request, dv_id):
 
     # Build an HTML representation from the stored payload
     payload = report.payload or {}
-    rows = []
     # --- BUILD PARTICULARS TABLE ---
     particular_rows = ""
     particulars = payload.get('particulars', [])
@@ -863,6 +862,10 @@ def dv_report_pdf(request, dv_id):
     /* remove borders for nested/inner tables (e.g., particulars breakdown) */
     table table, table table td, table table th {{
         border: none;
+    }}
+    /* remove top border of main table */
+    table tr:first-child td, table tr:first-child th {{
+        border-top: none;
     }}
     /* make first column narrow so logo/labels don't add extra width */
     table tr td:first-child {{
