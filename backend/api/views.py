@@ -17,6 +17,8 @@ from django.contrib.auth import login as django_login
 from django.http import HttpResponse
 import os
 from pathlib import Path
+import base64
+import os
 
 DEPT_STEP = {
     'accounting': 1,
@@ -808,6 +810,48 @@ def dv_report_pdf(request, dv_id):
         """
 
 
+    # Prepare image source: try data URI (public/MuniLuna.png), then file:// fallback, else keep original
+    img_src = '/MuniLuna.png'
+    candidates = [
+        Path(settings.BASE_DIR) / 'public' / 'MuniLuna.png',
+        Path(settings.BASE_DIR).parent / 'public' / 'MuniLuna.png',
+        Path(settings.BASE_DIR) / '..' / 'public' / 'MuniLuna.png',
+    ]
+    for p in candidates:
+        try:
+            p = p.resolve()
+        except Exception:
+            pass
+        if p.exists():
+            try:
+                with open(p, 'rb') as f:
+                    data = base64.b64encode(f.read()).decode()
+                img_src = f"data:image/png;base64,{data}"
+            except Exception:
+                img_src = 'file:///' + str(p).replace('\\', '/')
+            break
+
+    # second header image (LunaBaluarte.png)
+    img_src_2 = '/LunaBaluarte.png'
+    candidates2 = [
+        Path(settings.BASE_DIR) / 'public' / 'LunaBaluarte.png',
+        Path(settings.BASE_DIR).parent / 'public' / 'LunaBaluarte.png',
+        Path(settings.BASE_DIR) / '..' / 'public' / 'LunaBaluarte.png',
+    ]
+    for p in candidates2:
+        try:
+            p = p.resolve()
+        except Exception:
+            pass
+        if p.exists():
+            try:
+                with open(p, 'rb') as f:
+                    data2 = base64.b64encode(f.read()).decode()
+                img_src_2 = f"data:image/png;base64,{data2}"
+            except Exception:
+                img_src_2 = 'file:///' + str(p).replace('\\', '/')
+            break
+
     # --- MAIN HTML ---
     html = f"""
     <html>
@@ -826,6 +870,22 @@ def dv_report_pdf(request, dv_id):
         border: 1px solid black;
         padding: 5px;
     }}
+    /* remove borders for nested/inner tables (e.g., particulars breakdown) */
+    table table, table table td, table table th {{
+        border: none;
+    }}
+    /* remove top border of main table */
+    table tr:first-child td, table tr:first-child th {{
+        border-top: none;
+    }}
+    /* make first column narrow so logo/labels don't add extra width */
+    table tr td:first-child {{
+        width: 35px;
+        padding-left: 6px;
+        padding-right: 6px;
+        white-space: nowrap;
+        vertical-align: middle;
+    }}
     .center {{ text-align: center; }}
     .left {{ text-align: left; }}
     .bold {{ font-weight: bold; }}
@@ -833,6 +893,9 @@ def dv_report_pdf(request, dv_id):
     .small {{ font-size: 10px; }}
     .medium {{ font-size: 12px; }}
     .large {{ font-size: 14px; }}
+    .larger {{ font-size: 16px; }}
+    .largest {{ font-size: 18px; }}
+    .flex {{ display: flex; }}
     </style>
     </head>
 
@@ -841,128 +904,142 @@ def dv_report_pdf(request, dv_id):
     <!-- HEADER -->
     <table>
     <tr>
-        <td rowspan="2" class="center bold" style="width: 40px;">
-            <img src="/MuniLuna.png" alt="Seal" style="height: 40px;">
+        <td rowspan="2" class="center bold">
+            <img src="{img_src}" alt="Seal" style="height: auto; width: 125px;">
         </td>
-        <td rowspan="1" class="center bold medium" style="width: 80px;">
-            <p class="no-bold" style="margin-bottom: -10px;">Republic of the Philippines</p><br>
-            <h3 class="large" style="margin-top: -3px; margin-bottom: -3px;">MUNICIPALITY OF LUNA</h3><br>
-            <p class="no-bold" style="margin-top: -10px;">Province of La Union</p>
+
+        <td rowspan="1" class="center bold" style="width: 85px;">
+            <p class="no-bold medium" style="margin-bottom: -10px;">Republic of the Philippines</p><br>
+            <h3 class="largest" style="margin-top: -3px; margin-bottom: -3px;">MUNICIPALITY OF LUNA</h3><br>
+            <p class="no-bold medium" style="margin-top: -10px;">Province of La Union</p>
         </td>
-        <td rowspan="2" class="center bold" style="width: 60px;"></td>
-        <td rowspan="2" class="left bold small" style="width: 120px;">
-            <h3>Fund Source</h3>
-            <input type="checkbox" style="transform: scale(1.5); " disabled> GF <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> SEF</br> 
-            <input type="checkbox" style="transform: scale(1.5); " disabled> 20% DF <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> TF</br>
-            <input type="checkbox" style="transform: scale(1.5); " disabled> 5% DRRMF <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> PhilHealth</br>
-            <input type="checkbox" style="transform: scale(1.5); " disabled> CAD <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> Calamity</br>
-            <input type="checkbox" style="transform: scale(1.5); " disabled> RA7171</br>
+
+        <td rowspan="2" class="center bold" style="width: 200px;">
+            <img src="{img_src_2}" alt="Baluarte" style="height: auto; width: 200px; margin: 0; padding: 0; margin-top: -20px; margin-bottom: -20px;">
         </td>
-    </tr>
-    <tr>
-        <td rowspan="1" class="center bold" style="width: 80px;">DISBURSEMENT VOUCHER</td>
-        <td rowspan="1" class="center bold" style="width: 80px;"></td>
-    </tr>
-    <tr>
-        <td rowspan="1" class="center bold">MODE OF PAYMENT</td>
-        <td colspan="2" class="left bold">
-            <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> CASH
-            <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> CHECK
-            <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> OTHERS
-            <label>Specify: {payload.get('mode_of_payment_other','-')}</label>
+
+        <td rowspan="1" class="left bold small" style="width: 200px;">
+            <h3 style="margin-bottom: -2px;">Fund Source</h3>
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" disabled> GF <input type="checkbox" style="transform: scale(1.5); margin-left: 80px; margin-bottom: -3px;" disabled> SEF</br> 
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" disabled> 20% DF <input type="checkbox" style="transform: scale(1.5); margin-left: 57px; margin-bottom: -3px;" disabled> TF</br>
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" disabled> 5% DRRMF <input type="checkbox" style="transform: scale(1.5); margin-left: 40px; margin-bottom: -3px;" disabled> PhilHealth</br>
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" disabled> CAD <input type="checkbox" style="transform: scale(1.5); margin-left: 73px; margin-bottom: -3px;" disabled> Calamity</br>
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" disabled> RA7171</br>
         </td>
-        <td rowspan="1" class="center bold">Date: {payload.get('date','-')}</td>
     </tr>
 
     <tr>
-        <td colspan="3"><b>Payee:</b> {payload.get('payee','-')}</td>
-        <td colspan="3"><b>Office:</b> {payload.get('office','-')}</td>
+        <td rowspan="1" class="center bold largest" style="width: 80px; height: 30px;">DISBURSEMENT VOUCHER</td>
+        <td rowspan="1" class="bold small" style="width: 120px; position:relative; display:flex; align-items:center; justify-content:center;">
+            <span style="position:absolute; left:8px; font-weight:600;">DV No:</span>
+            <span style="text-align:center; display:block; width:100%;" class="medium">{payload.get('dv_no','')}</span>
+        </td>
     </tr>
 
     <tr>
-        <td><b>DV No:</b> {payload.get('dv_no','-')}</td>
-        <td><b>Tracking No:</b> {payload.get('tracking_no','-')}</td>
-        <td><b>TIN:</b> {payload.get('tin','-')}</td>
-        <td colspan="3"><b>Fund Source:</b> {payload.get('fund_source','-')}</td>
+        <td rowspan="1" class="center bold medium">MODE OF PAYMENT</td>
+        <td colspan="2" class="left bold small">
+            <input type="checkbox" style="transform: scale(1.5); margin-right: 3px;" disabled> CASH
+            <input type="checkbox" style="transform: scale(1.5); margin-right: 3px; margin-left: 10px;" disabled> CHECK
+            <input type="checkbox" style="transform: scale(1.5); margin-right: 3px; margin-left: 10px;" disabled> OTHERS
+            <label style="margin-left: 10px;">Specify: <span style="text-decoration: underline; font-size: 12px; margin-left: 10px;">{payload.get('mode_of_payment_other', '')}</span></label>
+        </td>
+        <td rowspan="1" class="bold small" style="width: 120px; position:relative; display:flex; align-items:center; justify-content:center;">
+            <span style="position:absolute; margin-top: -6px;">Date:</span>
+            <div style="text-align:center;" class="medium">{payload.get('date','')}</div>
+        </td>
     </tr>
 
     <tr>
-        <td colspan="3"><b>Responsibility Center:</b> {payload.get('responsibility_center','-')}</td>
-        <td colspan="3"><b>CAFOA No:</b> {payload.get('cafoa_no','-')}</td>
+        <td colspan="1" style="height: 60px;" class="center bold medium"><b>PAYEE</b></td>
+        <td colspan="1" class="center bold">{payload.get('payee','')}</td>
+        <td rowspan="1" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
+            <span style="position:absolute; margin-top: -23px;">ID No. / TIN:</span>
+            <div class="medium" style="text-align:center;">{payload.get('tin','')}</div>
+        </td>
+        <td rowspan="1" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
+            <span style="position:absolute; margin-top: -23px;">CAFOA No:</span>
+            <div class="medium" style="text-align:center;">{payload.get('cafoa_no','')}</div>
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="1" class="center bold medium"><b>POSITION / OFFICE</b></td>
+        <td colspan="1" class="center">{payload.get('office','')}</td>
+        <td rowspan="2" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
+            <span style="position:absolute; margin-top: -23px;">Office / Unit / Project:</span>
+            <div class="medium" style="text-align:center;">{payload.get('office_unit_project','')}</div>
+        </td>
+        <td rowspan="2" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
+            <span style="position:absolute; margin-top: -23px;">Responsibility Center:</span>
+            <div class="medium" style="text-align:center;">{payload.get('responsibility_center','')}</div>
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="1" class="center bold medium"><b>ADDRESS</b></td>
+        <td colspan="1" class="center">{payload.get('address','')}</td>
+    </tr>
+
+    <tr>
+        <td colspan="3" class="center bold medium"><b>PARTICULARS</b></td>
+        <td colspan="1" class="center bold medium"><b>AMOUNT</b></td>
+    </tr>
+
+    <tr>
+        <td colspan="3">
+            <span style="text-align: center; display: block;" class="medium">
+                To debit of municipal deposit to pay salaries of Municipal Officials, Dept. Heads and </br> Employees for the period {payload.get('period','')}.
+            </span>
+            <table style="width: 80%; margin-top: 5px; left: 0;" class="small">
+                <tr>
+                    <td></td>
+                    <td>Net Pay</td>
+                    <td>15th</td>
+                    <td>31th</td>
+                </tr>
+                <tr>
+                    <td>ORGANIC</td>
+                    <td>{payload.get('organic_net_pay','-')}</td>
+                    <td>{payload.get('organic_15th','-')}</td>
+                    <td>{payload.get('organic_31th','-')}</td>
+                </tr>
+                <tr>
+                    <td>DEVOLVED</td>
+                    <td>{payload.get('devolved_net_pay','-')}</td>
+                    <td>{payload.get('devolved_15th','-')}</td>
+                    <td>{payload.get('devolved_31th','-')}</td>
+                </tr>
+                <tr>
+                    <td>VM & SB</td>
+                    <td>{payload.get('vm_sb_net_pay','-')}</td>
+                    <td>{payload.get('vm_sb_15th','-')}</td>
+                    <td>{payload.get('vm_sb_31th','-')}</td>
+                </tr>
+                <tr>
+                    <td>Adjustment</td>
+                    <td>{payload.get('adjustment_net_pay','-')}</td>
+                    <td>{payload.get('adjustment_15th','-')}</td>
+                    <td>{payload.get('adjustment_31th','-')}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        </td>
+        <td colspan="1"></td>
     </tr>
     </table>
-
-    <br>
-
-    <!-- PARTICULARS -->
     <table>
-    <tr>
-        <th>JEV No</th>
-        <th>Date</th>
-        <th>Description</th>
-    </tr>
-    {particular_rows}
-    </table>
-
-    <br>
-
-    <!-- ACCOUNTING ENTRIES -->
-    <table>
-    <tr class="left">
-        <th colspan="4" class="small">Accounting Entries</th>
-    </tr>
-    <tr>
-        <th>PARTICULARS</th>
-        <th>Account</th>
-        <th>Debit</th>
-        <th>Credit</th>
-    </tr>
-    {je_rows}
-    </table>
-
-    <br>
-
-    <!-- PAYMENT -->
-    <table>
-    <tr>
-        <td>
-            <b>Payment Details:</b><br>
-            {payment_info or 'No payment data'}
-        </td>
-    </tr>
-    </table>
-
-    <br>
-
-    <!-- SIGNATURES -->
-    <table>
-    <tr>
-        <td class="small">
-            A. Certified: Expenses are necessary and lawful
-        </td>
-        <td class="small">
-            B. Certified: Documents complete
-        </td>
-        <td class="small">
-            C. Certified: Funds available
-        </td>
-    </tr>
-
-    <tr>
-        <td height="40"></td>
-        <td></td>
-        <td></td>
-    </tr>
-
-    <tr>
-        <td colspan="2">
-            <b>Approved for Payment:</b><br>
-            Amount: {payload.get('amount','-')}
-        </td>
-        <td>
-            <b>Advice No:</b> {payload.get('advice_no','-')}
-        </td>
-    </tr>
+        <tr>
+            <td colspan="1" class="center bold medium" style="text-align: center;">Amount in </br> Words: </td>
+            <td colspan="2" class="center bold medium" style="text-align: center; width: 56%;">{payload.get('amount_in_words','')}</td>
+            <td colspan="2" class="center bold medium" style="text-align: center;">Amount Due: ></td>
+            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">{payload.get('amount_due','')}</td>
+        </tr>
     </table>
 
     </body>
