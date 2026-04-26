@@ -864,10 +864,6 @@ def dv_report_pdf(request, dv_id):
     table table, table table td, table table th {{
         border: none;
     }}
-    /* remove top border of main table */
-    table tr:first-child td, table tr:first-child th {{
-        border-top: none;
-    }}
     /* make first column narrow so logo/labels don't add extra width */
     table tr td:first-child {{
         width: 35px;
