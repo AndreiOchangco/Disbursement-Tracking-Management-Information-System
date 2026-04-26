@@ -742,7 +742,8 @@ def dv_report_pdf(request, dv_id):
 
     # Build an HTML representation from the stored payload
     payload = report.payload or {}
-    # --- BUILD PARTICULARS TABLE ---
+    
+    # --- BUILD PARTICULARS TABLE (For standard rows, if still needed) ---
     particular_rows = ""
     particulars = payload.get('particulars', [])
 
@@ -767,6 +768,54 @@ def dv_report_pdf(request, dv_id):
 
     if not particular_rows:
         particular_rows = "<tr><td colspan='3'>No particulars available</td></tr>"
+
+
+    # --- BUILD DYNAMIC PARTICULARS DETAILS (Replaces hardcoded sentence and table) ---
+    particulars_details_html = ""
+    
+    for p in particulars:
+        desc = p.get('description', '')
+        cat_values = p.get('category_values', [])
+
+        cat_rows = ""
+        for c in cat_values:
+            cat = c.get('category', '')
+            np_val = c.get('np', '-')
+            ft_val = c.get('ft', '-')
+            tf_val = c.get('tf', '-')
+            
+            cat_rows += f"""
+                <tr>
+                    <td>{cat}</td>
+                    <td>{np_val}</td>
+                    <td>{ft_val}</td>
+                    <td>{tf_val}</td>
+                </tr>
+            """
+
+        particulars_details_html += f"""
+            <span style="text-align: center; display: block; margin-bottom: 6px;" class="medium">
+                {desc}
+            </span>
+            <table style="width: 80%; margin-top: 6px; left: 0;" class="small">
+                <tr>
+                    <td></td>
+                    <td>Net Pay</td>
+                    <td>15th</td>
+                    <td>31st</td>
+                </tr>
+                {cat_rows}
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        """
+
+    if not particulars_details_html:
+        particulars_details_html = "<span style='text-align: center; display: block;' class='medium'>No particulars available</span>"
 
 
     # --- BUILD JOURNAL ENTRIES ---
@@ -886,7 +935,6 @@ def dv_report_pdf(request, dv_id):
 
     <body>
 
-    <!-- HEADER -->
     <table>
     <tr>
         <td rowspan="2" class="center bold">
@@ -973,47 +1021,7 @@ def dv_report_pdf(request, dv_id):
 
     <tr>
         <td colspan="3">
-            <span style="text-align: center; display: block;" class="medium">
-                To debit of municipal deposit to pay salaries of Municipal Officials, Dept. Heads and </br> Employees for the period {payload.get('period','')}.
-            </span>
-            <table style="width: 80%; margin-top: 6px; left: 0;" class="small">
-                <tr>
-                    <td></td>
-                    <td>Net Pay</td>
-                    <td>15th</td>
-                    <td>31th</td>
-                </tr>
-                <tr>
-                    <td>ORGANIC</td>
-                    <td>{payload.get('organic_net_pay','-')}</td>
-                    <td>{payload.get('organic_15th','-')}</td>
-                    <td>{payload.get('organic_31th','-')}</td>
-                </tr>
-                <tr>
-                    <td>DEVOLVED</td>
-                    <td>{payload.get('devolved_net_pay','-')}</td>
-                    <td>{payload.get('devolved_15th','-')}</td>
-                    <td>{payload.get('devolved_31th','-')}</td>
-                </tr>
-                <tr>
-                    <td>VM & SB</td>
-                    <td>{payload.get('vm_sb_net_pay','-')}</td>
-                    <td>{payload.get('vm_sb_15th','-')}</td>
-                    <td>{payload.get('vm_sb_31th','-')}</td>
-                </tr>
-                <tr>
-                    <td>Adjustment</td>
-                    <td>{payload.get('adjustment_net_pay','-')}</td>
-                    <td>{payload.get('adjustment_15th','-')}</td>
-                    <td>{payload.get('adjustment_31th','-')}</td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </table>
+            {particulars_details_html}
         </td>
         <td colspan="1"></td>
     </tr>
