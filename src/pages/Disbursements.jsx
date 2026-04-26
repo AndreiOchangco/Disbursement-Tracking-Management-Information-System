@@ -49,7 +49,10 @@ export default function Disbursements() {
   const [particularJevNo, setParticularJevNo] = useState('')
   const [particularDate, setParticularDate] = useState(new Date().toISOString().split('T')[0])
   const [particulars, setParticulars] = useState([
-    { category: '', np: '', ft: '', tf: '' },
+    { category: 'ORGANIC', np: '', ft: '', tf: '' },
+    { category: 'DEVOLVED', np: '', ft: '', tf: '' },
+    { category: 'VM & SB', np: '', ft: '', tf: '' },
+    { category: 'Adjustment', np: '', ft: '', tf: '' },
   ])
   const [jeRows, setJeRows] = useState([
     { account_code: '', particulars: '', debit: '', credit: '' }

@@ -952,11 +952,11 @@ def dv_report_pdf(request, dv_id):
         <td colspan="1" class="center bold medium"><b>POSITION / OFFICE</b></td>
         <td colspan="1" class="center">{payload.get('office','')}</td>
         <td rowspan="2" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
-            <span style="position:absolute; margin-top: -23px;">Office / Unit / Project:</span>
+            <span style="position:absolute; margin-top: -25px;">Office / Unit / Project:</span>
             <div class="medium" style="text-align:center;">{payload.get('office_unit_project','')}</div>
         </td>
         <td rowspan="2" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
-            <span style="position:absolute; margin-top: -23px;">Responsibility Center:</span>
+            <span style="position:absolute; margin-top: -19px;">Responsibility Center:</span>
             <div class="medium" style="text-align:center;">{payload.get('responsibility_center','')}</div>
         </td>
     </tr>
@@ -973,45 +973,45 @@ def dv_report_pdf(request, dv_id):
 
     <tr>
         <td colspan="3">
-            <span style="text-align: center; display: block;" class="medium">
+            <span style="text-align: center; display: block; margin-top: 20px; margin-bottom: 20px;" class="medium">
                 To debit of municipal deposit to pay salaries of Municipal Officials, Dept. Heads and </br> Employees for the period {payload.get('period','')}.
             </span>
-            <table style="width: 80%; margin-top: 6px; left: 0;" class="small">
+            <table style="width: 80%; margin-top: 6px; margin-bottom: 6px; margin-left: 150px;" class="small">
                 <tr>
                     <td></td>
-                    <td>Net Pay</td>
-                    <td>15th</td>
-                    <td>31th</td>
+                    <td class="bold">Net Pay</td>
+                    <td class="bold">15th</td>
+                    <td class="bold">31th</td>
                 </tr>
                 <tr>
-                    <td>ORGANIC</td>
+                    <td style="padding-right: 80px;">ORGANIC</td>
                     <td>{payload.get('organic_net_pay','-')}</td>
                     <td>{payload.get('organic_15th','-')}</td>
                     <td>{payload.get('organic_31th','-')}</td>
                 </tr>
                 <tr>
-                    <td>DEVOLVED</td>
+                    <td style="padding-right: 80px;">DEVOLVED</td>
                     <td>{payload.get('devolved_net_pay','-')}</td>
                     <td>{payload.get('devolved_15th','-')}</td>
                     <td>{payload.get('devolved_31th','-')}</td>
                 </tr>
                 <tr>
-                    <td>VM & SB</td>
+                    <td style="padding-right: 80px;">VM & SB</td>
                     <td>{payload.get('vm_sb_net_pay','-')}</td>
                     <td>{payload.get('vm_sb_15th','-')}</td>
                     <td>{payload.get('vm_sb_31th','-')}</td>
                 </tr>
                 <tr>
-                    <td>Adjustment</td>
+                    <td style="padding-right: 80px;">Adjustment</td>
                     <td>{payload.get('adjustment_net_pay','-')}</td>
                     <td>{payload.get('adjustment_15th','-')}</td>
                     <td>{payload.get('adjustment_31th','-')}</td>
                 </tr>
                 <tr>
                     <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td style="text-decoration: underline;"></td>
+                    <td style="text-decoration: underline;"></td>
+                    <td style="text-decoration: underline;"></td>
                 </tr>
             </table>
         </td>
