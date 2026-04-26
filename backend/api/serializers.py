@@ -125,9 +125,11 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = DV
         fields = [
-            'dv_no', 'tracking_no', 'payee', 'office', 'cafoa_no',
-            'created_date', 'advice_no', 'responsibility_center',
-            'fund_source', 'tin', 'payments', 'particulars', 'journal_entries'
+            'dv_no', 'dv_date', 'tracking_no', 'transaction_no', 
+            'transaction_date', 'payee', 'office', 'cafoa_no', 
+            'created_date', 'advice_no', 'advice_date', 
+            'responsibility_center', 'fund_source', 'tin', 
+            'payments', 'particulars', 'journal_entries'
         ]
 
     def create(self, validated_data):
@@ -191,4 +193,4 @@ class DVReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DVReport
-        fields = ['id', 'dv', 'dv_no', 'payload', 'created_at']
+        fields = ['id', 'dv_no', 'dv_date', 'payee', 'tracking_no', 'transaction_no', 'status', 'created_at']

@@ -3,12 +3,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { apiRequest, getCurrentUser } from '../api'
-import Modal from '../components/Modal'
 import ReactModal from '../components/ReactModal'
 import Swal from 'sweetalert2'
 
-
-const user = JSON.parse(localStorage.getItem("user"))
 const statusOptions = ['Pending', 'Approved', 'Rejected']
 
 const formatDateMMDDYYYY = (date) => {
@@ -32,19 +29,22 @@ export default function Disbursements() {
       navigate('/admin/dashboard', { replace: true })
     }
   }, [currentUser, navigate])
+
   const [disbursements, setDisbursements] = useState([])
   const [search, setSearch] = useState('')
+  
+  // CREATE STATES (Accounting Only)
   const [trackingno, setTrackingNo] = useState('')
-  const [dvno, setDVno] = useState('')
-  const [status, setStatus] = useState('Pending')
   const [payee, setPayee] = useState('')
   const [fundSource, setFundSource] = useState('GF')
-  const [modeOfPayment, setModeOfPayment] = useState('CASH')
-  const [paymentMopSpecify, setPaymentMopSpecify] = useState('')
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0])
-  const [atmNo, setAtmNo] = useState('')
-  const [bank, setBank] = useState('')
   const [tin, setTin] = useState('')
+  const [createdDate, setCreatedDate] = useState(new Date().toISOString().split('T')[0])
+  const [status, setStatus] = useState('Pending')
+  const [adviceNo, setAdviceNo] = useState('')
+  const [adviceDate, setAdviceDate] = useState('')
+  const [transactionNo, setTransactionNo] = useState('')
+  const [transactionDate, setTransactionDate] = useState('')
+
   const [particularDescription, setParticularDescription] = useState('')
   const [particularJevNo, setParticularJevNo] = useState('')
   const [particularDate, setParticularDate] = useState(new Date().toISOString().split('T')[0])
@@ -52,34 +52,44 @@ export default function Disbursements() {
     { category: '', np: '', ft: '', tf: '' },
   ])
   const [jeRows, setJeRows] = useState([
-  { account_code: '', particulars: '', debit: '', credit: '' }
-]);
+    { account_code: '', particulars: '', debit: '', credit: '' }
+  ]);
   
-  // EDIT STATES
-  const [isEditable, setIsEditable] = useState(false);
+  // EDIT STATES (Separated by Department)
+  // Accounting Fields
   const [editTrackingNo, setEditTrackingNo] = useState('');
-  const [editDVNo, setEditDVNo] = useState('');
   const [editPayee, setEditPayee] = useState('');
   const [editTin, setEditTin] = useState('');
   const [editFundSource, setEditFundSource] = useState('GF');
-  const [editModeOfPayment, setEditModeOfPayment] = useState('CASH');
-  const [editMopOthers, setEditMopOthers] = useState('');
   const [editCreatedDate, setEditCreatedDate] = useState('');
   const [editOffice, setEditOffice] = useState('');
   const [editStatus, setEditStatus] = useState('');
+  const [editAdviceNo, setEditAdviceNo] = useState('');
+  const [editAdviceDate, setEditAdviceDate] = useState('');
+  const [editTransactionNo, setEditTransactionNo] = useState('');
+  const [editTransactionDate, setEditTransactionDate] = useState('');
   const [editParticulars, setEditParticulars] = useState([]);
   const [editJeRows, setEditJeRows] = useState([]);
+
+  // Budget Fields
+  const [editCafoaNo, setEditCafoaNo] = useState('');
+  const [editResponsibilityCenter, setEditResponsibilityCenter] = useState('');
+
+  // Treasurer Fields
+  const [editDVNo, setEditDVNo] = useState('');
+  const [editDVDate, setEditDVDate] = useState('');
+  const [editModeOfPayment, setEditModeOfPayment] = useState('CASH');
+  const [editMopOthers, setEditMopOthers] = useState('');
+  const [editAtmNo, setEditAtmNo] = useState('');
+  const [editBank, setEditBank] = useState('');
+  const [editPaymentDate, setEditPaymentDate] = useState('');
 
   const initialOfficer = (() => {
     const u = getCurrentUser()
     return (u && u.full_name) || ''
   })()
-
   const [officer, setOfficer] = useState(initialOfficer)
 
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [addedDV, setAddedDV] = useState(null)
-  const [showRecordsModal, setShowRecordsModal] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [dvCurrentPage, setDVCurrentPage] = useState(1)
   const dvItemsPerPage = 5
@@ -110,6 +120,16 @@ export default function Disbursements() {
     mayors_office: 5,
   }
   const currentUserStep = DEPT_STEP[currentUserDeptKey] || null
+
+  // Authorization Flags For Modal Interactivity
+  const isPending = selectedDV?.status?.toLowerCase() === 'pending';
+  const isDisapproved = selectedDV?.status?.toLowerCase() === 'disapproved';
+  const currentStep = selectedDV?.current_step;
+
+  const canEditAccounting = currentUserDeptKey === 'accounting' && isDisapproved;
+  const canEditBudget = currentUserDeptKey === 'budget' && isPending && currentStep === 2;
+  const canEditTreasurer = currentUserDeptKey === 'treasurer' && isPending && currentStep === 3;
+  const canSave = canEditAccounting || canEditBudget || canEditTreasurer;
 
   useEffect(() => {
     async function load() {
@@ -143,53 +163,55 @@ export default function Disbursements() {
   }
 
   const filtered = useMemo(() => {
-  const activeDisbursements = disbursements.filter(
-    (d) => String(d.status || '').toLowerCase() !== 'archived'
-  );
+    const activeDisbursements = disbursements.filter(
+      (d) => String(d.status || '').toLowerCase() !== 'archived'
+    );
+    const query = search.trim().toLowerCase();
+    
+    if (!query) return activeDisbursements;
 
-  const query = search.trim().toLowerCase();
-  
-  if (!query) return activeDisbursements;
-
-  return activeDisbursements.filter((d) =>
-    (
-      String(d.tracking_no || '') +
-      String(d.dv_no || '') +
-      String(d.status || '') +
-      String(d.payee || '') +
-      String(d.office || '') +
-      String(d.fund_source || '')
-    )
-      .toLowerCase()
-      .includes(query)
-  );
-}, [search, disbursements]);
+    return activeDisbursements.filter((d) =>
+      (
+        String(d.tracking_no || '') +
+        String(d.dv_no || '') +
+        String(d.status || '') +
+        String(d.payee || '') +
+        String(d.office || '') +
+        String(d.fund_source || '')
+      )
+        .toLowerCase()
+        .includes(query)
+    );
+  }, [search, disbursements]);
 
   const addDisbursement = async (e) => {
     e.preventDefault()
 
-    if (!trackingno || !dvno || !officer || !payee || !fundSource || !tin || !paymentDate) {
-      toast.error('Please fill required fields: Tracking#, DV#, Payee, Fund Source, ID #/TIN, Date')
+    if (!trackingno || !officer || !payee || !fundSource || !tin || !createdDate) {
+      toast.error('Please fill required fields: Tracking#, Payee, Fund Source, ID #/TIN, Date')
       return
     }
 
     try {
       const payload = {
-        dv_no: String(dvno),
         tracking_no: String(trackingno),
         payee,
         office: officer,
-        created_date: new Date().toISOString().split('T')[0],
+        created_date: createdDate,
         current_step: 2,
         fund_source: fundSource,
         tin,
+        advice_no: adviceNo || null,
+        advice_date: adviceDate || null,
+        transaction_no: transactionNo || null,
+        transaction_date: transactionDate || null,
         payments: [
           {
-            mop: modeOfPayment,
-            mop_specify: paymentMopSpecify,
-            atm_no: atmNo,
-            bank,
-            date: paymentDate,
+            mop: "CASH",
+            mop_specify: "",
+            atm_no: "",
+            bank: "",
+            date: null,
           },
         ],
         particulars: [
@@ -223,44 +245,27 @@ export default function Disbursements() {
         toast.error('Failed to add entry. Please check your inputs.');
       }
 
+      // Reset form states
       setTrackingNo('')
-      setDVno('')
       setStatus('Pending')
       setPayee('')
       setFundSource('GF')
-      setModeOfPayment('CASH')
-      setPaymentMopSpecify('')
-      setPaymentDate(new Date().toISOString().split('T')[0])
-      setAtmNo('')
-      setBank('')
       setTin('')
+      setAdviceNo('')
+      setAdviceDate('')
+      setTransactionNo('')
+      setTransactionDate('')
+      setCreatedDate(new Date().toISOString().split('T')[0])
+      
       setParticularDescription('')
       setParticularJevNo('')
       setParticularDate(new Date().toISOString().split('T')[0])
-      setParticulars([
-        { category: '', np: '', ft: '', tf: '' },
-      ])
+      setParticulars([{ category: '', np: '', ft: '', tf: '' }])
       setJeRows([{ account_code: '', particulars: '', debit: 0, credit: 0 }]);
       setOfficer(initialOfficer)
     } catch (err) {
       console.error('Create failed', err)
       toast.error(err?.message || 'Failed to create disbursement')
-    }
-  }
-
-  const updateStatus = async (item, newStatus) => {
-    try {
-      const updated = await apiRequest(`/dv/${item.id}/`, 'PUT', {
-        ...item,
-        status: newStatus,
-      })
-
-      setDisbursements((prev) =>
-        prev.map((d) => (d.id === item.id ? updated : d))
-      )
-    } catch (err) {
-      console.error(err)
-      alert("Action not allowed")
     }
   }
 
@@ -281,7 +286,7 @@ export default function Disbursements() {
     if (!result.isConfirmed) return
     
     try {
-      const res = await apiRequest(`/dv/${item.id}/approve/`, 'POST')
+      await apiRequest(`/dv/${item.id}/approve/`, 'POST')
       await Swal.fire({
         title: 'Success!',
         text: 'Disbursement approved successfully.',
@@ -298,8 +303,6 @@ export default function Disbursements() {
         text: err?.message || 'Approve failed',
         icon: 'error',
         confirmButtonColor: '#e11d48',
-        background: '#F0F4FF',
-        color: '#1f2937',
       })
     }
   }
@@ -327,8 +330,6 @@ export default function Disbursements() {
         text: 'Rejection remarks are required',
         icon: 'warning',
         confirmButtonColor: '#f97316',
-        background: '#F0F4FF',
-        color: '#1f2937',
       })
       return
     }
@@ -340,9 +341,8 @@ export default function Disbursements() {
         text: 'Disbursement rejected successfully.',
         icon: 'success',
         confirmButtonColor: '#0052CC',
-        background: '#F0F4FF',
-        color: '#1f2937',
       })
+      if(showViewModal) setShowViewModal(false)
       await reload()
     } catch (err) {
       console.error('Reject failed', err)
@@ -351,8 +351,6 @@ export default function Disbursements() {
         text: err?.message || 'Reject failed',
         icon: 'error',
         confirmButtonColor: '#e11d48',
-        background: '#F0F4FF',
-        color: '#1f2937',
       })
     }
   }
@@ -393,6 +391,12 @@ export default function Disbursements() {
     setEditParticulars(updated);
   };
 
+  const handleEditParticularJevNo = (pIdx, value) => {
+    const updated = [...editParticulars];
+    updated[pIdx] = { ...updated[pIdx], jev_no: value };
+    setEditParticulars(updated);
+  };
+
   const handleEditParticularValue = (pIdx, vIdx, field, value) => {
     const updated = [...editParticulars];
     const updatedVals = [...updated[pIdx].category_values];
@@ -401,7 +405,6 @@ export default function Disbursements() {
     setEditParticulars(updated);
   };
 
-  // Add Row to View Modal Particulars
   const handleAddEditParticularValue = (pIdx) => {
     const updated = [...editParticulars];
     if (!updated[pIdx].category_values) {
@@ -411,7 +414,6 @@ export default function Disbursements() {
     setEditParticulars(updated);
   };
 
-  // Remove Row from View Modal Particulars
   const handleRemoveEditParticularValue = (pIdx, vIdx) => {
     const updated = [...editParticulars];
     updated[pIdx].category_values = updated[pIdx].category_values.filter((_, i) => i !== vIdx);
@@ -424,32 +426,44 @@ export default function Disbursements() {
     setEditJeRows(updated);
   };
 
-  // Add Row to View Modal Journal Entries
   const handleAddEditJeRow = () => {
     setEditJeRows([...editJeRows, { account_code: '', particulars: '', debit: 0, credit: 0 }]);
   };
 
-  // Remove Row from View Modal Journal Entries
   const handleRemoveEditJeRow = (index) => {
     setEditJeRows(editJeRows.filter((_, i) => i !== index));
   };
 
   const handleView = (dv) => {
     setSelectedDV(dv);
-    const canEdit = currentUserDeptKey === 'accounting' && dv.status?.toLowerCase() === 'disapproved';
-    setIsEditable(canEdit);
 
+    // Populate Accounting States
     setEditTrackingNo(dv.tracking_no || '');
-    setEditDVNo(dv.dv_no || '');
     setEditPayee(dv.payee || '');
     setEditTin(dv.tin || '');
     setEditFundSource(dv.fund_source || 'GF');
-    setEditModeOfPayment(dv.payments?.[0]?.mop || 'CASH');
-    setEditMopOthers(dv.payments?.[0]?.mop_specify || '');
     setEditCreatedDate(dv.created_date || '');
     setEditOffice(dv.office || '');
     setEditStatus(dv.status || '');
+    setEditAdviceNo(dv.advice_no || '');
+    setEditAdviceDate(dv.advice_date || '');
+    setEditTransactionNo(dv.transaction_no || '');
+    setEditTransactionDate(dv.transaction_date || '');
     
+    // Populate Budget States
+    setEditCafoaNo(dv.cafoa_no || '');
+    setEditResponsibilityCenter(dv.responsibility_center || '');
+
+    // Populate Treasurer States
+    setEditDVNo(dv.dv_no || '');
+    setEditDVDate(dv.dv_date || '');
+    setEditModeOfPayment(dv.payments?.[0]?.mop || 'CASH');
+    setEditMopOthers(dv.payments?.[0]?.mop_specify || '');
+    setEditAtmNo(dv.payments?.[0]?.atm_no || '');
+    setEditBank(dv.payments?.[0]?.bank || '');
+    setEditPaymentDate(dv.payments?.[0]?.date || '');
+    
+    // Arrays
     setEditParticulars(dv.particulars ? JSON.parse(JSON.stringify(dv.particulars)) : []);
     setEditJeRows(dv.journal_entries ? JSON.parse(JSON.stringify(dv.journal_entries)) : []);
     
@@ -458,23 +472,36 @@ export default function Disbursements() {
 
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
-    if (!isEditable) return;
+    if (!canSave) return;
 
     try {
       const payload = {
         tracking_no: editTrackingNo,
-        dv_no: editDVNo,
         payee: editPayee,
         tin: editTin,
         fund_source: editFundSource,
         created_date: editCreatedDate,
+        advice_no: editAdviceNo || null,
+        advice_date: editAdviceDate || null,
+        transaction_no: editTransactionNo || null,
+        transaction_date: editTransactionDate || null,
+        
+        cafoa_no: editCafoaNo || null,
+        responsibility_center: editResponsibilityCenter || null,
+        
+        dv_no: editDVNo || null,
+        dv_date: editDVDate || null,
+
         particulars: editParticulars,
         journal_entries: editJeRows,
         payments: [
           {
             ...(selectedDV.payments?.[0] || {}),
             mop: editModeOfPayment,
-            mop_specify: editMopOthers
+            mop_specify: editMopOthers,
+            atm_no: editAtmNo,
+            bank: editBank,
+            date: editPaymentDate || null,
           }
         ]
       };
@@ -482,17 +509,21 @@ export default function Disbursements() {
       const updated = await apiRequest(`/dv/${selectedDV.id}/`, 'PUT', payload);
       
       if (updated) {
-        await apiRequest(`/dv/${selectedDV.id}/resubmit/`, 'POST', {
-          remarks: 'Corrected and resubmitted by Accounting.'
-        });
-
-        toast.success('Disbursement Voucher updated and resubmitted successfully!');
+        if (canEditAccounting) {
+          await apiRequest(`/dv/${selectedDV.id}/resubmit/`, 'POST', {
+            remarks: 'Corrected and resubmitted by Accounting.'
+          });
+          toast.success('Disbursement Voucher updated and resubmitted successfully!');
+        } else if (canEditBudget || canEditTreasurer) {
+          await apiRequest(`/dv/${selectedDV.id}/approve/`, 'POST');
+          toast.success('Disbursement Voucher updated and approved successfully!');
+        }
         setShowViewModal(false);
-        reload(); // Refresh the table
+        reload();
       }
     } catch (err) {
-      console.error("Resubmit error:", err);
-      toast.error(err?.message || 'Failed to update and resubmit the Disbursement Voucher');
+      console.error("Submission error:", err);
+      toast.error(err?.message || 'Failed to update the Disbursement Voucher');
     }
   };
   
@@ -505,7 +536,7 @@ export default function Disbursements() {
         </div>
       </div>
 
-      {/* ➕ NEW ENTRY FORM MODAL */}
+      {/* ➕ NEW ENTRY FORM MODAL (Accounting Specific) */}
       {isAccountant && (
         <ReactModal 
           isOpen={showCreateModal} 
@@ -514,15 +545,11 @@ export default function Disbursements() {
         >
           <section className="panel panel-alt noselect">
             <form onSubmit={addDisbursement}>
-              {/* TOP FORM GRID */}
+              {/* TOP FORM GRID - ACCOUNTING */}
               <div className="form-grid form-grid--split noselect">
                 <label>
                   <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
                   <input type="number" value={trackingno} onChange={(e) => setTrackingNo(e.target.value)} placeholder="Enter tracking number" />
-                </label>
-                <label>
-                  <span>DV Number<span style={{ color: 'red' }}>*</span></span>
-                  <input type="text" value={dvno} onChange={(e) => setDVno(e.target.value)} placeholder="Enter DV number" />
                 </label>
                 <label>
                   <span>Payee<span style={{ color: 'red' }}>*</span></span>
@@ -547,22 +574,24 @@ export default function Disbursements() {
                   </select>
                 </label>
                 <label>
-                  <span>Mode of Payment</span>
-                  <select value={modeOfPayment} onChange={(e) => setModeOfPayment(e.target.value)}>
-                    <option value="CASH">Cash</option>
-                    <option value="CHECK">Check</option>
-                    <option value="OTHERS">Others</option>
-                  </select>
+                  <span>Advice No</span>
+                  <input type="text" value={adviceNo} onChange={(e) => setAdviceNo(e.target.value)} placeholder="Enter Advice No" />
                 </label>
-                {modeOfPayment === 'OTHERS' && (
-                  <label>
-                    <span>Specify Payment Mode</span>
-                    <input type="text" value={paymentMopSpecify} onChange={(e) => setPaymentMopSpecify(e.target.value)} placeholder="Specify payment mode" />
-                  </label>
-                )}
                 <label>
-                  <span>Date<span style={{ color: 'red' }}>*</span></span>
-                  <input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} />
+                  <span>Advice Date</span>
+                  <input type="date" value={adviceDate} onChange={(e) => setAdviceDate(e.target.value)} />
+                </label>
+                <label>
+                  <span>Transaction No</span>
+                  <input type="text" value={transactionNo} onChange={(e) => setTransactionNo(e.target.value)} placeholder="Enter Transaction No" />
+                </label>
+                <label>
+                  <span>Transaction Date</span>
+                  <input type="date" value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} />
+                </label>
+                <label>
+                  <span>Created Date</span>
+                  <input type="date" value={createdDate} readOnly disabled onChange={(e) => setCreatedDate(e.target.value)} />
                 </label>
                 <label>
                   <span>Created By</span>
@@ -579,9 +608,20 @@ export default function Disbursements() {
                 <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars Section</h4>
                   <div className="general-description-wrapper">
                     <label className="general-label">
+                      <span>JEV Number</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="general-description"
+                      value={particularJevNo}
+                      onChange={(e) => setParticularJevNo(e.target.value)}
+                      placeholder="Enter JEV Number"
+                      style={{ marginBottom: '1rem', minHeight: '40px' }}
+                    />
+                    
+                    <label className="general-label">
                       <span>General Description</span>
                     </label>
-
                     <textarea
                       className="general-description"
                       value={particularDescription}
@@ -741,14 +781,17 @@ export default function Disbursements() {
                   <td className="table-column-center">
                     <div className="action-buttons">
                       <button className="btn-archive btn-small flex justify-center items-center gap-1" onClick={() => handleView(d)}>
-                          <ion-icon name="eye-outline"></ion-icon> View
+                          <ion-icon name="eye-outline"></ion-icon> {isActionable(d) && (currentUserDeptKey === 'budget' || currentUserDeptKey === 'treasurer') ? 'View/Modify' : 'View'}
                       </button>
+                      
                       {isActionable(d) && (
                         <>
-                          <button className="btn-primary btn-small flex justify-center items-center gap-1" onClick={() => approveItem(d)}>
-                            <ion-icon name="checkmark-circle"></ion-icon> Approve
-                          </button>
-
+                          {/* BAC/GSO and Others just approve without needing to modify first */}
+                          {(currentUserDeptKey !== 'budget' && currentUserDeptKey !== 'treasurer') && (
+                            <button className="btn-primary btn-small flex justify-center items-center gap-1" onClick={() => approveItem(d)}>
+                              <ion-icon name="checkmark-circle"></ion-icon> Approve
+                            </button>
+                          )}
                           <button className="btn-danger btn-small flex justify-center items-center gap-1" onClick={() => rejectItem(d)}>
                             <ion-icon name="close-circle"></ion-icon> Reject
                           </button>
@@ -794,6 +837,7 @@ export default function Disbursements() {
           </table>
           {filtered.length === 0 && <p className="empty empty--center"><ion-icon name="mail-unread"></ion-icon> No disbursements found.</p>}
         </div>
+        
         {/* 📄 Pagination Controls */}
         {filtered.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
@@ -844,7 +888,7 @@ export default function Disbursements() {
         )}
       </section>
 
-       {/* 👀 VIEW/EDIT DISBURSEMENT MODAL */}
+       {/* 👀 VIEW / MODIFY DISBURSEMENT MODAL */}
       <ReactModal 
         isOpen={showViewModal} 
         onClose={() => setShowViewModal(false)} 
@@ -853,26 +897,25 @@ export default function Disbursements() {
         {selectedDV && (
           <section className="panel panel-alt noselect">
             <form onSubmit={handleUpdateSubmit}>
+              
+              {/* --- ACCOUNTING INFORMATION --- */}
+              <h4 className="section-title"><ion-icon name="calculator-outline"></ion-icon> Accounting Information</h4>
               <div className="form-grid form-grid--split noselect">
                 <label>
                   <span>Tracking Number</span>
-                  <input type="text" value={editTrackingNo} onChange={(e) => setEditTrackingNo(e.target.value)} disabled={!isEditable} />
-                </label>
-                <label>
-                  <span>DV Number</span>
-                  <input type="text" value={editDVNo} onChange={(e) => setEditDVNo(e.target.value)} disabled={!isEditable} />
+                  <input type="text" value={editTrackingNo} onChange={(e) => setEditTrackingNo(e.target.value)} disabled={!canEditAccounting} />
                 </label>
                 <label>
                   <span>Payee</span>
-                  <input type="text" value={editPayee} onChange={(e) => setEditPayee(e.target.value)} disabled={!isEditable} />
+                  <input type="text" value={editPayee} onChange={(e) => setEditPayee(e.target.value)} disabled={!canEditAccounting} />
                 </label>
                 <label>
                   <span>ID # / TIN</span>
-                  <input type="text" value={editTin} onChange={(e) => setEditTin(e.target.value)} disabled={!isEditable} />
+                  <input type="text" value={editTin} onChange={(e) => setEditTin(e.target.value)} disabled={!canEditAccounting} />
                 </label>
                 <label>
                   <span>Fund Source</span>
-                  <select value={editFundSource} onChange={(e) => setEditFundSource(e.target.value)} disabled={!isEditable}>
+                  <select value={editFundSource} onChange={(e) => setEditFundSource(e.target.value)} disabled={!canEditAccounting}>
                     <option value="GF">GF</option>
                     <option value="20% DF">20% DF</option>
                     <option value="5% DRRM">5% DRRM</option>
@@ -885,8 +928,66 @@ export default function Disbursements() {
                   </select>
                 </label>
                 <label>
+                  <span>Advice No</span>
+                  <input type="text" value={editAdviceNo} onChange={(e) => setEditAdviceNo(e.target.value)} disabled={!canEditAccounting} />
+                </label>
+                <label>
+                  <span>Advice Date</span>
+                  <input type="date" value={editAdviceDate} onChange={(e) => setEditAdviceDate(e.target.value)} disabled={!canEditAccounting} />
+                </label>
+                <label>
+                  <span>Transaction No</span>
+                  <input type="text" value={editTransactionNo} onChange={(e) => setEditTransactionNo(e.target.value)} disabled={!canEditAccounting} />
+                </label>
+                <label>
+                  <span>Transaction Date</span>
+                  <input type="date" value={editTransactionDate} onChange={(e) => setEditTransactionDate(e.target.value)} disabled={!canEditAccounting} />
+                </label>
+                <label>
+                  <span>Date Created</span>
+                  <input type="date" value={editCreatedDate} onChange={(e) => setEditCreatedDate(e.target.value)} disabled={!canEditAccounting} />
+                </label>
+                <label>
+                  <span>Created By</span>
+                  <input value={editOffice} disabled={true} />
+                </label>
+                <label>
+                  <span>Status</span>
+                  <input value={editStatus} disabled={true} />
+                </label>
+              </div>
+
+              {/* --- BUDGET INFORMATION --- */}
+              <h4 className="section-title" style={{ marginTop: '2.5rem' }}><ion-icon name="wallet-outline"></ion-icon> Budget Information</h4>
+              <div className="form-grid form-grid--split noselect">
+                <label>
+                  <span>CAFOA No.</span>
+                  <input type="text" value={editCafoaNo} onChange={(e) => setEditCafoaNo(e.target.value)} disabled={!canEditBudget} />
+                </label>
+                <label>
+                  <span>Responsibility Center</span>
+                  <select value={editResponsibilityCenter} onChange={(e) => setEditResponsibilityCenter(e.target.value)} disabled={!canEditBudget}>
+                    <option value="">Select Option</option>
+                    <option value="One">One</option>
+                    <option value="Multiple">Multiple</option>
+                  </select>
+                </label>
+              </div>
+
+              {/* --- TREASURER INFORMATION --- */}
+              <h4 className="section-title" style={{ marginTop: '2.5rem' }}><ion-icon name="cash-outline"></ion-icon> Treasurer Information</h4>
+              <div className="form-grid form-grid--split noselect">
+                <label>
+                  <span>DV Number</span>
+                  <input type="text" value={editDVNo} onChange={(e) => setEditDVNo(e.target.value)} disabled={!canEditTreasurer} />
+                </label>
+                <label>
+                  <span>DV Date</span>
+                  <input type="date" value={editDVDate} onChange={(e) => setEditDVDate(e.target.value)} disabled={!canEditTreasurer} />
+                </label>
+                <label>
                   <span>Mode of Payment</span>
-                  <select value={editModeOfPayment} onChange={(e) => setEditModeOfPayment(e.target.value)} disabled={!isEditable}>
+                  <select value={editModeOfPayment} onChange={(e) => setEditModeOfPayment(e.target.value)} disabled={!canEditTreasurer}>
                     <option value="CASH">Cash</option>
                     <option value="CHECK">Check</option>
                     <option value="OTHERS">Others</option>
@@ -895,25 +996,25 @@ export default function Disbursements() {
                 {editModeOfPayment === 'OTHERS' && (
                   <label>
                     <span>Specify Payment Mode</span>
-                    <input type="text" value={editMopOthers} onChange={(e) => setEditMopOthers(e.target.value)} disabled={!isEditable} />
+                    <input type="text" value={editMopOthers} onChange={(e) => setEditMopOthers(e.target.value)} disabled={!canEditTreasurer} />
                   </label>
                 )}
                 <label>
-                  <span>Date</span>
-                  <input type="date" value={editCreatedDate} onChange={(e) => setEditCreatedDate(e.target.value)} disabled={!isEditable} />
+                  <span>ATM Number</span>
+                  <input type="text" value={editAtmNo} onChange={(e) => setEditAtmNo(e.target.value)} disabled={!canEditTreasurer} />
                 </label>
                 <label>
-                  <span>Created By</span>
-                  <input value={editOffice} onChange={(e) => setEditOffice(e.target.value)} disabled={!isEditable} />
+                  <span>Bank</span>
+                  <input type="text" value={editBank} onChange={(e) => setEditBank(e.target.value)} disabled={!canEditTreasurer} />
                 </label>
                 <label>
-                  <span>Status</span>
-                  <input value={editStatus} disabled={true} />
+                  <span>Date of Payment</span>
+                  <input type="date" value={editPaymentDate} onChange={(e) => setEditPaymentDate(e.target.value)} disabled={!canEditTreasurer} />
                 </label>
               </div>
 
               {/* --- PARTICULARS SECTION --- */}
-              <section className="panel-section" style={{ marginTop: '2rem' }}>
+              <section className="panel-section" style={{ marginTop: '2.5rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.5rem' }}>
                 <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars Section</h4>
                 
                 {editParticulars && editParticulars.length > 0 ? (
@@ -921,15 +1022,31 @@ export default function Disbursements() {
                     <div key={pIdx} style={{ marginBottom: '1.5rem' }}>
                       <div className="general-description-wrapper">
                         <label className="general-label">
+                          <span>JEV Number</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="general-description"
+                          value={part.jev_no || ''}
+                          onChange={(e) => handleEditParticularJevNo(pIdx, e.target.value)}
+                          disabled={!canEditAccounting}
+                          style={{ 
+                            marginBottom: '1rem',
+                            minHeight: '40px',
+                            backgroundColor: canEditAccounting ? '#fff' : '#f9fafb', 
+                          }}
+                        />
+
+                        <label className="general-label">
                           <span>General Description</span>
                         </label>
                         <textarea
                           className="general-description"
                           value={part.description || ''}
                           onChange={(e) => handleEditParticularDescription(pIdx, e.target.value)}
-                          disabled={!isEditable}
+                          disabled={!canEditAccounting}
                           style={{ 
-                            backgroundColor: isEditable ? '#fff' : '#f9fafb', 
+                            backgroundColor: canEditAccounting ? '#fff' : '#f9fafb', 
                             color: part.description ? 'inherit' : '#9ca3af',
                             fontStyle: part.description ? 'normal' : 'italic'
                           }}
@@ -944,18 +1061,18 @@ export default function Disbursements() {
                               <th>Net Pay</th>
                               <th>15th</th>
                               <th>31st</th>
-                              {isEditable && <th style={{ width: '50px' }}></th>}
+                              {canEditAccounting && <th style={{ width: '50px' }}></th>}
                             </tr>
                           </thead>
                           <tbody>
                             {part.category_values && part.category_values.length > 0 ? (
                               part.category_values.map((val, vIdx) => (
                                 <tr key={vIdx}>
-                                  <td><input className="particulars-input" value={val.category || ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'category', e.target.value)} disabled={!isEditable} /></td>
-                                  <td><input className="particulars-input" type="number" value={val.np !== undefined ? val.np : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'np', e.target.value)} disabled={!isEditable} /></td>
-                                  <td><input className="particulars-input" type="number" value={val.ft !== undefined ? val.ft : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'ft', e.target.value)} disabled={!isEditable} /></td>
-                                  <td><input className="particulars-input" type="number" value={val.tf !== undefined ? val.tf : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'tf', e.target.value)} disabled={!isEditable} /></td>
-                                  {isEditable && (
+                                  <td><input className="particulars-input" value={val.category || ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'category', e.target.value)} disabled={!canEditAccounting} /></td>
+                                  <td><input className="particulars-input" type="number" value={val.np !== undefined ? val.np : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'np', e.target.value)} disabled={!canEditAccounting} /></td>
+                                  <td><input className="particulars-input" type="number" value={val.ft !== undefined ? val.ft : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'ft', e.target.value)} disabled={!canEditAccounting} /></td>
+                                  <td><input className="particulars-input" type="number" value={val.tf !== undefined ? val.tf : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'tf', e.target.value)} disabled={!canEditAccounting} /></td>
+                                  {canEditAccounting && (
                                     <td className="table-column-center">
                                       <button type="button" className="btn-danger btn-small" onClick={() => handleRemoveEditParticularValue(pIdx, vIdx)}>
                                         <ion-icon name="trash"></ion-icon>
@@ -966,14 +1083,14 @@ export default function Disbursements() {
                               ))
                             ) : (
                               <tr>
-                                <td colSpan={isEditable ? "5" : "4"} style={{ textAlign: 'center', padding: '1.5rem', color: '#9ca3af', fontStyle: 'italic' }}>
+                                <td colSpan={canEditAccounting ? "5" : "4"} style={{ textAlign: 'center', padding: '1.5rem', color: '#9ca3af', fontStyle: 'italic' }}>
                                   <ion-icon name="information-circle-outline"></ion-icon> No Particular Categories provided.
                                 </td>
                               </tr>
                             )}
                           </tbody>
                         </table>
-                        {isEditable && (
+                        {canEditAccounting && (
                           <button type="button" className="btn-primary btn-small" onClick={() => handleAddEditParticularValue(pIdx)} style={{ marginTop: '1rem' }}>
                             + Add Category Row
                           </button>
@@ -1001,17 +1118,17 @@ export default function Disbursements() {
                           <th>Particulars</th>
                           <th>Debit</th>
                           <th>Credit</th>
-                          {isEditable && <th style={{ width: '50px' }}></th>}
+                          {canEditAccounting && <th style={{ width: '50px' }}></th>}
                         </tr>
                       </thead>
                       <tbody>
                         {editJeRows.map((row, index) => (
                           <tr key={index}>
-                            <td><input className="particulars-input" value={row.account_code || ''} onChange={(e) => handleEditJeRowChange(index, 'account_code', e.target.value)} disabled={!isEditable} /></td>
-                            <td><input className="particulars-input" value={row.particulars || ''} onChange={(e) => handleEditJeRowChange(index, 'particulars', e.target.value)} disabled={!isEditable} /></td>
-                            <td><input className="particulars-input" type="number" value={row.debit !== undefined ? row.debit : ''} onChange={(e) => handleEditJeRowChange(index, 'debit', e.target.value)} disabled={!isEditable} /></td>
-                            <td><input className="particulars-input" type="number" value={row.credit !== undefined ? row.credit : ''} onChange={(e) => handleEditJeRowChange(index, 'credit', e.target.value)} disabled={!isEditable} /></td>
-                            {isEditable && (
+                            <td><input className="particulars-input" value={row.account_code || ''} onChange={(e) => handleEditJeRowChange(index, 'account_code', e.target.value)} disabled={!canEditAccounting} /></td>
+                            <td><input className="particulars-input" value={row.particulars || ''} onChange={(e) => handleEditJeRowChange(index, 'particulars', e.target.value)} disabled={!canEditAccounting} /></td>
+                            <td><input className="particulars-input" type="number" value={row.debit !== undefined ? row.debit : ''} onChange={(e) => handleEditJeRowChange(index, 'debit', e.target.value)} disabled={!canEditAccounting} /></td>
+                            <td><input className="particulars-input" type="number" value={row.credit !== undefined ? row.credit : ''} onChange={(e) => handleEditJeRowChange(index, 'credit', e.target.value)} disabled={!canEditAccounting} /></td>
+                            {canEditAccounting && (
                               <td className="table-column-center">
                                 <button type="button" className="btn-danger btn-small" onClick={() => handleRemoveEditJeRow(index)}>
                                   <ion-icon name="trash"></ion-icon>
@@ -1022,7 +1139,7 @@ export default function Disbursements() {
                         ))}
                       </tbody>
                     </table>
-                    {isEditable && (
+                    {canEditAccounting && (
                       <button type="button" className="btn-primary btn-small" onClick={handleAddEditJeRow} style={{ marginTop: '1rem' }}>
                         + Add Journal Row
                       </button>
@@ -1033,7 +1150,7 @@ export default function Disbursements() {
                     <p className="empty empty--center" style={{ padding: '20px 22rem', border: '1px dashed var(--border-color)', borderRadius: '8px'}}>
                       <ion-icon name="information-circle-outline"></ion-icon> No journal entries provided.
                     </p>
-                    {isEditable && (
+                    {canEditAccounting && (
                       <button type="button" className="btn-primary btn-small" onClick={handleAddEditJeRow} style={{ marginTop: '1rem' }}>
                         + Add Journal Row
                       </button>
@@ -1078,12 +1195,20 @@ export default function Disbursements() {
                 </div>
               </section>
 
-              {/* --- DYNAMIC SUBMIT BUTTON --- */}
-              {isEditable && (
+              {/* --- DYNAMIC ACTIONS BASED ON DEPARTMENT --- */}
+              {canSave && (
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #eee', gap: '10px' }}>
-                  <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
-                    <ion-icon name="send-outline"></ion-icon> Resubmit DV
-                  </button>
+                  {canEditAccounting ? (
+                    <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
+                      <ion-icon name="send-outline"></ion-icon> Save & Resubmit DV
+                    </button>
+                  ) : (
+                    <>
+                      <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
+                        <ion-icon name="checkmark-circle"></ion-icon> Submit & Approve
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </form>
