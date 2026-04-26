@@ -39,7 +39,7 @@ export default function ArchivedDisbursements() {
     const query = search.trim().toLowerCase()
     
     const archivedItems = disbursements.filter(
-      (d) => String(d.status || '').toLowerCase() === 'archived'
+      (d) => String(d.dv_no || '').toLowerCase().includes(query)
     )
 
     if (!query) return archivedItems
@@ -48,6 +48,7 @@ export default function ArchivedDisbursements() {
       (
         String(d.tracking_no || '') +
         String(d.dv_no || '') +
+        String(d.status || '') +
         String(d.payee || '') +
         String(d.office || '')
       )
@@ -118,7 +119,7 @@ export default function ArchivedDisbursements() {
                   <td className="table-strong">{d.tracking_no}</td>
                   <td>{d.dv_no || '-'}</td>
                   <td className="table-column-center">
-                    <span className="status-badge status-archived">Archived</span>
+                    <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-') }>{d.status === 'completed' ? d.status : `${d.status} (${d.current_step})`}</span>
                   </td>
                   <td className='table-column-center'>{formatDateMMDDYYYY(d.created_date)}</td>
                   <td>{d.accounting_name || d.office}</td>

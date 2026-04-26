@@ -329,11 +329,15 @@ def dv_list(request):
 
         if not show_archived:
             if status_filter:
-                dvs = dvs.filter(status=status_filter)
+                # Special-case: when client requests 'archived', return DVs that have archive_info
+                if status_filter.lower() == 'archived':
+                    dvs = dvs.filter(archive_info__isnull=False)
+                else:
+                    dvs = dvs.filter(status=status_filter)
             else:
                 # Default: exclude archived unless explicitly requested
                 if request.user.department != 'accounting':
-                    dvs = dvs.exclude(status='archived')
+                    dvs = dvs.exclude(archive_info__isnull=False)
 
         if search:
             dvs = dvs.filter(
@@ -425,12 +429,6 @@ def dv_submit(request, pk):
     if request.user.department != 'accounting':
         return Response({'error': 'Only Accounting personnel can submit DVs.'}, status=status.HTTP_403_FORBIDDEN)
 
-    if dv.status != 'draft':
-        return Response(
-            {'error': f'Only draft Disbursement Vouchers can be submitted. Current status: {dv.status}'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
     dv.status = 'pending'
     dv.current_step = 2  # Forward to Budget
     dv.save()
@@ -475,7 +473,7 @@ def dv_approve(request, pk):
     )
     if user_step == 5:  # Mayor's Office - final step
         # Final approval: mark as archived so it moves to Archived view
-        dv.status = 'archived'
+        dv.status = 'completed'
         dv.current_step = 6
     else:
         dv.current_step = user_step + 1
@@ -483,7 +481,7 @@ def dv_approve(request, pk):
     dv.save()
 
     # If the DV just reached final (archived), create a report snapshot and archive record
-    if dv.status == 'archived' and user_step == 5:
+    if dv.status == 'completed' and user_step == 5:
         try:
             DVReport.objects.update_or_create(dv=dv, defaults={'payload': DVSerializer(dv).data})
         except Exception:
@@ -541,8 +539,9 @@ def dv_disapprove(request, pk):
         action_by=request.user, remarks='Auto-archived after disapproval.'
     )
 
-    dv.status = 'archived'
-    dv.current_step = 1
+    # Preserve the DV's status as 'disapproved' so it can be resubmitted later
+    dv.status = 'disapproved'
+    dv.current_step = user_step  # Keep track of where it was disapproved for resubmission
     dv.last_disapproved_step = user_step
     dv.save()
 
@@ -634,13 +633,12 @@ def dashboard_stats(request):
 
     if user.department == 'accounting':
         stats = {
-            'total': DV.objects.exclude(status='archived').count(),
-            'draft': DV.objects.filter(status='draft').count(),
+            'total': DV.objects.exclude(archive_info__isnull=False).count(),
             'pending': DV.objects.filter(status='pending').count(),
             'disapproved': DV.objects.filter(status='disapproved').count(),
             'completed': DV.objects.filter(status='completed').count(),
-            'archived': DV.objects.filter(status='archived').count(),
-            'for_action': DV.objects.filter(status__in=['draft', 'disapproved']).count(),
+            'archived': DVArchived.objects.count(),
+            'for_action': DV.objects.filter(status__in=['disapproved']).count(),
         }
     else:
         user_step = DEPT_STEP.get(user.department, 0)
@@ -648,8 +646,7 @@ def dashboard_stats(request):
         approved_by_me = DVWorkflow.objects.filter(action_by=user, status='approved').count()
         disapproved_by_me = DVWorkflow.objects.filter(action_by=user, status='disapproved').count()
         stats = {
-            'total': DV.objects.exclude(status='archived').count(),
-            'draft': 0,
+            'total': DV.objects.exclude(archive_info__isnull=False).count(),
             'pending': for_approval,
             'disapproved': disapproved_by_me,
             'completed': DV.objects.filter(status='completed').count(),
@@ -659,7 +656,7 @@ def dashboard_stats(request):
         }
 
     # Recent activity
-    recent_dvs = DV.objects.exclude(status='archived').order_by('-updated_at')[:5]
+    recent_dvs = DV.objects.exclude(archive_info__isnull=False).order_by('-updated_at')[:5]
     recent = DVSerializer(recent_dvs, many=True).data
 
     return Response({**stats, 'recent_dvs': recent})
@@ -754,36 +751,221 @@ def dv_report_pdf(request, dv_id):
     # Build an HTML representation from the stored payload
     payload = report.payload or {}
     rows = []
-    # Try to show details: particulars and JE rows
+    # --- BUILD PARTICULARS TABLE ---
+    particular_rows = ""
     particulars = payload.get('particulars', [])
-    for part in particulars:
-        desc = part.get('description', '')
-        jev = part.get('jev_no', '')
-        date = part.get('date', '')
-        rows.append(f"<tr><td>{jev or '-'}</td><td>{date or '-'}</td><td>{desc or '-'}</td></tr>")
 
+    for p in particulars:
+        desc = p.get('description', '-')
+        jev = p.get('jev_no', '-')
+        date = p.get('date', '-')
+
+        # Category breakdown (NP / FT / TF)
+        cat_values = p.get('category_values', [])
+        cat_text = ""
+        for c in cat_values:
+            cat_text += f"{c.get('category','')} (NP:{c.get('np',0)} FT:{c.get('ft',0)} TF:{c.get('tf',0)})<br>"
+
+        particular_rows += f"""
+        <tr>
+            <td>{jev}</td>
+            <td>{date}</td>
+            <td>{desc}<br><small>{cat_text}</small></td>
+        </tr>
+        """
+
+    if not particular_rows:
+        particular_rows = "<tr><td colspan='3'>No particulars available</td></tr>"
+
+
+    # --- BUILD JOURNAL ENTRIES ---
+    je_rows = ""
+    journal_entries = payload.get('journal_entries', [])
+
+    for je in journal_entries:
+        je_rows += f"""
+        <tr>
+            <td>{je.get('account_title','-')}</td>
+            <td>{je.get('account_code','-')}</td>
+            <td>{je.get('debit','-')}</td>
+            <td>{je.get('credit','-')}</td>
+        </tr>
+        """
+
+    if not je_rows:
+        je_rows = "<tr><td colspan='4'>No journal entries</td></tr>"
+
+
+    # --- BUILD PAYMENTS ---
+    payment_info = ""
+    payments = payload.get('payments', [])
+
+    for pay in payments:
+        payment_info += f"""
+        Bank: {pay.get('bank','-')}<br>
+        Date: {pay.get('date','-')}<br>
+        Ref No: {pay.get('reference_no','-')}<br><br>
+        """
+
+
+    # --- MAIN HTML ---
     html = f"""
     <html>
-      <head>
-        <meta charset='utf-8'/>
-        <style>
-          body {{ font-family: Arial, sans-serif; font-size: 12px; }}
-          table {{ width:100%; border-collapse: collapse; margin-bottom:1rem }}
-          th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-          th {{ background: #f3f4f6; }}
-          h2 {{ color: #2c5dff; }}
-        </style>
-      </head>
-      <body>
-        <h2>Disbursement Voucher Report</h2>
-        <p><strong>DV#:</strong> {payload.get('dv_no', '-') } &nbsp; <strong>Tracking#:</strong> {payload.get('tracking_no','-')}</p>
-        <p><strong>Payee:</strong> {payload.get('payee','-')} &nbsp; <strong>Office:</strong> {payload.get('office','-')}</p>
-        <h3>Particulars</h3>
-        <table>
-          <thead><tr><th>JEV#</th><th>Date</th><th>Description</th></tr></thead>
-          <tbody>{''.join(rows) or '<tr><td colspan="3">No particulars</td></tr>'}</tbody>
-        </table>
-      </body>
+    <head>
+    <meta charset="utf-8">
+    <style>
+    body {{
+        font-family: Arial;
+        font-size: 11px;
+    }}
+    table {{
+        width: 100%;
+        border-collapse: collapse;
+    }}
+    td, th {{
+        border: 1px solid black;
+        padding: 5px;
+    }}
+    .center {{ text-align: center; }}
+    .left {{ text-align: left; }}
+    .bold {{ font-weight: bold; }}
+    .no-bold {{ font-weight: normal; }}
+    .small {{ font-size: 10px; }}
+    .medium {{ font-size: 12px; }}
+    .large {{ font-size: 14px; }}
+    </style>
+    </head>
+
+    <body>
+
+    <!-- HEADER -->
+    <table>
+    <tr>
+        <td rowspan="2" class="center bold" style="width: 40px;">
+            <img src="/MuniLuna.png" alt="Seal" style="height: 40px;">
+        </td>
+        <td rowspan="1" class="center bold medium" style="width: 80px;">
+            <p class="no-bold" style="margin-bottom: -10px;">Republic of the Philippines</p><br>
+            <h3 class="large" style="margin-top: -3px; margin-bottom: -3px;">MUNICIPALITY OF LUNA</h3><br>
+            <p class="no-bold" style="margin-top: -10px;">Province of La Union</p>
+        </td>
+        <td rowspan="2" class="center bold" style="width: 60px;"></td>
+        <td rowspan="2" class="left bold small" style="width: 120px;">
+            <h3>Fund Source</h3>
+            <input type="checkbox" style="transform: scale(1.5); " disabled> GF <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> SEF</br> 
+            <input type="checkbox" style="transform: scale(1.5); " disabled> 20% DF <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> TF</br>
+            <input type="checkbox" style="transform: scale(1.5); " disabled> 5% DRRMF <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> PhilHealth</br>
+            <input type="checkbox" style="transform: scale(1.5); " disabled> CAD <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> Calamity</br>
+            <input type="checkbox" style="transform: scale(1.5); " disabled> RA7171</br>
+        </td>
+    </tr>
+    <tr>
+        <td rowspan="1" class="center bold" style="width: 80px;">DISBURSEMENT VOUCHER</td>
+        <td rowspan="1" class="center bold" style="width: 80px;"></td>
+    </tr>
+    <tr>
+        <td rowspan="1" class="center bold">MODE OF PAYMENT</td>
+        <td colspan="2" class="left bold">
+            <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> CASH
+            <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> CHECK
+            <input type="checkbox" style="transform: scale(1.5); margin-right: 5px;" disabled> OTHERS
+            <label>Specify: {payload.get('mode_of_payment_other','-')}</label>
+        </td>
+        <td rowspan="1" class="center bold">Date: {payload.get('date','-')}</td>
+    </tr>
+
+    <tr>
+        <td colspan="3"><b>Payee:</b> {payload.get('payee','-')}</td>
+        <td colspan="3"><b>Office:</b> {payload.get('office','-')}</td>
+    </tr>
+
+    <tr>
+        <td><b>DV No:</b> {payload.get('dv_no','-')}</td>
+        <td><b>Tracking No:</b> {payload.get('tracking_no','-')}</td>
+        <td><b>TIN:</b> {payload.get('tin','-')}</td>
+        <td colspan="3"><b>Fund Source:</b> {payload.get('fund_source','-')}</td>
+    </tr>
+
+    <tr>
+        <td colspan="3"><b>Responsibility Center:</b> {payload.get('responsibility_center','-')}</td>
+        <td colspan="3"><b>CAFOA No:</b> {payload.get('cafoa_no','-')}</td>
+    </tr>
+    </table>
+
+    <br>
+
+    <!-- PARTICULARS -->
+    <table>
+    <tr>
+        <th>JEV No</th>
+        <th>Date</th>
+        <th>Description</th>
+    </tr>
+    {particular_rows}
+    </table>
+
+    <br>
+
+    <!-- ACCOUNTING ENTRIES -->
+    <table>
+    <tr class="left">
+        <th colspan="4" class="small">Accounting Entries</th>
+    </tr>
+    <tr>
+        <th>PARTICULARS</th>
+        <th>Account</th>
+        <th>Debit</th>
+        <th>Credit</th>
+    </tr>
+    {je_rows}
+    </table>
+
+    <br>
+
+    <!-- PAYMENT -->
+    <table>
+    <tr>
+        <td>
+            <b>Payment Details:</b><br>
+            {payment_info or 'No payment data'}
+        </td>
+    </tr>
+    </table>
+
+    <br>
+
+    <!-- SIGNATURES -->
+    <table>
+    <tr>
+        <td class="small">
+            A. Certified: Expenses are necessary and lawful
+        </td>
+        <td class="small">
+            B. Certified: Documents complete
+        </td>
+        <td class="small">
+            C. Certified: Funds available
+        </td>
+    </tr>
+
+    <tr>
+        <td height="40"></td>
+        <td></td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+            <b>Approved for Payment:</b><br>
+            Amount: {payload.get('amount','-')}
+        </td>
+        <td>
+            <b>Advice No:</b> {payload.get('advice_no','-')}
+        </td>
+    </tr>
+    </table>
+
+    </body>
     </html>
     """
 
