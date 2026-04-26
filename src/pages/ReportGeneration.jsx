@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiRequest, BASE_URL, getToken, getCurrentUser } from '../api'
 import ReactModal from '../components/ReactModal'
+import {toast} from 'react-toastify'
 
 export default function ReportGeneration() {
   // 🔥 State controls modal visibility
@@ -170,7 +171,7 @@ export default function ReportGeneration() {
               footer={
                 <>
                   <button onClick={closeModal}>Cancel</button>
-                  <button onClick={() => alert('Confirmed')}>
+                  <button onClick={() => toast.success('Confirmed')}>
                     Confirm
                   </button>
                 </>
@@ -245,7 +246,7 @@ export default function ReportGeneration() {
                             URL.revokeObjectURL(url)
                           } catch (err) {
                             console.error(err)
-                            alert('Failed to download report PDF')
+                            toast.error('Failed to download report PDF')
                           }
                         }}>⤓ Export PDF</button>
                       </td>
