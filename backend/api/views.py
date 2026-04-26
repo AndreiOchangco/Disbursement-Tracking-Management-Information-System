@@ -1031,6 +1031,10 @@ def dv_report_pdf(request, dv_id):
             <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">{payload.get('amount_due','')}</td>
         </tr>
     </table>
+    <table>
+        <tr>
+        </tr>
+    </table>
 
     </body>
     </html>
