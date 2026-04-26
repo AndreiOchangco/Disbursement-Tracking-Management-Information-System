@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react'
 import { apiRequest, getCurrentUser } from '../api'
+import {toast} from 'react-toastify'
 
 export default function UserManagement() {
   const [users, setUsers] = useState([])
@@ -54,7 +55,7 @@ export default function UserManagement() {
     } catch (err) {
       console.error('Failed to load users:', err.message, err)
       const errorMsg = err.message?.includes('403') ? 'You do not have permission to view users. Only System Administrators can access this.' : 'Error loading users. Please try again.'
-      alert(errorMsg)
+      toast.error(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -89,12 +90,12 @@ export default function UserManagement() {
     e.preventDefault()
 
     if (!formData.full_name || !formData.email) {
-      alert('Please fill in all required fields')
+      toast.error('Please fill in all required fields')
       return
     }
 
     if (!editingUser && !formData.password) {
-      alert('Password is required for new users')
+      toast.error('Password is required for new users')
       return
     }
 
@@ -110,19 +111,19 @@ export default function UserManagement() {
         }
         result = await apiRequest(`/users/signup/${editingUser.id}/`, 'PUT', submitData)
         setUsers(users.map(u => u.id === editingUser.id ? result : u))
-        alert('User updated successfully')
+        toast.success('User updated successfully')
       } else {
         // Create user
         result = await apiRequest('/users/signup/', 'POST', submitData)
         setUsers([result, ...users])
-        alert('User created successfully')
+        toast.success('User created successfully')
       }
 
       calculateStats([...users.filter(u => u.id !== editingUser?.id), result])
       resetForm()
     } catch (err) {
       console.error('Failed to save user:', err)
-      alert('Error saving user')
+      toast.error('Error saving user')
     } finally {
       setLoading(false)
     }
@@ -159,10 +160,10 @@ export default function UserManagement() {
       setLoading(true)
       await apiRequest(`/users/${id}/`, 'DELETE')
       setUsers(users.map(u => u.id === id ? { ...u, status: 'archived' } : u))
-      alert('User archived successfully')
+      toast.success('User archived successfully')
     } catch (err) {
       console.error('Failed to archive user:', err.message, err)
-      alert(err.message || 'Error archiving user')
+      toast.error(err.message || 'Error archiving user')
     } finally {
       setLoading(false)
     }
@@ -175,10 +176,10 @@ export default function UserManagement() {
         status: 'inactive'
       })
       setUsers(users.map(u => u.id === id ? updated : u))
-      alert('User restored successfully')
+      toast.success('User restored successfully')
     } catch (err) {
       console.error('Failed to restore user:', err.message, err)
-      alert(err.message || 'Error restoring user')
+      toast.error(err.message || 'Error restoring user')
     } finally {
       setLoading(false)
     }
@@ -194,7 +195,7 @@ export default function UserManagement() {
       setUsers(users.map(u => u.id === user.id ? updated : u))
     } catch (err) {
       console.error('Failed to update user status:', err)
-      alert('Error updating user status')
+      toast.error(err.message || 'Error updating user status')
     }
   }
 
