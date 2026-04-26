@@ -23,7 +23,7 @@ export default function ReportGeneration() {
   const [loading, setLoading] = useState(false)
   const [reports, setReports] = useState([])
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize, setPageSize] = useState(5)
   const [totalPages, setTotalPages] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const [filterDvNo, setFilterDvNo] = useState('')
