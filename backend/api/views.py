@@ -18,7 +18,53 @@ from django.http import HttpResponse
 import os
 from pathlib import Path
 import base64
-import os
+from num2words import num2words
+
+def amount_to_words(amount):
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return ""
+
+    whole = int(amount)
+    cents = int(round((amount - whole) * 100))
+
+    words = num2words(whole, lang='en').upper()
+
+    if cents > 0:
+        return f"{words} PESOS AND {cents:02d}/100"
+    else:
+        return f"{words} PESOS ONLY"
+    
+def is_checked(value, expected):
+    if not value:
+        return ""
+
+    value = str(value).lower()
+
+    mapping = {
+        "gf": ["gf", "general fund"],
+        "sef": ["sef"],
+        "20% df": ["20% df", "20 percent df"],
+        "tf": ["tf", "trust fund"],
+        "5% drrmf": ["5% drrmf"],
+        "philhealth": ["philhealth"],
+        "cad": ["cad"],
+        "calamity": ["calamity"],
+        "ra7171": ["ra7171"],
+
+        "cash": ["cash"],
+        "check": ["check", "cheque"],
+        "others": ["others", "other"]
+    }
+
+    valid_values = mapping.get(expected.lower(), [expected.lower()])
+
+    for v in valid_values:
+        if v in value:
+            return "checked"
+
+    return ""
 
 DEPT_STEP = {
     'accounting': 1,
@@ -739,6 +785,7 @@ def dv_report_pdf(request, dv_id):
         report = DVReport.objects.get(dv__id=dv_id)
     except DVReport.DoesNotExist:
         return Response({'error': 'Report not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
 
     # Build an HTML representation from the stored payload
     payload = report.payload or {}
@@ -772,26 +819,106 @@ def dv_report_pdf(request, dv_id):
 
     # --- BUILD DYNAMIC PARTICULARS DETAILS (Replaces hardcoded sentence and table) ---
     particulars_details_html = ""
+
+    grand_total = 0
     
     for p in particulars:
         desc = p.get('description', '')
         cat_values = p.get('category_values', [])
 
         cat_rows = ""
+        # accumulate totals for this particular's category breakdown
+        total_np = 0
+        total_ft = 0
+        total_tf = 0
+        total_sum = 0
+        has_np = has_ft = has_tf = has_sum = False
+
+        def _to_num(v):
+            if isinstance(v, (int, float)):
+                return v
+            if isinstance(v, str):
+                s = v.replace(',', '').strip()
+                if s in ('', '-', None):
+                    return None
+                try:
+                    return float(s)
+                except Exception:
+                    return None
+            return None
+
         for c in cat_values:
             cat = c.get('category', '')
             np_val = c.get('np', '-')
             ft_val = c.get('ft', '-')
             tf_val = c.get('tf', '-')
-            
+            adjust_val = c.get('adjustment', '-')
+
+            # coerce displayed values to numbers when possible
+            np_num = _to_num(np_val)
+            ft_num = _to_num(ft_val)
+            tf_num = _to_num(tf_val)
+            adj_num = _to_num(adjust_val)
+
+            if np_num is not None and ft_num is not None and tf_num is not None:
+                sum_num = np_num + ft_num + tf_num
+            else:
+                sum_num = None
+
+            # apply adjustment to numeric sum and to np if needed
+            if sum_num is not None and adj_num:
+                sum_num += adj_num
+                if np_num is not None:
+                    np_num = np_num + adj_num
+
+            # prepare display values (preserve original if non-numeric)
+            if isinstance(np_num, (int, float)):
+                np_disp = format(np_num, ',.2f')
+            else:
+                np_disp = np_val
+            if isinstance(ft_num, (int, float)):
+                ft_disp = format(ft_num, ',.2f')
+            else:
+                ft_disp = ft_val
+            if isinstance(tf_num, (int, float)):
+                tf_disp = format(tf_num, ',.2f')
+            else:
+                tf_disp = tf_val
+
+            # accumulate totals using numeric values
+            if isinstance(np_num, (int, float)):
+                total_np += np_num
+                has_np = True
+            if isinstance(ft_num, (int, float)):
+                total_ft += ft_num
+                has_ft = True
+            if isinstance(tf_num, (int, float)):
+                total_tf += tf_num
+                has_tf = True
+            if isinstance(np_num, (int, float)) or isinstance(ft_num, (int, float)) or isinstance(tf_num, (int, float)):
+                grand_total += ft_num
+
             cat_rows += f"""
                 <tr>
                     <td>{cat}</td>
-                    <td>{np_val}</td>
-                    <td>{ft_val}</td>
-                    <td>{tf_val}</td>
+                    <td>{np_disp}</td>
+                    <td>{ft_disp}</td>
+                    <td>{tf_disp}</td>
                 </tr>
             """
+
+        # totals row (show '-' when no numeric values present)
+        total_np_display = format(total_np, ',.2f') if has_np else '-'
+        total_ft_display = format(total_ft, ',.2f') if has_ft else '-'
+        total_tf_display = format(total_tf, ',.2f') if has_tf else '-'
+        cat_rows += f"""
+            <tr>
+                <td></td>
+                <td style="font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">{total_np_display}</td>
+                <td style="font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">{total_ft_display}</td>
+                <td style="font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">{total_tf_display}</td>
+            </tr>
+        """
 
         particulars_details_html += f"""
             <span style="text-align: center; display: block; margin-bottom: 6px;" class="medium">
@@ -890,6 +1017,15 @@ def dv_report_pdf(request, dv_id):
                 img_src_2 = 'file:///' + str(p).replace('\\', '/')
             break
 
+    amount_due = grand_total
+    amount_due_display = f"{amount_due:,.2f}" if amount_due else "0.00"
+    amount_in_words = amount_to_words(amount_due)
+
+    fund_source = (payload.get('fund_source') or "").strip().lower()
+
+    mop = (payload.get('mop') or "").strip().lower()
+    mop_specify = payload.get('mop_specify', '')
+
     # --- MAIN HTML ---
     html = f"""
     <html>
@@ -953,11 +1089,11 @@ def dv_report_pdf(request, dv_id):
 
         <td rowspan="1" class="left bold small" style="width: 200px;">
             <h3 style="margin-bottom: -2px;">Fund Source</h3>
-            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" disabled> GF <input type="checkbox" style="transform: scale(1.5); margin-left: 80px; margin-bottom: -3px;" disabled> SEF</br> 
-            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" disabled> 20% DF <input type="checkbox" style="transform: scale(1.5); margin-left: 57px; margin-bottom: -3px;" disabled> TF</br>
-            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" disabled> 5% DRRMF <input type="checkbox" style="transform: scale(1.5); margin-left: 40px; margin-bottom: -3px;" disabled> PhilHealth</br>
-            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" disabled> CAD <input type="checkbox" style="transform: scale(1.5); margin-left: 73px; margin-bottom: -3px;" disabled> Calamity</br>
-            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" disabled> RA7171</br>
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, 'gf')} disabled> GF <input type="checkbox" style="transform: scale(1.5); margin-left: 80px; margin-bottom: -3px;" {is_checked(fund_source, 'sef')} disabled> SEF</br> 
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, '20% df')} disabled> 20% DF <input type="checkbox" style="transform: scale(1.5); margin-left: 57px; margin-bottom: -3px;" {is_checked(fund_source, 'tf')} disabled> TF</br>
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, '5% drrmf')} disabled> 5% DRRMF <input type="checkbox" style="transform: scale(1.5); margin-left: 40px; margin-bottom: -3px;" {is_checked(fund_source, 'philhealth')} disabled> PhilHealth</br>
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, 'cad')} disabled> CAD <input type="checkbox" style="transform: scale(1.5); margin-left: 73px; margin-bottom: -3px;" {is_checked(fund_source, 'calamity')} disabled> Calamity</br>
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, 'ra7171')} disabled> RA7171</br>
         </td>
     </tr>
 
@@ -972,10 +1108,10 @@ def dv_report_pdf(request, dv_id):
     <tr>
         <td rowspan="1" class="center bold medium">MODE OF PAYMENT</td>
         <td colspan="2" class="left bold small">
-            <input type="checkbox" style="transform: scale(1.5); margin-right: 3px;" disabled> CASH
-            <input type="checkbox" style="transform: scale(1.5); margin-right: 3px; margin-left: 10px;" disabled> CHECK
-            <input type="checkbox" style="transform: scale(1.5); margin-right: 3px; margin-left: 10px;" disabled> OTHERS
-            <label style="margin-left: 10px;">Specify: <span style="text-decoration: underline; font-size: 12px; margin-left: 10px;">{payload.get('mode_of_payment_other', '')}</span></label>
+            <input type="checkbox" style="transform: scale(1.5); margin-right: 3px;" {is_checked(mop, 'cash')} disabled> CASH
+            <input type="checkbox" style="transform: scale(1.5); margin-right: 3px; margin-left: 10px;" {is_checked(mop, 'check')} disabled> CHECK
+            <input type="checkbox" style="transform: scale(1.5); margin-right: 3px; margin-left: 10px;" {is_checked(mop, 'others')} disabled> OTHERS
+            <label style="margin-left: 10px;">Specify: <span style="text-decoration: underline; font-size: 12px; margin-left: 10px;">{mop_specify if 'other' in mop else ''}</span></label>
         </td>
         <td rowspan="1" class="bold small" style="width: 120px; position:relative; display:flex; align-items:center; justify-content:center;">
             <span style="position:absolute; margin-top: -6px;">Date:</span>
@@ -1023,15 +1159,15 @@ def dv_report_pdf(request, dv_id):
         <td colspan="3">
             {particulars_details_html}
         </td>
-        <td colspan="1"></td>
+        <td colspan="1">{total_ft_display}</td>
     </tr>
     </table>
     <table>
         <tr>
             <td colspan="1" class="center bold medium" style="text-align: center;">Amount in </br> Words: </td>
-            <td colspan="2" class="center bold medium" style="text-align: center; width: 56%;">{payload.get('amount_in_words','')}</td>
+            <td colspan="2" class="center bold medium" style="text-align: center; width: 56%;">{amount_in_words}</td>
             <td colspan="2" class="center bold medium" style="text-align: center;">Amount Due: ></td>
-            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">{payload.get('amount_due','')}</td>
+            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">{amount_due_display}</td>
         </tr>
     </table>
     <table>

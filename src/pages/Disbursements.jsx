@@ -608,7 +608,7 @@ export default function Disbursements() {
 
               {/* --- PARTICULARS SECTION --- */}
               <section className="panel-section" style={{ marginTop: '2rem' }}>
-                <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars Section</h4>
+                <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars</h4>
                   <div className="general-description-wrapper">
                     <label className="general-label">
                       <span>JEV Number</span>
@@ -663,21 +663,18 @@ export default function Disbursements() {
                       ))}
                     </tbody>
                   </table>
-                  <button type="button" className="btn-primary btn-small" onClick={addParticularRow} style={{ marginTop: '1rem' }}>
-                    + Add Category Row
-                  </button>
                 </div>
               </section>
 
-              {/* --- JOURNAL ENTRY SECTION --- */}
+              {/* --- ACCOUNTING ENTRY SECTION --- */}
               <section className="panel-section" style={{ marginTop: '2.5rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.5rem' }}>
-                <h4 className="section-title"><ion-icon name="journal-outline"></ion-icon> Journal Entry Section</h4>
+                <h4 className="section-title"><ion-icon name="journal-outline"></ion-icon> Accounting Entries</h4>
                 <div className="table-wrap">
                   <table className="particulars-table">
                     <thead>
                       <tr>
-                        <th>Account Code</th>
                         <th>Particulars</th>
+                        <th>Account</th>
                         <th>Debit</th>
                         <th>Credit</th>
                         <th style={{ width: '50px' }}></th>
@@ -687,10 +684,10 @@ export default function Disbursements() {
                       {jeRows.map((row, index) => (
                         <tr key={index}>
                           <td>
-                            <input className="particulars-input" type="text" value={row.account_code} onChange={(e) => handleJeRowChange(index, 'account_code', e.target.value)} placeholder="Code" />
+                            <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Description" />
                           </td>
                           <td>
-                            <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Description" />
+                            <input className="particulars-input" type="text" value={row.account_code} onChange={(e) => handleJeRowChange(index, 'account_code', e.target.value)} placeholder="Code" />
                           </td>
                           <td><input className="particulars-input" type="number" value={row.debit} onChange={(e) => handleJeRowChange(index, 'debit', e.target.value)} placeholder="0.00" /></td>
                           <td><input className="particulars-input" type="number" value={row.credit} onChange={(e) => handleJeRowChange(index, 'credit', e.target.value)} placeholder="0.00" /></td>
