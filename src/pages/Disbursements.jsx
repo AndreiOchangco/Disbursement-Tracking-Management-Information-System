@@ -86,6 +86,8 @@ export default function Disbursements() {
   const [editAtmNo, setEditAtmNo] = useState('');
   const [editBank, setEditBank] = useState('');
   const [editPaymentDate, setEditPaymentDate] = useState('');
+  const [editPaymentJevNo, setEditPaymentJevNo] = useState('');
+  const [editReceivedPaymentDate, setEditReceivedPaymentDate] = useState('');
 
   const initialOfficer = (() => {
     const u = getCurrentUser()
@@ -215,12 +217,13 @@ export default function Disbursements() {
             atm_no: "",
             bank: "",
             date: null,
+            jev_no: particularJevNo || null,
+            rec_date: null,
           },
         ],
         particulars: [
           {
             description: particularDescription,
-            jev_no: particularJevNo,
             date: particularDate,
             category_values: particulars.map((item) => ({
               category: item.category,
@@ -231,8 +234,8 @@ export default function Disbursements() {
           },
         ],
         journal_entries: jeRows.map(je => ({
-          account_code: je.account_code,
           particulars: je.particulars,
+          account_code: je.account_code,
           debit: parseFloat(je.debit) || 0,
           credit: parseFloat(je.credit) || 0
         })),
@@ -261,7 +264,6 @@ export default function Disbursements() {
       setCreatedDate(new Date().toISOString().split('T')[0])
       
       setParticularDescription('')
-      setParticularJevNo('')
       setParticularDate(new Date().toISOString().split('T')[0])
       setParticulars([{ category: '', np: '', ft: '', tf: '' }])
       setJeRows([{ account_code: '', particulars: '', debit: 0, credit: 0 }]);
@@ -394,17 +396,26 @@ export default function Disbursements() {
     setEditParticulars(updated);
   };
 
-  const handleEditParticularJevNo = (pIdx, value) => {
-    const updated = [...editParticulars];
-    updated[pIdx] = { ...updated[pIdx], jev_no: value };
-    setEditParticulars(updated);
-  };
-
   const handleEditParticularValue = (pIdx, vIdx, field, value) => {
     const updated = [...editParticulars];
     const updatedVals = [...updated[pIdx].category_values];
     updatedVals[vIdx] = { ...updatedVals[vIdx], [field]: value };
     updated[pIdx] = { ...updated[pIdx], category_values: updatedVals };
+    setEditParticulars(updated);
+  };
+
+  const handleEditPaymentJevNo = (pIdx, value) => {
+    const updated = [...editParticulars];
+    updated[pIdx] = { ...updated[pIdx], jev_no: value };
+    setEditParticulars(updated);
+  };
+
+  const handleAddEditPaymentJevNo = (pIdx) => {
+    const updated = [...editParticulars];
+    if (!updated[pIdx].jev_no) {
+      updated[pIdx].jev_no = [];
+    }
+    updated[pIdx].jev_no.push({ jev_no: ''});
     setEditParticulars(updated);
   };
 
@@ -465,7 +476,8 @@ export default function Disbursements() {
     setEditAtmNo(dv.payments?.[0]?.atm_no || '');
     setEditBank(dv.payments?.[0]?.bank || '');
     setEditPaymentDate(dv.payments?.[0]?.date || '');
-    
+    setEditReceivedPaymentDate(dv.payments?.[0]?.rec_date || '');
+    setEditPaymentJevNo(dv.payments?.[0]?.jev_no || '');
     // Arrays
     setEditParticulars(dv.particulars ? JSON.parse(JSON.stringify(dv.particulars)) : []);
     setEditJeRows(dv.journal_entries ? JSON.parse(JSON.stringify(dv.journal_entries)) : []);
@@ -505,6 +517,8 @@ export default function Disbursements() {
             atm_no: editAtmNo,
             bank: editBank,
             date: editPaymentDate || null,
+            jev_no: editPaymentJevNo || null,
+            rec_date: editReceivedPaymentDate || null,
           }
         ]
       };
@@ -610,17 +624,6 @@ export default function Disbursements() {
               <section className="panel-section" style={{ marginTop: '2rem' }}>
                 <h4 className="section-title"><ion-icon name="list-circle-outline"></ion-icon> Particulars</h4>
                   <div className="general-description-wrapper">
-                    <label className="general-label">
-                      <span>JEV Number</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="general-description"
-                      value={particularJevNo}
-                      onChange={(e) => setParticularJevNo(e.target.value)}
-                      placeholder="Enter JEV Number"
-                      style={{ marginBottom: '1rem', minHeight: '40px' }}
-                    />
                     
                     <label className="general-label">
                       <span>General Description</span>
@@ -663,6 +666,9 @@ export default function Disbursements() {
                       ))}
                     </tbody>
                   </table>
+                  <button type="button" className="btn-primary btn-small" onClick={addParticularRow} style={{ marginTop: '1rem' }}>
+                    + Add Category Row
+                  </button>
                 </div>
               </section>
 
@@ -1011,6 +1017,21 @@ export default function Disbursements() {
                   <span>Date of Payment</span>
                   <input type="date" value={editPaymentDate} onChange={(e) => setEditPaymentDate(e.target.value)} disabled={!canEditTreasurer} />
                 </label>
+                <label className="general-label">
+                  <span>JEV Number</span>
+                  <input
+                    type="text"
+                    className="general-description"
+                    value={particularJevNo}
+                    onChange={(e) => setParticularJevNo(e.target.value)}
+                    placeholder="Enter JEV Number"
+                    style={{ marginBottom: '1rem', minHeight: '40px' }}
+                  />
+                </label>
+                <label>
+                  <span>Date of Received Payment</span>
+                  <input type="date" value={editReceivedPaymentDate} onChange={(e) => setEditReceivedPaymentDate(e.target.value)} disabled={!canEditTreasurer} />
+                </label>
               </div>
 
               {/* --- PARTICULARS SECTION --- */}
@@ -1028,7 +1049,7 @@ export default function Disbursements() {
                           type="text"
                           className="general-description"
                           value={part.jev_no || ''}
-                          onChange={(e) => handleEditParticularJevNo(pIdx, e.target.value)}
+                          onChange={(e) => handleEditPaymentJevNo(pIdx, e.target.value)}
                           disabled={!canEditAccounting}
                           style={{ 
                             marginBottom: '1rem',

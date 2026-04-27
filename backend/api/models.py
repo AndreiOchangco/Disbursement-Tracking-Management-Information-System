@@ -152,6 +152,8 @@ class DVPayment(models.Model):
     atm_no = models.CharField(max_length=100, blank=True, null=True)
     bank = models.CharField(max_length=255, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
+    jev_no = models.CharField(max_length=100, blank=True, null=True)
+    rec_date = models.DateField(blank=True, null=True)
 
     class Meta:
         db_table = 'dv_payment'
