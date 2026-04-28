@@ -97,7 +97,8 @@ class DV(models.Model):
         User, on_delete=models.SET_NULL, null=True, related_name='created_dvs'
     )
     payee = models.CharField(max_length=255)
-    office = models.CharField(max_length=255)
+    position_office = models.CharField(max_length=255, blank=True, null=True)
+    office_unit_project = models.CharField(max_length=255, blank=True, null=True)
     cafoa_no = models.CharField(max_length=100, blank=True, null=True)
     created_date = models.DateField()
     advice_no = models.CharField(max_length=100, blank=True, null=True)

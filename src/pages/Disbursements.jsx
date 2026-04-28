@@ -44,6 +44,8 @@ export default function Disbursements() {
   const [adviceDate, setAdviceDate] = useState('')
   const [transactionNo, setTransactionNo] = useState('')
   const [transactionDate, setTransactionDate] = useState('')
+  const [positionOffice, setPositionOffice] = useState('')
+  const [officeUnitProject, setOfficeUnitProject] = useState('')
 
   const [particularDescription, setParticularDescription] = useState('')
   const [particularJevNo, setParticularJevNo] = useState('')
@@ -73,6 +75,8 @@ export default function Disbursements() {
   const [editTransactionDate, setEditTransactionDate] = useState('');
   const [editParticulars, setEditParticulars] = useState([]);
   const [editJeRows, setEditJeRows] = useState([]);
+  const [editPositionOffice, setEditPositionOffice] = useState('');
+  const [editOfficeUnitProject, setEditOfficeUnitProject] = useState('');
 
   // Budget Fields
   const [editCafoaNo, setEditCafoaNo] = useState('');
@@ -204,6 +208,8 @@ export default function Disbursements() {
         current_step: 2,
         fund_source: fundSource,
         tin,
+        position_office: positionOffice,
+        office_unit_project: officeUnitProject,
         advice_no: adviceNo || null,
         advice_date: adviceDate || null,
         transaction_no: transactionNo || null,
@@ -253,6 +259,8 @@ export default function Disbursements() {
       setStatus('Pending')
       setPayee('')
       setFundSource('GF')
+      setPositionOffice('')
+      setOfficeUnitProject('')
       setTin('')
       setAdviceNo('')
       setAdviceDate('')
@@ -445,8 +453,12 @@ export default function Disbursements() {
     setEditPayee(dv.payee || '');
     setEditTin(dv.tin || '');
     setEditFundSource(dv.fund_source || 'GF');
+    setEditPositionOffice(dv.position_office || '');
+    setEditOfficeUnitProject(dv.office_unit_project || '');
     setEditCreatedDate(dv.created_date || '');
-    setEditOffice(dv.office || '');
+    setEditOffice(dv.accounting_name
+      
+      || '');
     setEditStatus(dv.status || '');
     setEditAdviceNo(dv.advice_no || '');
     setEditAdviceDate(dv.advice_date || '');
@@ -484,6 +496,8 @@ export default function Disbursements() {
         tin: editTin,
         fund_source: editFundSource,
         created_date: editCreatedDate,
+        position_office: editPositionOffice,
+        office_unit_project: editOfficeUnitProject,
         advice_no: editAdviceNo || null,
         advice_date: editAdviceDate || null,
         transaction_no: editTransactionNo || null,
@@ -561,6 +575,24 @@ export default function Disbursements() {
                 <label>
                   <span>ID # / TIN<span style={{ color: 'red' }}>*</span></span>
                   <input type="text" value={tin} onChange={(e) => setTin(e.target.value)} placeholder="Enter TIN or ID number" />
+                </label>
+                <label>
+                  <span>Position / Office</span>
+                  <input 
+                    type="text" 
+                    value={positionOffice} 
+                    onChange={(e) => setPositionOffice(e.target.value)} 
+                    placeholder="Enter position or office" 
+                  />
+                </label>
+                <label>
+                  <span>Office / Unit / Project</span>
+                  <input 
+                    type="text" 
+                    value={officeUnitProject} 
+                    onChange={(e) => setOfficeUnitProject(e.target.value)} 
+                    placeholder="Enter office, unit or project" 
+                  />
                 </label>
                 <label>
                   <span>Fund Source<span style={{ color: 'red' }}>*</span></span>
@@ -912,6 +944,24 @@ export default function Disbursements() {
                 <label>
                   <span>ID # / TIN</span>
                   <input type="text" value={editTin} onChange={(e) => setEditTin(e.target.value)} disabled={!canEditAccounting} />
+                </label>
+                <label>
+                  <span>Position / Office</span>
+                  <input 
+                    type="text" 
+                    value={editPositionOffice} 
+                    onChange={(e) => setEditPositionOffice(e.target.value)} 
+                    disabled={!canEditAccounting} 
+                  />
+                </label>
+                <label>
+                  <span>Office / Unit / Project</span>
+                  <input 
+                    type="text" 
+                    value={editOfficeUnitProject} 
+                    onChange={(e) => setEditOfficeUnitProject(e.target.value)} 
+                    disabled={!canEditAccounting} 
+                  />
                 </label>
                 <label>
                   <span>Fund Source</span>

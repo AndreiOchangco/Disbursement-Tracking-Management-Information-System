@@ -126,9 +126,9 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
         model = DV
         fields = [
             'dv_no', 'dv_date', 'tracking_no', 'transaction_no', 
-            'transaction_date', 'payee', 'office', 'cafoa_no', 
+            'transaction_date', 'payee', 'office_unit_project', 'position_office', 'cafoa_no', 
             'created_date', 'advice_no', 'advice_date', 
-            'responsibility_center', 'fund_source', 'tin', 
+            'responsibility_center', 'fund_source', 'tin',
             'payments', 'particulars', 'journal_entries'
         ]
 

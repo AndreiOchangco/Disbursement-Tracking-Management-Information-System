@@ -789,7 +789,7 @@ def dv_report_pdf(request, dv_id):
 
     # Build an HTML representation from the stored payload
     payload = report.payload or {}
-    
+
     # --- BUILD PARTICULARS TABLE (For standard rows, if still needed) ---
     particular_rows = ""
     particulars = payload.get('particulars', [])
@@ -965,7 +965,12 @@ def dv_report_pdf(request, dv_id):
 
     # --- BUILD PAYMENTS ---
     payment_info = ""
-    payments = payload.get('payments', [])
+    payments = payload.get("payments", [])
+
+    payment = payments[0] if payments else {}
+
+    mop = (payment.get("mop") or "").strip().lower()
+    mop_specify = payment.get("mop_specify", "")
 
     for pay in payments:
         payment_info += f"""
@@ -1022,9 +1027,6 @@ def dv_report_pdf(request, dv_id):
     amount_in_words = amount_to_words(amount_due)
 
     fund_source = (payload.get('fund_source') or "").strip().lower()
-
-    mop = (payload.get('mop') or "").strip().lower()
-    mop_specify = payload.get('mop_specify', '')
 
     # --- MAIN HTML ---
     html = f"""
@@ -1111,11 +1113,11 @@ def dv_report_pdf(request, dv_id):
             <input type="checkbox" style="transform: scale(1.5); margin-right: 3px;" {is_checked(mop, 'cash')} disabled> CASH
             <input type="checkbox" style="transform: scale(1.5); margin-right: 3px; margin-left: 10px;" {is_checked(mop, 'check')} disabled> CHECK
             <input type="checkbox" style="transform: scale(1.5); margin-right: 3px; margin-left: 10px;" {is_checked(mop, 'others')} disabled> OTHERS
-            <label style="margin-left: 10px;">Specify: <span style="text-decoration: underline; font-size: 12px; margin-left: 10px;">{mop_specify if 'other' in mop else ''}</span></label>
+            <label style="margin-left: 10px;">Specify: <span style="text-decoration: underline; font-size: 12px; margin-left: 10px;">{mop_specify if 'others' in mop else ''}</span></label>
         </td>
         <td rowspan="1" class="bold small" style="width: 120px; position:relative; display:flex; align-items:center; justify-content:center;">
             <span style="position:absolute; margin-top: -6px;">Date:</span>
-            <div style="text-align:center;" class="medium">{payload.get('date','')}</div>
+            <div style="text-align:center;" class="medium">{payload.get('dv_date','')}</div>
         </td>
     </tr>
 
@@ -1134,7 +1136,7 @@ def dv_report_pdf(request, dv_id):
 
     <tr>
         <td colspan="1" class="center bold medium"><b>POSITION / OFFICE</b></td>
-        <td colspan="1" class="center">{payload.get('office','')}</td>
+        <td colspan="1" class="center">{payload.get('position_office','')}</td>
         <td rowspan="2" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
             <span style="position:absolute; margin-top: -25px;">Office / Unit / Project:</span>
             <div class="medium" style="text-align:center;">{payload.get('office_unit_project','')}</div>
@@ -1147,7 +1149,7 @@ def dv_report_pdf(request, dv_id):
 
     <tr>
         <td colspan="1" class="center bold medium"><b>ADDRESS</b></td>
-        <td colspan="1" class="center">{payload.get('address','')}</td>
+        <td colspan="1" class="center">Luna, La Union</td>
     </tr>
 
     <tr>

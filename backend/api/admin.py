@@ -12,7 +12,7 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(DV)
 class DVAdmin(admin.ModelAdmin):
-    list_display = ['dv_no', 'tracking_no', 'payee', 'office', 'fund_source', 'status', 'current_step', 'created_date']
+    list_display = ['dv_no', 'tracking_no', 'payee', 'position_office', 'fund_source', 'status', 'current_step', 'created_date']
     list_filter = ['status', 'fund_source', 'current_step']
     search_fields = ['dv_no', 'tracking_no', 'payee']
 
