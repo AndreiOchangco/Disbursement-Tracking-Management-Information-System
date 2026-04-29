@@ -257,20 +257,54 @@ export default function ReportGeneration() {
           </table>
           {reports.length === 0 && <p className="empty" style={{ textAlign: 'center', padding: '2rem', color: '#4b5563' }}>{loading ? 'Loading...' : 'No generated reports yet.'}</p>}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
-          <div>
-            Page {page} of {totalPages} — {totalCount} total
+        {/* 📄 Pagination Controls */}
+        {totalCount > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+            <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+              Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} records | Page {page} of {totalPages}
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => fetchReports(page - 1)}
+                disabled={page === 1 || loading}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #d1d5db',
+                  background: (page === 1 || loading) ? '#f3f4f6' : '#fff',
+                  color: (page === 1 || loading) ? '#9ca3af' : '#2c5dff',
+                  cursor: (page === 1 || loading) ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                <ion-icon name="chevron-back"></ion-icon> Previous
+              </button>
+              <button
+                onClick={() => fetchReports(page + 1)}
+                disabled={page >= totalPages || loading}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #d1d5db',
+                  background: (page >= totalPages || loading) ? '#f3f4f6' : '#fff',
+                  color: (page >= totalPages || loading) ? '#9ca3af' : '#2c5dff',
+                  cursor: (page >= totalPages || loading) ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                Next <ion-icon name="chevron-forward"></ion-icon>
+              </button>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button onClick={() => { if (page > 1) fetchReports(page - 1) }} disabled={page <= 1 || loading}>Prev</button>
-            <button onClick={() => { if (page < totalPages) fetchReports(page + 1) }} disabled={page >= totalPages || loading}>Next</button>
-            <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); fetchReports(1) }}>
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-            </select>
-          </div>
-        </div>
+        )}
       </section>
     </div>
   )

@@ -196,6 +196,7 @@ export default function ArchivedDisbursements() {
         {selectedDV && (
           <section className="panel panel-alt noselect">
             {/* TOP FORM GRID - All Disabled */}
+            <h4 className="section-title"><ion-icon name="calculator-outline"></ion-icon> Accounting Information</h4>
             <div className="form-grid form-grid--split noselect">
               <label>
                 <span>Tracking Number</span>
@@ -214,38 +215,104 @@ export default function ArchivedDisbursements() {
                 <input type="text" value={selectedDV.tin || ''} disabled />
               </label>
               <label>
+                <span>Position / Office</span>
+                <input type="text" value={selectedDV.position_office || ''} disabled/>
+              </label>
+              <label>
+                <span>Office / Unit / Project</span>
+                <input type="text" value={selectedDV.office_unit_project || ''} disabled />
+             </label>
+             <label>
                 <span>Fund Source</span>
                 <select value={selectedDV.fund_source || ''} disabled>
                   <option value={selectedDV.fund_source}>{selectedDV.fund_source}</option>
                 </select>
               </label>
               <label>
-                <span>Mode of Payment</span>
-                <select value={selectedDV.mode_of_payment || ''} disabled>
-                  <option value={selectedDV.mode_of_payment}>
-                    {selectedDV.mode_of_payment}
-                  </option>
-                </select>
-              </label>
-              {selectedDV.mode_of_payment === 'OTHERS' && (
-                <label>
-                  <span>Specify Payment Mode</span>
-                  <input type="text" value={selectedDV.mop_others || ''} disabled />
+                  <span>Advice No</span>
+                  <input type="text" value={selectedDV.advice_no || ''} disabled />
                 </label>
-              )}
-              <label>
-                <span>Date</span>
-                <input type="text" value={selectedDV.created_date || ''} disabled />
-              </label>
-              <label>
-                <span>Created By</span>
-                <input value={selectedDV.office || ''} disabled />
-              </label>
-              <label>
-                <span>Status</span>
-                <input value={selectedDV.status || ''} disabled />
-              </label>
+                <label>
+                  <span>Advice Date</span>
+                  <input type="date" value={selectedDV.advice_date || ''} disabled />
+                </label>
+                <label>
+                  <span>Transaction No</span>
+                  <input type="text" value={selectedDV.transaction_no || ''} disabled />
+                </label>
+                <label>
+                  <span>Transaction Date</span>
+                  <input type="date" value={selectedDV.transaction_date || ''} disabled />
+                </label>
+                <label>
+                  <span>Date Created</span>
+                  <input type="date" value={selectedDV.created_date|| ''} disabled />
+                </label>
+                <label>
+                  <span>Created By</span>
+                  <input value={selectedDV.accounting_name || ''} disabled={true} />
+                </label>
+                <label>
+                  <span>Status</span>
+                  <input value={selectedDV.status || ''} disabled={true} />
+                </label>
             </div>
+
+            {/* --- BUDGET INFORMATION --- */}
+              <h4 className="section-title" style={{ marginTop: '2.5rem' }}><ion-icon name="wallet-outline"></ion-icon> Budget Information</h4>
+              <div className="form-grid form-grid--split noselect">
+                <label>
+                  <span>CAFOA No.</span>
+                  <input type="text" value={selectedDV.cafoa_no || ''} disabled />
+                </label>
+                <label>
+                  <span>Responsibility Center</span>
+                  <select value={selectedDV.responsibility_center || ''} disabled>
+                    <option value="">Select Option</option>
+                    <option value="One">One</option>
+                    <option value="Multiple">Multiple</option>
+                  </select>
+                </label>
+            </div>
+
+            {/* --- TREASURER INFORMATION --- */}
+              <h4 className="section-title" style={{ marginTop: '2.5rem' }}><ion-icon name="cash-outline"></ion-icon> Treasurer Information</h4>
+              <div className="form-grid form-grid--split noselect">
+                <label>
+                  <span>DV Number</span>
+                  <input type="text" value={selectedDV.dv_no || ''} disabled />
+                </label>
+                <label>
+                  <span>DV Date</span>
+                  <input type="date" value={selectedDV.dv_date || ''} disabled/>
+                </label>
+                <label>
+                  <span>Mode of Payment</span>
+                  <select value={selectedDV.payments[0].mop || ''} disabled>
+                    <option value="CASH">Cash</option>
+                    <option value="CHECK">Check</option>
+                    <option value="OTHERS">Others</option>
+                  </select>
+                </label>
+                {selectedDV.payments[0].mop === 'OTHERS' && (
+                  <label>
+                    <span>Specify Payment Mode</span>
+                    <input type="text" value={selectedDV.payments[0].mop_specify || ''} disabled />
+                  </label>
+                )}
+                <label>
+                  <span>ATM Number</span>
+                  <input type="text" value={selectedDV.payments[0].atm_no || ''} disabled />
+                </label>
+                <label>
+                  <span>Bank</span>
+                  <input type="text" value={selectedDV.payments[0].bank || ''} disabled />
+                </label>
+                <label>
+                  <span>Date of Payment</span>
+                  <input type="date" value={selectedDV.payments[0].date || ''} disabled />
+                </label>
+              </div>
 
             {/* --- PARTICULARS SECTION --- */}
             <section className="panel-section" style={{ marginTop: '2rem' }}>
