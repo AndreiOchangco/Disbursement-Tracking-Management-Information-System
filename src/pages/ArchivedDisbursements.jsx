@@ -38,7 +38,7 @@ export default function ArchivedDisbursements() {
   const archivedFiltered = useMemo(() => {
     const query = search.trim().toLowerCase()
     
-    let filtered = disbursements.filter((d) => d.status !== 'completed')
+    let filtered = disbursements.filter((d) => d.status?.toLowerCase() === 'archived')
 
     if (!query) return filtered
 
@@ -47,7 +47,7 @@ export default function ArchivedDisbursements() {
         String(d.tracking_no || '') +
         String(d.dv_no || '') +
         String(d.status || '') +
-        String(d.payee || '') +
+        String(d.payee?.name || '') +
         String(d.office || '')
       )
         .toLowerCase()

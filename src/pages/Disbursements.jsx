@@ -919,7 +919,7 @@ export default function Disbursements() {
                     {actions.length === 1 ? (
                       // RENDER SINGLE BUTTON
                       <button 
-                        className={`flex items-center gap-1.5 ${actions[0].type === 'primary' ? 'btn-primary' : actions[0].type === 'danger' ? 'btn-danger' : 'btn-archive'}`} 
+                        className={`btn-single ${actions[0].type === 'primary' ? 'btn-primary' : actions[0].type === 'danger' ? 'btn-danger' : 'btn-archive'}`} 
                         onClick={actions[0].onClick}
                       >
                         <ion-icon name={actions[0].icon}></ion-icon> {actions[0].label}

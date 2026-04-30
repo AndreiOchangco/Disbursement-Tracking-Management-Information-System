@@ -721,8 +721,15 @@ button {
 
 .btn-archive.btn-small,
 .btn-danger.btn-small,
-.btn-primary.btn-small {
+.btn-primary.btn-small, .btn-single {
   min-width: 110px;
+}
+
+.btn-single {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
 }
 
 .btn-danger {
