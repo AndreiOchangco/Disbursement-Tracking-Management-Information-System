@@ -518,7 +518,7 @@ def dv_approve(request, pk):
 
     dv.save()
 
-    # If the DV just reached final (archived), create a report snapshot
+    # If the DV just reached final, create a report snapshot
     if dv.status == 'completed' and user_step == 5:
         try:
             DVReport.objects.update_or_create(dv=dv, defaults={'payload': DVSerializer(dv).data})
