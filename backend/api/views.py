@@ -377,15 +377,11 @@ def dv_list(request):
 
         if not show_archived:
             if status_filter:
-                # Special-case: when client requests 'archived', return DVs that have archive_info
-                if status_filter.lower() == 'archived':
-                    dvs = dvs.filter(archive_info__isnull=False)
-                else:
                     dvs = dvs.filter(status=status_filter)
             else:
                 # Default: exclude archived unless explicitly requested
                 if request.user.department != 'accounting':
-                    dvs = dvs.exclude(archive_info__isnull=False)
+                    dvs = dvs.exclude(status='archived')
 
         if search:
             dvs = dvs.filter(
@@ -510,21 +506,12 @@ def dv_approve(request, pk):
         remarks=request.data.get('remarks', '')
     )
     if user_step == 5:  # Mayor's Office - final step
-        # Final approval: mark as archived so it moves to Archived view
         dv.status = 'completed'
         dv.current_step = 6
     else:
         dv.current_step = user_step + 1
 
     dv.save()
-
-    # If the DV just reached final, create a report snapshot
-    if dv.status == 'completed' and user_step == 5:
-        try:
-            DVReport.objects.update_or_create(dv=dv, defaults={'payload': DVSerializer(dv).data})
-        except Exception:
-            pass
-        
     return Response(DVSerializer(dv).data)
 
 
@@ -556,13 +543,8 @@ def dv_disapprove(request, pk):
         action_by=request.user, remarks=remarks
     )
 
-    # Immediately archive the disapproved DV so it is moved to the
-    # archived records/view. Use the rejection remarks as the reason.
-    DVArchived.objects.update_or_create(dv=dv, defaults={'reason_of_archive': remarks})
-
-    # Preserve the DV's status as 'disapproved' so it can be resubmitted later
     dv.status = 'disapproved'
-    dv.current_step = user_step  # Keep track of where it was disapproved for resubmission
+    dv.current_step = 1  # Back to Accounting
     dv.last_disapproved_step = user_step
     dv.save()
 
@@ -654,12 +636,12 @@ def dashboard_stats(request):
 
     if user.department == 'accounting':
         stats = {
-            'total': DV.objects.exclude(archive_info__isnull=False).count(),
+            'total': DV.objects.exclude(status='archived').count(),
             'pending': DV.objects.filter(status='pending').count(),
             'disapproved': DV.objects.filter(status='disapproved').count(),
             'completed': DV.objects.filter(status='completed').count(),
-            'archived': DVArchived.objects.count(),
-            'for_action': DV.objects.filter(status__in=['disapproved']).count(),
+            'archived': DV.objects.filter(status='archived').count(),
+            'for_action': DV.objects.filter(status__in=['draft', 'disapproved']).count(),
         }
     else:
         user_step = DEPT_STEP.get(user.department, 0)
@@ -667,7 +649,7 @@ def dashboard_stats(request):
         approved_by_me = DVWorkflow.objects.filter(action_by=user, status='approved').count()
         disapproved_by_me = DVWorkflow.objects.filter(action_by=user, status='disapproved').count()
         stats = {
-            'total': DV.objects.exclude(archive_info__isnull=False).count(),
+            'total': DV.objects.exclude(status='archived').count(),
             'pending': for_approval,
             'disapproved': disapproved_by_me,
             'completed': DV.objects.filter(status='completed').count(),
@@ -677,7 +659,7 @@ def dashboard_stats(request):
         }
 
     # Recent activity
-    recent_dvs = DV.objects.exclude(archive_info__isnull=False).order_by('-updated_at')[:5]
+    recent_dvs = DV.objects.exclude(status='archived').order_by('-updated_at')[:5]
     recent = DVSerializer(recent_dvs, many=True).data
 
     return Response({**stats, 'recent_dvs': recent})
