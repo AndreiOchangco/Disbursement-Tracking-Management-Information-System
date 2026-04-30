@@ -96,7 +96,6 @@ class DV(models.Model):
     accounting = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name='created_dvs'
     )
-    payee = models.CharField(max_length=255)
     position_office = models.CharField(max_length=255, blank=True, null=True)
     office_unit_project = models.CharField(max_length=255, blank=True, null=True)
     cafoa_no = models.CharField(max_length=100, blank=True, null=True)
@@ -120,6 +119,16 @@ class DV(models.Model):
 
     def __str__(self):
         return self.dv_no
+    
+class Payee(models.Model):
+    dv = models.OneToOneField(DV, on_delete=models.CASCADE, related_name='payee')
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+    email = models.EmailField(blank=True, null=True)
+    phone_no = models.CharField(max_length=11, blank=True, null=True)
+
+    class Meta:
+        db_table = 'payee'
 
 
 class DVArchived(models.Model):

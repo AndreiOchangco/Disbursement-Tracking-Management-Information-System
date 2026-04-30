@@ -35,7 +35,12 @@ export default function Disbursements() {
   
   // CREATE STATES (Accounting Only)
   const [trackingno, setTrackingNo] = useState('')
-  const [payee, setPayee] = useState('')
+  const [payeeData, setPayeeData] = useState({
+  name: '',
+  address: '',
+  email: '',
+  phone_no: ''
+});
   const [fundSource, setFundSource] = useState('GF')
   const [tin, setTin] = useState('')
   const [createdDate, setCreatedDate] = useState(new Date().toISOString().split('T')[0])
@@ -63,7 +68,12 @@ export default function Disbursements() {
   // EDIT STATES (Separated by Department)
   // Accounting Fields
   const [editTrackingNo, setEditTrackingNo] = useState('');
-  const [editPayee, setEditPayee] = useState('');
+  const [editPayeeData, setEditPayeeData] = useState({
+  name: '',
+  address: '',
+  email: '',
+  phone_no: ''
+});
   const [editTin, setEditTin] = useState('');
   const [editFundSource, setEditFundSource] = useState('GF');
   const [editCreatedDate, setEditCreatedDate] = useState('');
@@ -194,7 +204,17 @@ export default function Disbursements() {
   const addDisbursement = async (e) => {
     e.preventDefault()
 
-    if (!trackingno || !officer || !payee || !fundSource || !tin || !createdDate) {
+    if (!payeeData.email && !payeeData.phone_no) {
+    toast.error('Please fill in the Payee Email or Phone Number');
+    return;
+    }
+
+    if (!payeeData.name || !trackingno) {
+    toast.error('Please fill in the Payee Name and Tracking Number');
+    return;
+  }
+
+    if (!trackingno || !officer || !fundSource || !tin || !createdDate) {
       toast.error('Please fill required fields: Tracking#, Payee, Fund Source, ID #/TIN, Date')
       return
     }
@@ -202,7 +222,7 @@ export default function Disbursements() {
     try {
       const payload = {
         tracking_no: String(trackingno),
-        payee,
+        payee: payeeData,
         office: officer,
         created_date: createdDate,
         current_step: 2,
@@ -257,7 +277,7 @@ export default function Disbursements() {
       // Reset form states
       setTrackingNo('')
       setStatus('Pending')
-      setPayee('')
+      setPayeeData({ name: '', address: '', email: '', phone_no: '' });
       setFundSource('GF')
       setPositionOffice('')
       setOfficeUnitProject('')
@@ -366,6 +386,28 @@ export default function Disbursements() {
     }
   }
 
+  const handleArchive = async (d) => {
+  const result = await Swal.fire({
+    title: 'Archive disbursement?',
+    text: 'Please enter a reason for archiving.',
+    input: 'text',
+    inputPlaceholder: 'Enter reason...',
+    showCancelButton: true,
+    confirmButtonText: 'Archive',
+    inputValidator: (value) => !value && 'Reason is required'
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    await apiRequest(`/dv/${d.id}/archive/`, 'POST', { reason: result.value });
+    await Swal.fire({ icon: 'success', title: 'Archived!' });
+    await reload();
+  } catch (e) {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to archive.' });
+  }
+};
+
   const isActionable = (d) => {
     const statusLower = String(d.status || '').toLowerCase()
     if (currentUserDeptKey === 'accounting') return false
@@ -447,10 +489,14 @@ export default function Disbursements() {
 
   const handleView = (dv) => {
     setSelectedDV(dv);
-
+    setEditPayeeData({
+       name: dv.payee?.name || '',
+       address: dv.payee?.address || '',
+       email: dv.payee?.email || '',
+       phone_no: dv.payee?.phone_no || ''
+    })
     // Populate Accounting States
     setEditTrackingNo(dv.tracking_no || '');
-    setEditPayee(dv.payee || '');
     setEditTin(dv.tin || '');
     setEditFundSource(dv.fund_source || 'GF');
     setEditPositionOffice(dv.position_office || '');
@@ -492,7 +538,7 @@ export default function Disbursements() {
     try {
       const payload = {
         tracking_no: editTrackingNo,
-        payee: editPayee,
+        payee: editPayeeData,
         tin: editTin,
         fund_source: editFundSource,
         created_date: editCreatedDate,
@@ -562,15 +608,24 @@ export default function Disbursements() {
         >
           <section className="panel panel-alt noselect">
             <form onSubmit={addDisbursement}>
-              {/* TOP FORM GRID - ACCOUNTING */}
+              {/* TOP FORM GRID - Payee */}
+              <h4 className="section-title"><ion-icon name="person-outline"></ion-icon> Payee Information</h4>
               <div className="form-grid form-grid--split noselect">
                 <label>
-                  <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
-                  <input type="number" value={trackingno} onChange={(e) => setTrackingNo(e.target.value)} placeholder="Enter tracking number" />
+                  <span>Payee Name<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={payeeData.name} onChange={(e) => setPayeeData({...payeeData, name: e.target.value})} placeholder="Enter payee name" />
                 </label>
                 <label>
-                  <span>Payee<span style={{ color: 'red' }}>*</span></span>
-                  <input type="text" value={payee} onChange={(e) => setPayee(e.target.value)} placeholder="Enter payee name" />
+                  <span>Payee Email<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={payeeData.email} onChange={(e) => setPayeeData({...payeeData, email: e.target.value})} placeholder="Enter payee email" />
+                </label>
+                <label>
+                  <span>Payee Phone Number<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={payeeData.phone_no} onChange={(e) => setPayeeData({...payeeData, phone_no: e.target.value})} placeholder="Enter payee phone number" />
+                </label>
+                <label>
+                  <span>Payee Address<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={payeeData.address} onChange={(e) => setPayeeData({...payeeData, address: e.target.value})} placeholder="Enter payee address" />
                 </label>
                 <label>
                   <span>ID # / TIN<span style={{ color: 'red' }}>*</span></span>
@@ -593,6 +648,14 @@ export default function Disbursements() {
                     onChange={(e) => setOfficeUnitProject(e.target.value)} 
                     placeholder="Enter office, unit or project" 
                   />
+                </label>
+              </div>
+              {/* TOP FORM GRID - ACCOUNTING */}
+              <h4 className="section-title"><ion-icon name="calculator-outline"></ion-icon> Accounting Information</h4>
+              <div className="form-grid form-grid--split noselect">
+                <label>
+                  <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
+                  <input type="number" value={trackingno} onChange={(e) => setTrackingNo(e.target.value)} placeholder="Enter tracking number" />
                 </label>
                 <label>
                   <span>Fund Source<span style={{ color: 'red' }}>*</span></span>
@@ -686,8 +749,8 @@ export default function Disbursements() {
                           <td><input className="particulars-input" type="number" value={item.tf} onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)} placeholder="0.00" /></td>
                           <td className="table-column-center">
                             {idx > 0 && (
-                              <button type="button" className="btn-danger btn-small" onClick={() => removeParticularRow(idx)}>
-                                <ion-icon name="trash"></ion-icon>
+                              <button type="button" className="btn-danger" onClick={() => removeParticularRow(idx)}>
+                                <ion-icon name="close"></ion-icon>
                               </button>
                             )}
                           </td>
@@ -725,8 +788,8 @@ export default function Disbursements() {
                           <td><input className="particulars-input" type="number" value={row.credit} onChange={(e) => handleJeRowChange(index, 'credit', e.target.value)} placeholder="0.00" /></td>
                           <td className="table-column-center">
                             {index > 0 && (
-                              <button type="button" className="btn-danger btn-small" onClick={() => removeJeRow(index)}>
-                                <ion-icon name="trash"></ion-icon>
+                              <button type="button" className="btn-danger" onClick={() => removeJeRow(index)}>
+                                <ion-icon name="close"></ion-icon>
                               </button>
                             )}
                           </td>
@@ -754,171 +817,191 @@ export default function Disbursements() {
 
       {/* 📋 VOUCHERS TABLE */}
       <section className="panel">
-        <div className="table-toolbar">
-          <div>
-            <h3 className="panel-title"><ion-icon name="clipboard"></ion-icon> Open Disbursement Voucher Entries</h3>
-            <p className="panel-subtitle">{filtered.length} active records</p>
-          </div>
-          <div className="toolbar-actions">
-            {isAccountant && (
-              <button
-                className="btn-archive btn-small"
-                style={{display: 'flex', alignItems: 'center', gap: '0.3rem'}}
-                onClick={() => setShowCreateModal(true)}
-              >
-                <ion-icon name="add"></ion-icon> Create DV
-              </button>
-            )}
-            <Link to="/disbursements/archived" className="btn-archive btn-small" style={{display: 'flex', alignItems: 'center', gap: '0.3rem'}}>
-              <ion-icon name="archive"></ion-icon> Archived
-            </Link>
-            <input
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value)
-                setDVCurrentPage(1)
-              }}
-              placeholder="Search by tracking, DV number, or officer..."
-              className="search search--wide"
-            />
-          </div>
-        </div>
+  <div className="table-toolbar">
+    <div>
+      <h3 className="panel-title">
+        <ion-icon name="clipboard"></ion-icon> Open Disbursement Voucher Entries
+      </h3>
+      <p className="panel-subtitle">{filtered.length} active records</p>
+    </div>
+    <div className="toolbar-actions">
+      {isAccountant && (
+        <button
+          className="btn-archive btn-small"
+          style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+          onClick={() => setShowCreateModal(true)}
+        >
+          <ion-icon name="add"></ion-icon> Create DV
+        </button>
+      )}
+      <Link to="/disbursements/archived" className="btn-archive btn-small" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+        <ion-icon name="archive"></ion-icon> Archived
+      </Link>
+      <input
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setDVCurrentPage(1);
+        }}
+        placeholder="Search by tracking, DV number, or officer..."
+        className="search search--wide"
+      />
+    </div>
+  </div>
 
-        <div className="table-wrap">
-          <table>
-            <thead className="table-head">
-              <tr>
-                <th className="table-column-center table-column-border table-pin-column"><ion-icon name="pin"></ion-icon> Tracking #</th>
-                <th className="table-column-center table-column-border table-bookmark-column"><ion-icon name="bookmark"></ion-icon> DV Number</th>
-                <th className="table-column-center table-column-border"><ion-icon name="bar-chart"></ion-icon> Status</th>
-                <th className="table-column-center table-column-border table-calendar-column"><ion-icon name="calendar"></ion-icon> Request Date</th>
-                <th className="table-column-center table-column-border"><ion-icon name="person"></ion-icon> Created By</th>
-                <th className="table-column-center table-column-border"><ion-icon name="settings"></ion-icon> Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered
-                .slice((dvCurrentPage - 1) * dvItemsPerPage, dvCurrentPage * dvItemsPerPage)
-                .map((d) => (
-                <tr key={d.id} className="table-row">
-                  <td className="table-strong">{d.tracking_no}</td>
-                  <td>{d.dv_no !== undefined && d.dv_no !== null && d.dv_no !== '' ? Number(d.dv_no).toString() : '-'}</td>
-                  <td className="table-column-center">
-                    <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-') }>
-                      {d.status === 'completed' ? d.status : `${d.status} (${d.current_step})`}
-                    </span>
-                  </td>
-                  <td className='table-column-center'>{formatDateMMDDYYYY(d.created_date)}</td>
-                  <td>{d.accounting_name || d.office || 'N/A'}</td>
-                  <td className="table-column-center">
-                    <div className="action-buttons">
-                      <button className="btn-archive btn-small flex justify-center items-center gap-1" onClick={() => handleView(d)}>
-                          <ion-icon name="eye-outline"></ion-icon> {isActionable(d) && (currentUserDeptKey === 'budget' || currentUserDeptKey === 'treasurer') ? 'View/Modify' : 'View'}
+  {/* 📊 TABLE AREA */}
+  <div className="table-wrap">
+    <table>
+      <thead className="table-head">
+        <tr>
+          <th className="table-column-center table-column-border table-pin-column"><ion-icon name="pin"></ion-icon> Tracking #</th>
+          <th className="table-column-center table-column-border table-bookmark-column"><ion-icon name="bookmark"></ion-icon> DV Number</th>
+          <th className="table-column-center table-column-border"><ion-icon name="bar-chart"></ion-icon> Status</th>
+          <th className="table-column-center table-column-border table-calendar-column"><ion-icon name="calendar"></ion-icon> Request Date</th>
+          <th className="table-column-center table-column-border"><ion-icon name="person"></ion-icon> Created By</th>
+          <th className="table-column-center table-column-border"><ion-icon name="settings"></ion-icon> Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filtered
+          .slice((dvCurrentPage - 1) * dvItemsPerPage, dvCurrentPage * dvItemsPerPage)
+          .map((d) => {
+            // 1. DYNAMIC ACTION CALCULATION
+            const actions = [];
+            
+            // Always show View
+            actions.push({
+              label: isActionable(d) && (currentUserDeptKey === 'budget' || currentUserDeptKey === 'treasurer') ? 'View/Modify' : 'View ',
+              icon: 'eye-outline',
+              onClick: () => handleView(d),
+              type: 'secondary' // mapping to btn-archive
+            });
+
+            if (isActionable(d)) {
+              if (currentUserDeptKey !== 'budget' && currentUserDeptKey !== 'treasurer') {
+                actions.push({
+                  label: 'Approve',
+                  icon: 'checkmark-circle',
+                  onClick: () => approveItem(d),
+                  type: 'primary' 
+                });
+              }
+              actions.push({
+                label: 'Reject',
+                icon: 'close-circle',
+                onClick: () => rejectItem(d),
+                type: 'danger'
+              });
+            }
+
+            if (canArchive(d)) {
+              actions.push({
+                label: 'Archive',
+                icon: 'archive',
+                onClick: () => handleArchive(d), // Assuming handleArchive is defined in your component
+                type: 'secondary'
+              });
+            }
+
+            return (
+              <tr key={d.id} className="table-row">
+                <td className="table-strong">{d.tracking_no}</td>
+                <td>{d.dv_no ? Number(d.dv_no).toString() : '-'}</td>
+                <td className="table-column-center">
+                  <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-')}>
+                    {d.status === 'completed' ? d.status : `${d.status} (${d.current_step})`}
+                  </span>
+                </td>
+                <td className='table-column-center'>{formatDateMMDDYYYY(d.created_date)}</td>
+                <td>{d.accounting_name || d.office || 'N/A'}</td>
+                <td className="table-column-center">
+                  <div className="action-buttons">
+                    {actions.length === 1 ? (
+                      // RENDER SINGLE BUTTON
+                      <button 
+                        className={`flex items-center gap-1.5 ${actions[0].type === 'primary' ? 'btn-primary' : actions[0].type === 'danger' ? 'btn-danger' : 'btn-archive'}`} 
+                        onClick={actions[0].onClick}
+                      >
+                        <ion-icon name={actions[0].icon}></ion-icon> {actions[0].label}
                       </button>
-                      
-                      {isActionable(d) && (
-                        <>
-                          {/* BAC/GSO and Others just approve without needing to modify first */}
-                          {(currentUserDeptKey !== 'budget' && currentUserDeptKey !== 'treasurer') && (
-                            <button className="btn-primary btn-small flex justify-center items-center gap-1" onClick={() => approveItem(d)}>
-                              <ion-icon name="checkmark-circle"></ion-icon> Approve
-                            </button>
-                          )}
-                          <button className="btn-danger btn-small flex justify-center items-center gap-1" onClick={() => rejectItem(d)}>
-                            <ion-icon name="close-circle"></ion-icon> Reject
-                          </button>
-                        </>
-                      )}
-
-                      {canArchive(d) && (
-                        <button
-                          className="btn-archive btn-small flex justify-center items-center gap-1"
-                          onClick={async () => {
-                            const result = await Swal.fire({
-                              title: 'Archive disbursement?',
-                              text: 'Please enter a reason for archiving.',
-                              input: 'text',
-                              inputPlaceholder: 'Enter reason...',
-                              showCancelButton: true,
-                              confirmButtonText: 'Archive',
-                              cancelButtonText: 'Cancel',
-                              inputValidator: (value) => {
-                                if (!value) return 'Reason is required';
-                              }
-                            });
-                            
-                            if (!result.isConfirmed) return;
-                            
-                            try {
-                              await apiRequest(`/dv/${d.id}/archive/`, 'POST', { reason: result.value });
-                              await Swal.fire({ icon: 'success', title: 'Archived!' });
-                              await reload();
-                            } catch (e) {
-                              Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to archive.' });
-                            }
-                          }}
-                        >
-                          <ion-icon name="archive"></ion-icon> Archive
+                    ) : (
+                      // RENDER DROPDOWN
+                      <div className="dropdown">
+                        <button className="btn-archive btn-small flex items-center gap-1">
+                          Actions <ion-icon name="chevron-down"></ion-icon>
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {filtered.length === 0 && <p className="empty empty--center"><ion-icon name="mail-unread"></ion-icon> No disbursements found.</p>}
-        </div>
-        
-        {/* 📄 Pagination Controls */}
-        {filtered.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
-            <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-              Showing {(dvCurrentPage - 1) * dvItemsPerPage + 1} to {Math.min(dvCurrentPage * dvItemsPerPage, filtered.length)} of {filtered.length} records | Page {dvCurrentPage} of {Math.ceil(filtered.length / dvItemsPerPage)}
-            </span>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={() => setDVCurrentPage(p => Math.max(1, p - 1))}
-                disabled={dvCurrentPage === 1}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '4px',
-                  border: '1px solid #d1d5db',
-                  background: dvCurrentPage === 1 ? '#f3f4f6' : '#fff',
-                  color: dvCurrentPage === 1 ? '#9ca3af' : '#2c5dff',
-                  cursor: dvCurrentPage === 1 ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                }}
-              >
-                <ion-icon name="chevron-back"></ion-icon> Previous
-              </button>
-              <button
-                onClick={() => setDVCurrentPage(p => Math.min(Math.ceil(filtered.length / dvItemsPerPage), p + 1))}
-                disabled={dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '4px',
-                  border: '1px solid #d1d5db',
-                  background: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? '#f3f4f6' : '#fff',
-                  color: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? '#9ca3af' : '#2c5dff',
-                  cursor: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
-                }}
-              >
-                Next <ion-icon name="chevron-forward"></ion-icon>
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
+                        <div className="dropdown-content">
+                          {actions.map((action, idx) => (
+                            <button key={idx} onClick={action.onClick} className="dropdown-item">
+                              <ion-icon name={action.icon}></ion-icon> {action.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+      </tbody>
+    </table>
+    {filtered.length === 0 && (
+      <p className="empty empty--center">
+        <ion-icon name="mail-unread"></ion-icon> No disbursements found.
+      </p>
+    )}
+  </div>
+
+  {/* 📄 PAGINATION CONTROLS */}
+  {filtered.length > 0 && (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+      <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+        Showing {(dvCurrentPage - 1) * dvItemsPerPage + 1} to {Math.min(dvCurrentPage * dvItemsPerPage, filtered.length)} of {filtered.length} records | Page {dvCurrentPage} of {Math.ceil(filtered.length / dvItemsPerPage)}
+      </span>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button
+          onClick={() => setDVCurrentPage(p => Math.max(1, p - 1))}
+          disabled={dvCurrentPage === 1}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            border: '1px solid #d1d5db',
+            background: dvCurrentPage === 1 ? '#f3f4f6' : '#fff',
+            color: dvCurrentPage === 1 ? '#9ca3af' : '#2c5dff',
+            cursor: dvCurrentPage === 1 ? 'not-allowed' : 'pointer',
+            fontSize: '0.9rem',
+            fontWeight: '500',
+          }}
+        >
+          <ion-icon name="chevron-back"></ion-icon> Previous
+        </button>
+        <button
+          onClick={() => setDVCurrentPage(p => Math.min(Math.ceil(filtered.length / dvItemsPerPage), p + 1))}
+          disabled={dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            border: '1px solid #d1d5db',
+            background: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? '#f3f4f6' : '#fff',
+            color: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? '#9ca3af' : '#2c5dff',
+            cursor: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? 'not-allowed' : 'pointer',
+            fontSize: '0.9rem',
+            fontWeight: '500',
+          }}
+        >
+          Next <ion-icon name="chevron-forward"></ion-icon>
+        </button>
+      </div>
+    </div>
+  )}
+</section>
 
        {/* 👀 VIEW / MODIFY DISBURSEMENT MODAL */}
       <ReactModal 
@@ -929,21 +1012,28 @@ export default function Disbursements() {
         {selectedDV && (
           <section className="panel panel-alt noselect">
             <form onSubmit={handleUpdateSubmit}>
-              
-              {/* --- ACCOUNTING INFORMATION --- */}
-              <h4 className="section-title"><ion-icon name="calculator-outline"></ion-icon> Accounting Information</h4>
+              {/* TOP FORM GRID - Payee */}
+              <h4 className="section-title"><ion-icon name="person-outline"></ion-icon> Payee Information</h4>
               <div className="form-grid form-grid--split noselect">
                 <label>
-                  <span>Tracking Number</span>
-                  <input type="text" value={editTrackingNo} onChange={(e) => setEditTrackingNo(e.target.value)} disabled={!canEditAccounting} />
+                  <span>Payee Name<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={editPayeeData.name} onChange={(e) => setEditPayeeData({...payeeData, name: e.target.value})}  disabled={!canEditAccounting}/>
                 </label>
                 <label>
-                  <span>Payee</span>
-                  <input type="text" value={editPayee} onChange={(e) => setEditPayee(e.target.value)} disabled={!canEditAccounting} />
+                  <span>Payee Email<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={editPayeeData.email} onChange={(e) => setPayeeData({...payeeData, email: e.target.value})}  disabled={!canEditAccounting}/>
                 </label>
                 <label>
-                  <span>ID # / TIN</span>
-                  <input type="text" value={editTin} onChange={(e) => setEditTin(e.target.value)} disabled={!canEditAccounting} />
+                  <span>Payee Phone Number<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={editPayeeData.phone_no} onChange={(e) => setEditPayeeData({...payeeData, phone_no: e.target.value})}  disabled={!canEditAccounting}/>
+                </label>
+                <label>
+                  <span>Payee Address<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={editPayeeData.address} onChange={(e) => setEditPayeeData({...payeeData, address: e.target.value})}  disabled={!canEditAccounting}/>
+                </label>
+                <label>
+                  <span>ID # / TIN<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={editTin} onChange={(e) => setEditTin(e.target.value)}  disabled={!canEditAccounting}/>
                 </label>
                 <label>
                   <span>Position / Office</span>
@@ -951,7 +1041,7 @@ export default function Disbursements() {
                     type="text" 
                     value={editPositionOffice} 
                     onChange={(e) => setEditPositionOffice(e.target.value)} 
-                    disabled={!canEditAccounting} 
+                    disabled={!canEditAccounting}
                   />
                 </label>
                 <label>
@@ -960,8 +1050,16 @@ export default function Disbursements() {
                     type="text" 
                     value={editOfficeUnitProject} 
                     onChange={(e) => setEditOfficeUnitProject(e.target.value)} 
-                    disabled={!canEditAccounting} 
+                    disabled={!canEditAccounting}
                   />
+                </label>
+              </div>    
+              {/* --- ACCOUNTING INFORMATION --- */}
+              <h4 className="section-title"><ion-icon name="calculator-outline"></ion-icon> Accounting Information</h4>
+              <div className="form-grid form-grid--split noselect">
+                <label>
+                  <span>Tracking Number</span>
+                  <input type="text" value={editTrackingNo} onChange={(e) => setEditTrackingNo(e.target.value)} disabled={!canEditAccounting} />
                 </label>
                 <label>
                   <span>Fund Source</span>
@@ -1124,8 +1222,8 @@ export default function Disbursements() {
                                   <td><input className="particulars-input" type="number" value={val.tf !== undefined ? val.tf : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'tf', e.target.value)} disabled={!canEditAccounting} /></td>
                                   {canEditAccounting && (
                                     <td className="table-column-center">
-                                      <button type="button" className="btn-danger btn-small" onClick={() => handleRemoveEditParticularValue(pIdx, vIdx)}>
-                                        <ion-icon name="trash"></ion-icon>
+                                      <button type="button" className="btn-danger" onClick={() => handleRemoveEditParticularValue(pIdx, vIdx)}>
+                                        <ion-icon name="close"></ion-icon>
                                       </button>
                                     </td>
                                   )}
@@ -1180,8 +1278,8 @@ export default function Disbursements() {
                             <td><input className="particulars-input" type="number" value={row.credit !== undefined ? row.credit : ''} onChange={(e) => handleEditJeRowChange(index, 'credit', e.target.value)} disabled={!canEditAccounting} /></td>
                             {canEditAccounting && (
                               <td className="table-column-center">
-                                <button type="button" className="btn-danger btn-small" onClick={() => handleRemoveEditJeRow(index)}>
-                                  <ion-icon name="trash"></ion-icon>
+                                <button type="button" className="btn-danger" onClick={() => handleRemoveEditJeRow(index)}>
+                                  <ion-icon name="close"></ion-icon>
                                 </button>
                               </td>
                             )}

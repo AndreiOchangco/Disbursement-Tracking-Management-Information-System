@@ -547,7 +547,7 @@ button {
   background: var(--bg-white);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
 }
@@ -714,7 +714,9 @@ button {
 .btn-small {
   padding:  0.55rem 1rem;
   font-size: 0.88rem;
-
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .btn-archive.btn-small,
@@ -733,6 +735,8 @@ button {
   font-size: 0.9rem;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+  display: flex;
+  align-items: center;
 }
 
 .btn-danger:hover {
@@ -881,6 +885,8 @@ button {
   border-radius: 8px;
   background: var(--bg-white);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding-bottom: 120px; 
+  margin-bottom: -120px;
 }
 
 .table-head {
@@ -898,7 +904,8 @@ button {
 }
 
 .table-row:hover {
-  background: #fffbeb;
+  z-index: 20;
+  position: relative;
 }
 
 .table-strong {
@@ -1661,7 +1668,7 @@ th {
   background: var(--bg-white);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1rem1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
 }
@@ -1724,6 +1731,8 @@ button, a, input, select {
   text-align: center;
   justify-content: center;
   align-items: center;
+  overflow: visible !important; 
+  position: relative;
 }
 .table-column-border {
   border-left: 1px solid var(--border-color);
@@ -1736,4 +1745,58 @@ button, a, input, select {
 
 .table-calendar-column {
   width: 11rem;
+}
+
+
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* 3. The Floating Menu (Hidden by default) */
+.dropdown-content {
+  display: none;        /* Hidden */
+  position: absolute;   /* Floating */
+  top: 100%;            /* Directly below the button */
+  right: 0;             /* Align to the right edge so it stays inside the screen */
+  background-color: #ffffff;
+  min-width: 160px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15); /* Layering effect */
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.5rem 0;
+  z-index: 9999;        /* Ensure it's on top of everything */
+}
+
+/* 4. Show on Hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* 5. Dropdown Items */
+.dropdown-item {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #374151;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+  color: #2c5dff;
+}
+
+/* Icon sizing inside the dropdown */
+.dropdown-item ion-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
 }

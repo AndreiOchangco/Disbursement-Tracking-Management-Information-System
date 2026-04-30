@@ -306,7 +306,7 @@ export default function Dashboard() {
                     <tr key={dv.id} style={{ borderBottom: '1px solid #fef3c7' }}>
                       <td style={{ fontWeight: '500' }}>{dv.tracking_no}</td>
                       <td>{dv.dv_no || '-'}</td>
-                      <td>{dv.payee}</td>
+                      <td>{dv.payee?.name}</td>
                       <td className='table-column-center'>
                         <span style={{
                           display: 'inline-block',

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVParticularValue, DVReport
+from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVParticularValue, DVReport, Payee
 
 
 STEP_LABELS = {
@@ -96,11 +96,17 @@ class DVJESerializer(serializers.ModelSerializer):
         model = DVJE
         exclude = ['dv']
 
+class PayeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payee
+        fields = ['id', 'name', 'address', 'email', 'phone_no']
+
 
 class DVSerializer(serializers.ModelSerializer):
     accounting_name = serializers.SerializerMethodField()
     current_step_label = serializers.SerializerMethodField()
     payments = DVPaymentSerializer(many=True, read_only=True)
+    payee = PayeeSerializer(read_only=True)
     particulars = DVParticularsSerializer(many=True, read_only=True)
     journal_entries = DVJESerializer(many=True, read_only=True)
     workflow_steps = DVWorkflowSerializer(many=True, read_only=True)
@@ -118,6 +124,7 @@ class DVSerializer(serializers.ModelSerializer):
 
 
 class DVCreateUpdateSerializer(serializers.ModelSerializer):
+    payee = PayeeSerializer(required=False)
     payments = DVPaymentSerializer(many=True, required=False)
     particulars = DVParticularsSerializer(many=True, required=False)
     journal_entries = DVJESerializer(many=True, required=False)
@@ -126,13 +133,14 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
         model = DV
         fields = [
             'dv_no', 'dv_date', 'tracking_no', 'transaction_no', 
-            'transaction_date', 'payee', 'office_unit_project', 'position_office', 'cafoa_no', 
-            'created_date', 'advice_no', 'advice_date', 
+            'transaction_date', 'office_unit_project', 'position_office', 'cafoa_no', 
+            'created_date', 'advice_no', 'advice_date',
             'responsibility_center', 'fund_source', 'tin',
-            'payments', 'particulars', 'journal_entries'
+            'payee','payments', 'particulars', 'journal_entries'
         ]
 
     def create(self, validated_data):
+        payee_data = validated_data.pop('payee', None)
         payments_data = validated_data.pop('payments', [])
         particulars_data = validated_data.pop('particulars', [])
         je_data = validated_data.pop('journal_entries', [])
@@ -142,6 +150,9 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
         # Handle Payments
         for p in payments_data:
             DVPayment.objects.create(dv=dv, **p)
+
+        if payee_data:
+            Payee.objects.create(dv=dv, **payee_data)
             
         # Handle Particulars and their Category Values
         for part in particulars_data:
@@ -158,6 +169,7 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
         return dv
 
     def update(self, instance, validated_data):
+        payee_data = validated_data.pop('payee', None)
         payments_data = validated_data.pop('payments', None)
         particulars_data = validated_data.pop('particulars', None)
         je_data = validated_data.pop('journal_entries', None)
@@ -165,6 +177,9 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+        
+        if payee_data is not None:
+            Payee.objects.update_or_create(dv=instance, defaults=payee_data)
 
         if payments_data is not None:
             instance.payments.all().delete()
@@ -186,8 +201,7 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
                 DVJE.objects.create(dv=instance, **je)
 
         return instance
-
-
+    
 class DVReportSerializer(serializers.ModelSerializer):
     dv_no = serializers.CharField(source='dv.dv_no', read_only=True)
     class Meta:

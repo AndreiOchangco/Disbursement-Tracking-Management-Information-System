@@ -196,6 +196,46 @@ export default function ArchivedDisbursements() {
       >
         {selectedDV && (
           <section className="panel panel-alt noselect">
+             {/* TOP FORM GRID - Payee */}
+              <h4 className="section-title"><ion-icon name="person-outline"></ion-icon> Payee Information</h4>
+              <div className="form-grid form-grid--split noselect">
+                <label>
+                  <span>Payee Name<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={selectedDV.payee?.name || ""} disabled />
+                </label>
+                <label>
+                  <span>Payee Email<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={selectedDV.payee?.email || ""} disabled />
+                </label>
+                <label>
+                  <span>Payee Phone Number<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={selectedDV.payee?.phone_no || ""} disabled />
+                </label>
+                <label>
+                  <span>Payee Address<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={selectedDV.payee?.address || ""} disabled />
+                </label>
+                <label>
+                  <span>ID # / TIN<span style={{ color: 'red' }}>*</span></span>
+                  <input type="text" value={selectedDV.tin || ""} disabled />
+                </label>
+                <label>
+                  <span>Position / Office</span>
+                  <input 
+                    type="text" 
+                    value={selectedDV.position_office || ''} 
+                    disabled
+                  />
+                </label>
+                <label>
+                  <span>Office / Unit / Project</span>
+                  <input 
+                    type="text" 
+                    value={selectedDV.office_unit_project || ''} 
+                    disabled
+                  />
+                </label>
+              </div>
             {/* TOP FORM GRID - All Disabled */}
             <h4 className="section-title"><ion-icon name="calculator-outline"></ion-icon> Accounting Information</h4>
             <div className="form-grid form-grid--split noselect">
@@ -207,22 +247,6 @@ export default function ArchivedDisbursements() {
                 <span>DV Number</span>
                 <input type="text" value={selectedDV.dv_no || ''} disabled />
               </label>
-              <label>
-                <span>Payee</span>
-                <input type="text" value={selectedDV.payee || ''} disabled />
-              </label>
-              <label>
-                <span>ID # / TIN</span>
-                <input type="text" value={selectedDV.tin || ''} disabled />
-              </label>
-              <label>
-                <span>Position / Office</span>
-                <input type="text" value={selectedDV.position_office || ''} disabled/>
-              </label>
-              <label>
-                <span>Office / Unit / Project</span>
-                <input type="text" value={selectedDV.office_unit_project || ''} disabled />
-             </label>
              <label>
                 <span>Fund Source</span>
                 <select value={selectedDV.fund_source || ''} disabled>
@@ -289,29 +313,29 @@ export default function ArchivedDisbursements() {
                 </label>
                 <label>
                   <span>Mode of Payment</span>
-                  <select value={selectedDV.payments[0].mop ? selectedDV.payments[0].mop : ''} disabled>
+                  <select value={selectedDV?.payments[0]?.mop ?? ''} disabled>
                     <option value="CASH">Cash</option>
                     <option value="CHECK">Check</option>
                     <option value="OTHERS">Others</option>
                   </select>
                 </label>
-                {selectedDV.payments[0].mop === 'OTHERS' && (
+                {selectedDV?.payments[0]?.mop === 'OTHERS' && (
                   <label>
                     <span>Specify Payment Mode</span>
-                    <input type="text" value={selectedDV.payments[0].mop_specify ? selectedDV.payments[0].mop_specify : ''} disabled />
+                    <input type="text" value={selectedDV?.payments[0]?.mop_specify ?? ''} disabled />
                   </label>
                 )}
                 <label>
                   <span>ATM Number</span>
-                  <input type="text" value={selectedDV.payments[0].atm_no ? selectedDV.payments[0].atm_no : ''} disabled />
+                  <input type="text" value={selectedDV?.payments[0]?.atm_no ?? ''} disabled />
                 </label>
                 <label>
                   <span>Bank</span>
-                  <input type="text" value={selectedDV.payments[0].bank ? selectedDV.payments[0].bank : ''} disabled />
+                  <input type="text" value={selectedDV?.payments[0]?.bank ?? ''} disabled />
                 </label>
                 <label>
                   <span>Date of Payment</span>
-                  <input type="date" value={selectedDV.payments[0].date ? selectedDV.payments[0].date : ''} disabled />
+                  <input type="date" value={selectedDV?.payments[0]?.date ?? ''} disabled />
                 </label>
               </div>
 
