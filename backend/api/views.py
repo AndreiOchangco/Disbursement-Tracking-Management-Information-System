@@ -518,25 +518,13 @@ def dv_approve(request, pk):
 
     dv.save()
 
-    # If the DV just reached final (archived), create a report snapshot and archive record
+    # If the DV just reached final (archived), create a report snapshot
     if dv.status == 'completed' and user_step == 5:
         try:
             DVReport.objects.update_or_create(dv=dv, defaults={'payload': DVSerializer(dv).data})
         except Exception:
             pass
-
-        try:
-            DVArchived.objects.update_or_create(dv=dv, defaults={'reason_of_archive': 'Archived after final approval.'})
-        except Exception:
-            pass
-
-        try:
-            DVWorkflow.objects.create(
-                dv=dv, step=user_step, status='archived',
-                action_by=request.user, remarks='Auto-archived after final approval.'
-            )
-        except Exception:
-            pass
+        
     return Response(DVSerializer(dv).data)
 
 
@@ -571,11 +559,6 @@ def dv_disapprove(request, pk):
     # Immediately archive the disapproved DV so it is moved to the
     # archived records/view. Use the rejection remarks as the reason.
     DVArchived.objects.update_or_create(dv=dv, defaults={'reason_of_archive': remarks})
-
-    DVWorkflow.objects.create(
-        dv=dv, step=user_step, status='archived',
-        action_by=request.user, remarks='Auto-archived after disapproval.'
-    )
 
     # Preserve the DV's status as 'disapproved' so it can be resubmitted later
     dv.status = 'disapproved'

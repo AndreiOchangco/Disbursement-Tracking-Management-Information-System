@@ -38,13 +38,11 @@ export default function ArchivedDisbursements() {
   const archivedFiltered = useMemo(() => {
     const query = search.trim().toLowerCase()
     
-    const archivedItems = disbursements.filter(
-      (d) => String(d.dv_no || '').toLowerCase().includes(query)
-    )
+    let filtered = disbursements.filter((d) => d.status !== 'completed')
 
-    if (!query) return archivedItems
+    if (!query) return filtered
 
-    return archivedItems.filter((d) =>
+    return filtered.filter((d) =>
       (
         String(d.tracking_no || '') +
         String(d.dv_no || '') +
@@ -119,7 +117,10 @@ export default function ArchivedDisbursements() {
                   <td className="table-strong">{d.tracking_no}</td>
                   <td>{d.dv_no || '-'}</td>
                   <td className="table-column-center">
-                    <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-') }>{d.status === 'completed' ? d.status : `${d.status} (${d.current_step})`}</span>
+                    {/* Simplified badge logic since 'completed' is now impossible here */}
+                    <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-') }>
+                      {`${d.status} (${d.current_step})`}
+                    </span>
                   </td>
                   <td className='table-column-center'>{formatDateMMDDYYYY(d.created_date)}</td>
                   <td>{d.accounting_name || d.office}</td>
@@ -130,7 +131,7 @@ export default function ArchivedDisbursements() {
                   </td>
                 </tr>
               ))}
-            </tbody>
+              </tbody>
           </table>
           {archivedFiltered.length === 0 && (
             <p className="empty empty--center"><ion-icon name="file-tray-outline"></ion-icon> No archived records found.</p>
@@ -288,7 +289,7 @@ export default function ArchivedDisbursements() {
                 </label>
                 <label>
                   <span>Mode of Payment</span>
-                  <select value={selectedDV.payments[0].mop || ''} disabled>
+                  <select value={selectedDV.payments[0].mop ? selectedDV.payments[0].mop : ''} disabled>
                     <option value="CASH">Cash</option>
                     <option value="CHECK">Check</option>
                     <option value="OTHERS">Others</option>
@@ -297,20 +298,20 @@ export default function ArchivedDisbursements() {
                 {selectedDV.payments[0].mop === 'OTHERS' && (
                   <label>
                     <span>Specify Payment Mode</span>
-                    <input type="text" value={selectedDV.payments[0].mop_specify || ''} disabled />
+                    <input type="text" value={selectedDV.payments[0].mop_specify ? selectedDV.payments[0].mop_specify : ''} disabled />
                   </label>
                 )}
                 <label>
                   <span>ATM Number</span>
-                  <input type="text" value={selectedDV.payments[0].atm_no || ''} disabled />
+                  <input type="text" value={selectedDV.payments[0].atm_no ? selectedDV.payments[0].atm_no : ''} disabled />
                 </label>
                 <label>
                   <span>Bank</span>
-                  <input type="text" value={selectedDV.payments[0].bank || ''} disabled />
+                  <input type="text" value={selectedDV.payments[0].bank ? selectedDV.payments[0].bank : ''} disabled />
                 </label>
                 <label>
                   <span>Date of Payment</span>
-                  <input type="date" value={selectedDV.payments[0].date || ''} disabled />
+                  <input type="date" value={selectedDV.payments[0].date ? selectedDV.payments[0].date : ''} disabled />
                 </label>
               </div>
 
