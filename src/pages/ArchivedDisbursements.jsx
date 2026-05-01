@@ -1,8 +1,9 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest } from '../api'
 import ReactModal from '../components/ReactModal'
+import { toast } from 'react-toastify'
 
 const formatDateMMDDYYYY = (date) => {
   if (!date) return '-'
@@ -20,40 +21,55 @@ export default function ArchivedDisbursements() {
   const [search, setSearch] = useState('')
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedDV, setSelectedDV] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [hasNext, setHasNext] = useState(false)
+  const [hasPrevious, setHasPrevious] = useState(false)
   
-  // Pagination State - Set to 5 to match Disbursements.jsx
+  // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 5
+  const searchTimeoutRef = useRef(null)
 
-  // Load data from backend
+  // Load data from backend with pagination and search
   useEffect(() => {
     async function load() {
-      const data = await apiRequest('/dv/')
-      if (data) setDisbursements(data)
+      setLoading(true)
+      try {
+        const params = new URLSearchParams()
+        params.append('page', currentPage)
+        params.append('page_size', itemsPerPage)
+        params.append('status', 'archived')
+        if (search) {
+          params.append('search', search)
+        }
+        const response = await apiRequest(`/dv/?${params.toString()}`)
+        if (response) {
+          setDisbursements(response.results || [])
+          setTotalCount(response.total_count || 0)
+          setTotalPages(response.total_pages || 0)
+          setHasNext(response.has_next || false)
+          setHasPrevious(response.has_previous || false)
+        }
+      } catch (e) {
+        console.error('Failed to load archived disbursements', e)
+        toast.error('Failed to load archived disbursements')
+      } finally {
+        setLoading(false)
+      }
     }
     load()
+  }, [currentPage, search])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
   }, [])
-
-  // Filter for ARCHIVED status and apply search
-  const archivedFiltered = useMemo(() => {
-    const query = search.trim().toLowerCase()
-    
-    let filtered = disbursements.filter((d) => d.status?.toLowerCase() === 'archived')
-
-    if (!query) return filtered
-
-    return filtered.filter((d) =>
-      (
-        String(d.tracking_no || '') +
-        String(d.dv_no || '') +
-        String(d.status || '') +
-        String(d.payee?.name || '') +
-        String(d.office || '')
-      )
-        .toLowerCase()
-        .includes(query)
-    )
-  }, [search, disbursements])
 
   const handleView = (dv) => {
     setSelectedDV(dv)
@@ -61,10 +77,7 @@ export default function ArchivedDisbursements() {
   }
 
   // Pagination Logic
-  const paginatedItems = archivedFiltered.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  const itemsToDisplay = disbursements;
 
   return (
     <div className='noselect'>
@@ -84,16 +97,26 @@ export default function ArchivedDisbursements() {
         <div className="table-toolbar">
           <div>
             <h3 className="panel-title"><ion-icon name="folder-open-outline"></ion-icon> Archived Records</h3>
-            <p className="panel-subtitle">{archivedFiltered.length} records found</p>
+            <p className="panel-subtitle">{totalCount} records found</p>
           </div>
           <div className="toolbar-actions">
             <input
               value={search}
               onChange={(e) => {
-                setSearch(e.target.value)
-                setCurrentPage(1)
+                const value = e.target.value;
+                setSearch(value);
+                
+                // Clear previous timeout
+                if (searchTimeoutRef.current) {
+                  clearTimeout(searchTimeoutRef.current);
+                }
+                
+                // Set new timeout for debounced search
+                searchTimeoutRef.current = setTimeout(() => {
+                  setCurrentPage(1);
+                }, 300);
               }}
-              placeholder="Search archived by tracking or DV#..."
+              placeholder="Search by tracking number..."
               className="search search--wide"
             />
           </div>
@@ -112,7 +135,7 @@ export default function ArchivedDisbursements() {
               </tr>
             </thead>
             <tbody>
-              {paginatedItems.map((d) => (
+              {disbursements.map((d) => (
                 <tr key={d.id} className="table-row">
                   <td className="table-strong">{d.tracking_no}</td>
                   <td>{d.dv_no || '-'}</td>
@@ -133,21 +156,21 @@ export default function ArchivedDisbursements() {
               ))}
               </tbody>
           </table>
-          {archivedFiltered.length === 0 && (
+          {disbursements.length === 0 && (
             <p className="empty empty--center"><ion-icon name="file-tray-outline"></ion-icon> No archived records found.</p>
           )}
         </div>
 
-        {/* 📄 PAGINATION CONTROLS (Matched with Disbursements.jsx) */}
-        {archivedFiltered.length > 0 && (
+        {/* 📄 PAGINATION CONTROLS (Backend-driven) */}
+        {totalCount > 0 && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
             <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-              Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, archivedFiltered.length)} of {archivedFiltered.length} records | Page {currentPage} of {Math.ceil(archivedFiltered.length / itemsPerPage)}
+              Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} records | Page {currentPage} of {totalPages}
             </span>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
+                disabled={!hasPrevious || loading}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -155,9 +178,9 @@ export default function ArchivedDisbursements() {
                   padding: '0.5rem 1rem',
                   borderRadius: '4px',
                   border: '1px solid #d1d5db',
-                  background: currentPage === 1 ? '#f3f4f6' : '#fff',
-                  color: currentPage === 1 ? '#9ca3af' : '#2c5dff',
-                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  background: !hasPrevious || loading ? '#f3f4f6' : '#fff',
+                  color: !hasPrevious || loading ? '#9ca3af' : '#2c5dff',
+                  cursor: !hasPrevious || loading ? 'not-allowed' : 'pointer',
                   fontSize: '0.9rem',
                   fontWeight: '500',
                 }}
@@ -165,8 +188,8 @@ export default function ArchivedDisbursements() {
                 <ion-icon name="chevron-back"></ion-icon> Previous
               </button>
               <button
-                onClick={() => setCurrentPage(p => Math.min(Math.ceil(archivedFiltered.length / itemsPerPage), p + 1))}
-                disabled={currentPage >= Math.ceil(archivedFiltered.length / itemsPerPage)}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={!hasNext || loading}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -174,9 +197,9 @@ export default function ArchivedDisbursements() {
                   padding: '0.5rem 1rem',
                   borderRadius: '4px',
                   border: '1px solid #d1d5db',
-                  background: currentPage >= Math.ceil(archivedFiltered.length / itemsPerPage) ? '#f3f4f6' : '#fff',
-                  color: currentPage >= Math.ceil(archivedFiltered.length / itemsPerPage) ? '#9ca3af' : '#2c5dff',
-                  cursor: currentPage >= Math.ceil(archivedFiltered.length / itemsPerPage) ? 'not-allowed' : 'pointer',
+                  background: !hasNext || loading ? '#f3f4f6' : '#fff',
+                  color: !hasNext || loading ? '#9ca3af' : '#2c5dff',
+                  cursor: !hasNext || loading ? 'not-allowed' : 'pointer',
                   fontSize: '0.9rem',
                   fontWeight: '500',
                 }}

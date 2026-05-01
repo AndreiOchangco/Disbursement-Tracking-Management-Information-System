@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { apiRequest, getCurrentUser } from '../api'
@@ -32,6 +32,12 @@ export default function Disbursements() {
 
   const [disbursements, setDisbursements] = useState([])
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [hasNext, setHasNext] = useState(false)
+  const [hasPrevious, setHasPrevious] = useState(false)
+  const searchTimeoutRef = useRef(null)
   
   // CREATE STATES (Accounting Only)
   const [trackingno, setTrackingNo] = useState('')
@@ -150,18 +156,54 @@ export default function Disbursements() {
 
   useEffect(() => {
     async function load() {
-      const data = await apiRequest('/dv/')
-      if (data) setDisbursements(data)
+      setLoading(true)
+      try {
+        const params = new URLSearchParams()
+        params.append('page', dvCurrentPage)
+        params.append('page_size', dvItemsPerPage)
+        if (search) {
+          params.append('search', search)
+        }
+        const response = await apiRequest(`/dv/?${params.toString()}`)
+        if (response) {
+          setDisbursements(response.results || [])
+          setTotalCount(response.total_count || 0)
+          setTotalPages(response.total_pages || 0)
+          setHasNext(response.has_next || false)
+          setHasPrevious(response.has_previous || false)
+        }
+      } catch (e) {
+        console.error('Failed to load disbursements', e)
+        toast.error('Failed to load disbursements')
+      } finally {
+        setLoading(false)
+      }
     }
     load()
-  }, [])
+  }, [dvCurrentPage, search])
 
   const reload = async () => {
     try {
-      const data = await apiRequest('/dv/')
-      if (data) setDisbursements(data)
+      setLoading(true)
+      const params = new URLSearchParams()
+      params.append('page', dvCurrentPage)
+      params.append('page_size', dvItemsPerPage)
+      if (search) {
+        params.append('search', search)
+      }
+      const response = await apiRequest(`/dv/?${params.toString()}`)
+      if (response) {
+        setDisbursements(response.results || [])
+        setTotalCount(response.total_count || 0)
+        setTotalPages(response.total_pages || 0)
+        setHasNext(response.has_next || false)
+        setHasPrevious(response.has_previous || false)
+      }
     } catch (e) {
       console.error('Failed to reload disbursements', e)
+      toast.error('Failed to reload disbursements')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -178,28 +220,6 @@ export default function Disbursements() {
   const removeParticularRow = (index) => {
     setParticulars((prev) => prev.filter((_, i) => i !== index))
   }
-
-  const filtered = useMemo(() => {
-    const activeDisbursements = disbursements.filter(
-      (d) => String(d.status || '').toLowerCase() !== 'archived'
-    );
-    const query = search.trim().toLowerCase();
-    
-    if (!query) return activeDisbursements;
-
-    return activeDisbursements.filter((d) =>
-      (
-        String(d.tracking_no || '') +
-        String(d.dv_no || '') +
-        String(d.status || '') +
-        String(d.payee || '') +
-        String(d.office || '') +
-        String(d.fund_source || '')
-      )
-        .toLowerCase()
-        .includes(query)
-    );
-  }, [search, disbursements]);
 
   const addDisbursement = async (e) => {
     e.preventDefault()
@@ -822,7 +842,7 @@ export default function Disbursements() {
       <h3 className="panel-title">
         <ion-icon name="clipboard"></ion-icon> Open Disbursement Voucher Entries
       </h3>
-      <p className="panel-subtitle">{filtered.length} active records</p>
+      <p className="panel-subtitle">{totalCount} active records</p>
     </div>
     <div className="toolbar-actions">
       {isAccountant && (
@@ -840,10 +860,20 @@ export default function Disbursements() {
       <input
         value={search}
         onChange={(e) => {
-          setSearch(e.target.value);
-          setDVCurrentPage(1);
+          const value = e.target.value;
+          setSearch(value);
+          
+          // Clear previous timeout
+          if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+          }
+          
+          // Set new timeout for debounced search
+          searchTimeoutRef.current = setTimeout(() => {
+            setDVCurrentPage(1);
+          }, 300);
         }}
-        placeholder="Search by tracking, DV number, or officer..."
+        placeholder="Search by tracking number..."
         className="search search--wide"
       />
     </div>
@@ -863,8 +893,7 @@ export default function Disbursements() {
         </tr>
       </thead>
       <tbody>
-        {filtered
-          .slice((dvCurrentPage - 1) * dvItemsPerPage, dvCurrentPage * dvItemsPerPage)
+        {disbursements
           .map((d) => {
             // 1. DYNAMIC ACTION CALCULATION
             const actions = [];
@@ -946,7 +975,7 @@ export default function Disbursements() {
           })}
       </tbody>
     </table>
-    {filtered.length === 0 && (
+    {disbursements.length === 0 && (
       <p className="empty empty--center">
         <ion-icon name="mail-unread"></ion-icon> No disbursements found.
       </p>
@@ -954,15 +983,15 @@ export default function Disbursements() {
   </div>
 
   {/* 📄 PAGINATION CONTROLS */}
-  {filtered.length > 0 && (
+  {totalCount > 0 && (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
       <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-        Showing {(dvCurrentPage - 1) * dvItemsPerPage + 1} to {Math.min(dvCurrentPage * dvItemsPerPage, filtered.length)} of {filtered.length} records | Page {dvCurrentPage} of {Math.ceil(filtered.length / dvItemsPerPage)}
+        Showing {(dvCurrentPage - 1) * dvItemsPerPage + 1} to {Math.min(dvCurrentPage * dvItemsPerPage, totalCount)} of {totalCount} records | Page {dvCurrentPage} of {totalPages}
       </span>
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <button
           onClick={() => setDVCurrentPage(p => Math.max(1, p - 1))}
-          disabled={dvCurrentPage === 1}
+          disabled={!hasPrevious || loading}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -970,9 +999,9 @@ export default function Disbursements() {
             padding: '0.5rem 1rem',
             borderRadius: '4px',
             border: '1px solid #d1d5db',
-            background: dvCurrentPage === 1 ? '#f3f4f6' : '#fff',
-            color: dvCurrentPage === 1 ? '#9ca3af' : '#2c5dff',
-            cursor: dvCurrentPage === 1 ? 'not-allowed' : 'pointer',
+            background: !hasPrevious || loading ? '#f3f4f6' : '#fff',
+            color: !hasPrevious || loading ? '#9ca3af' : '#2c5dff',
+            cursor: !hasPrevious || loading ? 'not-allowed' : 'pointer',
             fontSize: '0.9rem',
             fontWeight: '500',
           }}
@@ -980,8 +1009,8 @@ export default function Disbursements() {
           <ion-icon name="chevron-back"></ion-icon> Previous
         </button>
         <button
-          onClick={() => setDVCurrentPage(p => Math.min(Math.ceil(filtered.length / dvItemsPerPage), p + 1))}
-          disabled={dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage)}
+          onClick={() => setDVCurrentPage(p => Math.min(totalPages, p + 1))}
+          disabled={!hasNext || loading}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -989,9 +1018,9 @@ export default function Disbursements() {
             padding: '0.5rem 1rem',
             borderRadius: '4px',
             border: '1px solid #d1d5db',
-            background: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? '#f3f4f6' : '#fff',
-            color: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? '#9ca3af' : '#2c5dff',
-            cursor: dvCurrentPage >= Math.ceil(filtered.length / dvItemsPerPage) ? 'not-allowed' : 'pointer',
+            background: !hasNext || loading ? '#f3f4f6' : '#fff',
+            color: !hasNext || loading ? '#9ca3af' : '#2c5dff',
+            cursor: !hasNext || loading ? 'not-allowed' : 'pointer',
             fontSize: '0.9rem',
             fontWeight: '500',
           }}

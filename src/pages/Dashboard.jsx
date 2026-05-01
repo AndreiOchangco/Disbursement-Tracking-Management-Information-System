@@ -61,22 +61,17 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const res = await apiRequest('/dv/')
-      setData(res)
-
-      // Separate status counts based on your API response
-      const completed = res.filter(d => d.status === 'completed').length
-      const pending = res.filter(d => d.status === 'pending').length
-      const archived = res.filter(d => d.status === 'archived').length
-      const rejected = res.filter(d => d.status === 'disapproved').length
-
-      setStats({
-        total: res.length,
-        completed,
-        pending,
-        archived,
-        rejected,
-      })
+      const res = await apiRequest('/dashboard/')
+      if (res) {
+        setData(res.recent_dvs || [])
+        setStats({
+          total: res.total || 0,
+          completed: res.completed || 0,
+          pending: res.pending || 0,
+          archived: res.archived || 0,
+          rejected: res.disapproved || 0,
+        })
+      }
     } catch (err) {
       console.error(err)
     }
@@ -111,7 +106,7 @@ export default function Dashboard() {
           'rgba(5, 150, 105, 0.7)', // Success Green
           'rgba(0, 82, 204, 0.7)',   // Primary Blue
           'rgba(249, 115, 22, 0.7)', // Warning Orange
-          'rgba(107, 114, 128, 0.7)', // Gray
+          'rgba(242, 63, 56, 0.7)', // Red
         ],
         borderColor: [
           '#059669',

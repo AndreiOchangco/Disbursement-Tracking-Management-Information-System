@@ -374,6 +374,8 @@ def dv_list(request):
         search = request.query_params.get('search', '').strip()
         status_filter = request.query_params.get('status', '').strip()
         show_archived = request.query_params.get('archived', 'false').lower() == 'true'
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
 
         dvs = DV.objects.all()
 
@@ -382,20 +384,33 @@ def dv_list(request):
                     dvs = dvs.filter(status=status_filter)
             else:
                 # Default: exclude archived unless explicitly requested
-                if request.user.department != 'accounting':
-                    dvs = dvs.exclude(status='archived')
+                dvs = dvs.exclude(status='archived')
 
         if search:
-            dvs = dvs.filter(
-                Q(dv_no__icontains=search) |
-                Q(tracking_no__icontains=search) |
-                Q(transaction_no__icontains=search) |
-                Q(payee__icontains=search) |
-                Q(office__icontains=search)
-            )
+            dvs = dvs.filter(tracking_no__icontains=search)
 
         dvs = dvs.order_by('-created_at')
-        return Response(DVSerializer(dvs, many=True).data)
+        
+        # Calculate total count before pagination
+        total_count = dvs.count()
+        
+        # Apply pagination
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated_dvs = dvs[start:end]
+        
+        # Calculate total pages
+        total_pages = (total_count + page_size - 1) // page_size
+        
+        return Response({
+            'results': DVSerializer(paginated_dvs, many=True).data,
+            'total_count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages,
+            'has_previous': page > 1
+        })
 
     elif request.method == 'POST':
         if request.user.department != 'accounting':
