@@ -15,6 +15,8 @@ from django.contrib.auth import authenticate as django_authenticate
 from django.contrib.auth.models import User as DjangoUser
 from django.contrib.auth import login as django_login
 from django.http import HttpResponse
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import strip_tags
 import os
 from pathlib import Path
 import base64
@@ -1321,3 +1323,30 @@ def wkhtmltopdf_health(request):
         'status': 'missing',
         'message': 'wkhtmltopdf binary not found. Set settings.WKHTMLTOPDF_PATH or WKHTMLTOPDF_PATH env var, or place the binary under backend/wkhtmltopdf/bin.'
     }, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def send_email(request):
+    subject = request.data.get('subject')
+    to_email = request.data.get('to')
+    html_content = request.data.get('html')
+    
+    # Validation
+    if not all([subject, to_email, html_content]):
+        return Response({"error": "Missing fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Create plain text version (good practice for email clients that don't render HTML)
+    text_content = strip_tags(html_content) 
+
+    try:
+        msg = EmailMultiAlternatives(
+            subject, 
+            text_content, 
+            settings.EMAIL_HOST_USER, # From email
+            [to_email]              # Recipient list
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        
+        return Response({"message": "Email sent!"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

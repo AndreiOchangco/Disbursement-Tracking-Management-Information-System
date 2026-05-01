@@ -38,4 +38,7 @@ urlpatterns = [
     
     # wkhtmltopdf diagnostic
     path('health/wkhtmltopdf/', views.wkhtmltopdf_health, name='wkhtmltopdf-health'),
+
+    # Email
+    path('send-email/', views.send_email, name='send-email')
 ]

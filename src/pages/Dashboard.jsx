@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { apiRequest, getCurrentUser } from '../api'
 import '../chart.js'
-
 import { Bar, Pie, Line } from 'react-chartjs-2'
 
 export default function Dashboard() {
@@ -38,6 +37,27 @@ export default function Dashboard() {
       loadData()
     }
   }, [isAdmin])
+
+  const testEmail = async () => {
+  const staticTestData = {
+    to: "bagoman.321@gmail.com", // Replace with your own email for testing
+    subject: "Static Test Email",
+    html: "<h1>Test Successful</h1><p>This is a <b>static</b> test email from React.</p>"
+  };
+
+  try {
+    // You MUST specify 'POST' and pass the body
+    const res = await apiRequest('/send-email/', 'POST', staticTestData);
+    
+    if (res) {
+      console.log('Success:', res.message);
+      alert('Email sent! Check your inbox.');
+    }
+  } catch (err) {
+    console.error('Test Email Failed:', err.message);
+    alert('Failed to send: ' + err.message);
+  }
+};
 
   const loadData = async () => {
     try {
@@ -130,6 +150,9 @@ export default function Dashboard() {
 
   return (
     <div>
+      <button onClick={testEmail} style={{ marginBottom: '1rem', padding: '0.5rem 1rem', background: '#2c5dff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+        Send Test Email
+      </button>
       {/* 👑 ADMIN DASHBOARD */}
       {isAdmin && (
               <>

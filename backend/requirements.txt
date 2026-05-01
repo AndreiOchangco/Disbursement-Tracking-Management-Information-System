@@ -21,3 +21,5 @@ django-filter>=23.5
 # Uses `pdfkit` which requires the `wkhtmltopdf` binary to be installed on the host.
 # On Windows download/install wkhtmltopdf from https://wkhtmltopdf.org/downloads.html
 pdfkit>=1.0.0
+
+python-dotenv
