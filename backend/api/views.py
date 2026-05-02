@@ -938,20 +938,27 @@ def dv_report_pdf(request, dv_id):
 
     # --- BUILD JOURNAL ENTRIES ---
     je_rows = ""
-    journal_entries = payload.get('journal_entries', [])
+    journal_entries = payload.get("journal_entries", [])
 
     for je in journal_entries:
+        particular = je.get("particular", "")
+        code = je.get("account_code", "")
+        debit = je.get("debit", "")
+        credit = je.get("credit", "")
+
+        # format numbers
+        debit_display = f"{float(debit):,.2f}" if debit else ""
+        credit_display = f"{float(credit):,.2f}" if credit else ""
+
         je_rows += f"""
         <tr>
-            <td>{je.get('account_title','-')}</td>
-            <td>{je.get('account_code','-')}</td>
-            <td>{je.get('debit','-')}</td>
-            <td>{je.get('credit','-')}</td>
+            <td style="border: 1px solid black; width: 48%;">{particular}</td>
+            <td style="border: 1px solid black; text-align:center; width: 22%;">{code}</td>
+            <td style="border: 1px solid black; text-align:right; width: 15%;">{debit_display}</td>
+            <td style="border: 1px solid black; text-align:right; width: 15%;">{credit_display}</td>
         </tr>
         """
 
-    if not je_rows:
-        je_rows = "<tr><td colspan='4'>No journal entries</td></tr>"
 
 
     # --- BUILD PAYMENTS ---
@@ -1168,12 +1175,12 @@ def dv_report_pdf(request, dv_id):
     </table>
     <table style="border-collapse: collapse;">
         <tr>
-            <td colspan="1" class="bold medium" 
+            <td colspan="1" class="medium" 
                 style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
 
                 <!-- Top-left (forced tight) -->
                 <div style="margin: 0; padding: 0; line-height: 1.2;">
-                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">A</span>
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">A.</span>
                     <span style="margin: 0;">Certified:</span><br>
 
                     <span style="font-size: 8px; margin: 0;">
@@ -1195,12 +1202,12 @@ def dv_report_pdf(request, dv_id):
 
             </td>
 
-            <td colspan="1" class="bold medium" 
+            <td colspan="1" class="medium" 
                 style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
 
                 <!-- Top-left (forced tight) -->
                 <div style="margin: 0; padding: 0; line-height: 1.2;">
-                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">B</span>
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">B.</span>
                     <span style="margin: 0;">Certified:</span><br>
 
                     <span style="font-size: 8px; margin: 0;">
@@ -1222,12 +1229,12 @@ def dv_report_pdf(request, dv_id):
 
             </td>
 
-            <td colspan="1" class="bold medium" 
+            <td colspan="1" class="medium" 
                 style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
 
                 <!-- Top-left (forced tight) -->
                 <div style="margin: 0; padding: 0; line-height: 1.2;">
-                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">C</span>
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">C.</span>
                     <span style="margin: 0;">Certified:</span><br>
 
                     <span style="font-size: 8px; margin: 0;">
@@ -1250,12 +1257,12 @@ def dv_report_pdf(request, dv_id):
         </tr>
 
         <tr>
-            <td colspan="1" class="bold medium" 
+            <td colspan="1" class="medium" 
                 style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
 
                 <!-- Top-left (forced tight) -->
                 <div style="margin: 0; padding: 0; line-height: 1.2;">
-                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">D</span>
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">D.</span>
                     <span style="margin: 0;">Approved Payment:</span>
                     <span>PHP {amount_due_display}</span>
                 </div>
@@ -1308,12 +1315,12 @@ def dv_report_pdf(request, dv_id):
 
             </td>
 
-            <td colspan="1" class="bold medium" 
+            <td colspan="1" class="medium" 
                 style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
 
                 <!-- Top-left (forced tight) -->
                 <div style="margin: 0; padding: 0; line-height: 1.2;">
-                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">E</span>
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">E.</span>
                     <span style="margin: 0;">Received Payment:</span><br>
                 </div>
 
@@ -1326,6 +1333,36 @@ def dv_report_pdf(request, dv_id):
 
             </td>
         </tr>
+    </table>
+
+    <table style="border-collapse: collapse; width: 100%;">
+
+        <!-- Header row -->
+        <tr>
+            <td style="vertical-align: top; text-align: left; padding: 0;">
+                <span style="border: 1px solid black; padding: 0 4px;">F.</span>
+                <span>Accounting Entries</span>
+            </td>
+        </tr>
+
+        <!-- Table content row -->
+        <tr>
+            <td style="padding: 0;">
+                <table style="width: 100%; border-collapse: collapse;">
+
+                    <tr>
+                        <th style="border: 1px solid black; text-align: left;">Particulars</th>
+                        <th style="border: 1px solid black;">Account Code</th>
+                        <th style="border: 1px solid black;">Debit</th>
+                        <th style="border: 1px solid black;">Credit</th>
+                    </tr>
+
+                    {je_rows}
+
+                </table>
+            </td>
+        </tr>
+
     </table>
 
     </body>
