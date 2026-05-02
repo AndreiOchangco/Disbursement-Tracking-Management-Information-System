@@ -971,12 +971,12 @@ def dv_report_pdf(request, dv_id):
     mop_specify = payment.get("mop_specify", "")
     atm_no = payment.get("atm_no", "")
     bank = payment.get("bank", "")
-    date = payment.get("date", "")
+    pdate = payment.get("date", "")
 
     for pay in payments:
         payment_info += f"""
         Bank: {pay.get('bank','-')}<br>
-        Date: {pay.get('date','-')}<br>
+        Date: {pay.get('pdate','-')}<br>
         Ref No: {pay.get('reference_no','-')}<br><br>
         """
 
@@ -1283,7 +1283,7 @@ def dv_report_pdf(request, dv_id):
             <td style="vertical-align: top; padding: 10px; height: 140px;">
 
                 <!-- Title -->
-                <div style="margin-bottom: 15px;">
+                <div style="margin-bottom: 10px;">
                     <strong>Payment :</strong>
                 </div>
 
@@ -1307,7 +1307,7 @@ def dv_report_pdf(request, dv_id):
                     <tr>
                         <td style="padding-top: 10px;">Date:</td>
                         <td style="border-bottom: 1px solid black;">
-                            {date}
+                            {pdate}
                         </td>
                     </tr>
 
@@ -1316,19 +1316,35 @@ def dv_report_pdf(request, dv_id):
             </td>
 
             <td colspan="1" class="medium" 
-                style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
+                style="vertical-align: top; text-align: left; height: 160px; width: 33.33%; padding: 0;">
 
-                <!-- Top-left (forced tight) -->
+                <!-- Header -->
                 <div style="margin: 0; padding: 0; line-height: 1.2;">
                     <span style="border: 1px solid black; padding: 0 4px; margin: 0;">E.</span>
                     <span style="margin: 0;">Received Payment:</span><br>
                 </div>
 
-                <!-- Centered bottom -->
-                <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                <!-- Signature Area -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 33px;">
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Signature Over Printed Name/Position
-                    </span><br>
+                    </span>
+                </div>
+
+                <!-- JEV Row -->
+                <div style="border-top: 1px solid black; padding: 4px; font-size: 10px;">
+                    JEV no.
+                    <span style="margin-left: 10px;">
+                        {jev}
+                    </span>
+                </div>
+
+                <!-- Date Row -->
+                <div style="border-top: 1px solid black; padding: 4px; font-size: 10px;">
+                    Date
+                    <span style="margin-left: 30px;">
+                        {date}
+                    </span>
                 </div>
 
             </td>
@@ -1361,6 +1377,47 @@ def dv_report_pdf(request, dv_id):
 
                 </table>
             </td>
+        </tr>
+
+    </table>
+
+    <table style="border-collapse: collapse;">
+
+        <tr>
+
+            <td style="height: 25px; width: 48%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="margin: 0;">Prepared by:</span><br>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 20px; margin-bottom: 10px;">
+                    <span>{report.dv.accounting.full_name}</span><br>
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Accounting Personnel
+                    </span><br>
+                </div>
+
+            </td>
+
+            <td style="width: 52%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                <br>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 30px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Head, Accounting Division/Unit
+                    </span><br>
+                </div>
+
+            </td>
+
         </tr>
 
     </table>
