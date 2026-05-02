@@ -51,7 +51,7 @@ def is_checked(value, expected):
         "tf": ["tf", "trust fund"],
         "5% drrmf": ["5% drrmf"],
         "philhealth": ["philhealth"],
-        "cad": ["cad"],
+        "gad": ["gad"],
         "calamity": ["calamity"],
         "ra7171": ["ra7171"],
 
@@ -529,6 +529,11 @@ def dv_approve(request, pk):
         dv.current_step = user_step + 1
 
     dv.save()
+    
+    # Create DVReport snapshot when DV is completed
+    if dv.status == 'completed' and not hasattr(dv, 'report'):
+        DVReport.objects.create(dv=dv, payload=DVSerializer(dv).data)
+    
     return Response(DVSerializer(dv).data)
 
 
@@ -771,6 +776,10 @@ def dv_report_pdf(request, dv_id):
 
     # Build an HTML representation from the stored payload
     payload = report.payload or {}
+
+    # Extract payee name from payee object
+    payee_data = payload.get('payee', {})
+    payee_name = payee_data.get('name', '') if isinstance(payee_data, dict) else payee_data
 
     # --- BUILD PARTICULARS TABLE (For standard rows, if still needed) ---
     particular_rows = ""
@@ -1076,7 +1085,7 @@ def dv_report_pdf(request, dv_id):
             <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, 'gf')} disabled> GF <input type="checkbox" style="transform: scale(1.5); margin-left: 80px; margin-bottom: -3px;" {is_checked(fund_source, 'sef')} disabled> SEF</br> 
             <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, '20% df')} disabled> 20% DF <input type="checkbox" style="transform: scale(1.5); margin-left: 57px; margin-bottom: -3px;" {is_checked(fund_source, 'tf')} disabled> TF</br>
             <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, '5% drrmf')} disabled> 5% DRRMF <input type="checkbox" style="transform: scale(1.5); margin-left: 40px; margin-bottom: -3px;" {is_checked(fund_source, 'philhealth')} disabled> PhilHealth</br>
-            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, 'cad')} disabled> CAD <input type="checkbox" style="transform: scale(1.5); margin-left: 73px; margin-bottom: -3px;" {is_checked(fund_source, 'calamity')} disabled> Calamity</br>
+            <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, 'gad')} disabled> GAD <input type="checkbox" style="transform: scale(1.5); margin-left: 73px; margin-bottom: -3px;" {is_checked(fund_source, 'calamity')} disabled> Calamity</br>
             <input type="checkbox" style="transform: scale(1.5); margin-bottom: -3px;" {is_checked(fund_source, 'ra7171')} disabled> RA7171</br>
         </td>
     </tr>
@@ -1105,7 +1114,7 @@ def dv_report_pdf(request, dv_id):
 
     <tr>
         <td colspan="1" style="height: 60px;" class="center bold medium"><b>PAYEE</b></td>
-        <td colspan="1" class="center bold">{payload.get('payee','')}</td>
+        <td colspan="1" class="center bold">{payee_name}</td>
         <td rowspan="1" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
             <span style="position:absolute; margin-top: -23px;">ID No. / TIN:</span>
             <div class="medium" style="text-align:center;">{payload.get('tin','')}</div>
