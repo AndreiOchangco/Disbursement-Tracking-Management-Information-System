@@ -178,9 +178,9 @@ export default function ReportGeneration() {
               <p>This is your modal content.</p>
             </ReactModal>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginLeft: '1rem' }}>
-              <input placeholder="Filter DV#" value={filterDvNo} onChange={e => setFilterDvNo(e.target.value)} />
-              <input type="date" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
-              <input type="date" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
+              <input placeholder="Filter DV#" value={filterDvNo} className="search search--wide" onChange={e => setFilterDvNo(e.target.value)} />
+              <input type="date" value={filterFrom} className="search search--wide" onChange={e => setFilterFrom(e.target.value)} />
+              <input type="date" value={filterTo} className="search search--wide" onChange={e => setFilterTo(e.target.value)} />
               <button className="btn-primary" onClick={() => fetchReports(1)} disabled={loading}>Apply</button>
             </div>
           </div>
