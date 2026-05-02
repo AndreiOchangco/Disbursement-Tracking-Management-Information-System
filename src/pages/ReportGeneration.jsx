@@ -173,7 +173,6 @@ export default function ReportGeneration() {
               }}
               footer={
                 <>
-                  <button onClick={closeModal}>Close</button>
                   {pdfUrl && (
                     <a href={pdfUrl} download="dv_report.pdf">
                       <button>Download</button>
