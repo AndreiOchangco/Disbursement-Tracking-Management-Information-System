@@ -40,13 +40,13 @@ export default function Dashboard() {
 
   const testEmail = async () => {
     const staticTestData = {
-      to: "bagoman.321@gmail.com", // Replace with your own email for testing
+      to: "andrei.ochangco@gmail.com", // Replace with your own email for testing
       subject: "DTMIS Test Email: Your System Notification Template",
       html: `
         <div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
           <div style="max-width: 600px; margin: auto; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);">
             <div style="background: #2c5dff; color: #ffffff; padding: 24px; text-align: center;">
-              <h1 style="margin: 0; font-size: 24px;">Disbursement Tracking System</h1>
+              <h1 style="margin: 0; font-size: 24px;">Municipal Accounting Office</h1>
               <p style="margin: 8px 0 0; font-size: 16px; opacity: 0.9;">Test Email Notification</p>
             </div>
             <div style="padding: 24px; background: #ffffff;">
@@ -361,9 +361,11 @@ export default function Dashboard() {
                           textTransform: 'capitalize',
                           background: dv.status === 'completed' ? 'rgba(5, 150, 105, 0.2)' : 
                                     dv.status === 'pending' ? 'rgba(0, 82, 204, 0.2)' :
+                                    dv.status === 'disapproved' ? 'rgba(242, 63, 56, 0.2)' :
                                     'rgba(107, 114, 128, 0.2)',
                           color: dv.status === 'completed' ? '#059669' :
                                 dv.status === 'pending' ? '#0052CC' :
+                                dv.status === 'disapproved' ? '#f23f38' :
                                 '#6b7280'
                         }}>
                           {dv.status}
