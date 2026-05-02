@@ -1302,6 +1302,7 @@ export default function Disbursements() {
                         {editJeRows.map((row, index) => (
                           <tr key={index}>
                             <td><input className="particulars-input" value={row.particulars || ''} onChange={(e) => handleEditJeRowChange(index, 'particulars', e.target.value)} disabled={!canEditAccounting} /></td>
+                            <td><input className="particulars-input" value={row.account_code || ''} onChange={(e) => handleEditJeRowChange(index, 'account_code', e.target.value)} disabled={!canEditAccounting} /></td>
                             <td><input className="particulars-input" type="number" step="0.01" value={row.debit !== undefined ? row.debit : ''} onChange={(e) => handleEditJeRowChange(index, 'debit', e.target.value)} disabled={!canEditAccounting} /></td>
                             <td><input className="particulars-input" type="number" step="0.01" value={row.credit !== undefined ? row.credit : ''} onChange={(e) => handleEditJeRowChange(index, 'credit', e.target.value)} disabled={!canEditAccounting} /></td>
                             {canEditAccounting && (
