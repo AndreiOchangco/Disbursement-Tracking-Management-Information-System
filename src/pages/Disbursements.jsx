@@ -764,9 +764,9 @@ export default function Disbursements() {
                           <td>
                             <input className="particulars-input" type="text" value={item.category} onChange={(e) => handleParticularChange(idx, 'category', e.target.value)} placeholder="Category name" />
                           </td>
-                          <td><input className="particulars-input" type="number" value={item.np} onChange={(e) => handleParticularChange(idx, 'np', e.target.value)} placeholder="0.00" /></td>
-                          <td><input className="particulars-input" type="number" value={item.ft} onChange={(e) => handleParticularChange(idx, 'ft', e.target.value)} placeholder="0.00" /></td>
-                          <td><input className="particulars-input" type="number" value={item.tf} onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)} placeholder="0.00" /></td>
+                          <td><span>{(parseFloat(item.ft || 0) + parseFloat(item.tf || 0)).toFixed(2)}</span></td>
+                          <td><input className="particulars-input" type="number" step="0.01" value={item.ft} onChange={(e) => handleParticularChange(idx, 'ft', e.target.value)} placeholder="0.00" /></td>
+                          <td><input className="particulars-input" type="number" step="0.01" value={item.tf} onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)} placeholder="0.00" /></td>
                           <td className="table-column-center">
                             {idx > 0 && (
                               <button type="button" className="btn-danger" onClick={() => removeParticularRow(idx)}>
@@ -804,8 +804,8 @@ export default function Disbursements() {
                           <td>
                             <input className="particulars-input" type="text" value={row.account_code} onChange={(e) => handleJeRowChange(index, 'account_code', e.target.value)} placeholder="Account Code" />
                           </td>
-                          <td><input className="particulars-input" type="number" value={row.debit} onChange={(e) => handleJeRowChange(index, 'debit', e.target.value)} placeholder="0.00" /></td>
-                          <td><input className="particulars-input" type="number" value={row.credit} onChange={(e) => handleJeRowChange(index, 'credit', e.target.value)} placeholder="0.00" /></td>
+                          <td><input className="particulars-input" type="number" step="0.01" value={row.debit} onChange={(e) => handleJeRowChange(index, 'debit', e.target.value)} placeholder="0.00" /></td>
+                          <td><input className="particulars-input" type="number" step="0.01" value={row.credit} onChange={(e) => handleJeRowChange(index, 'credit', e.target.value)} placeholder="0.00" /></td>
                           <td className="table-column-center">
                             {index > 0 && (
                               <button type="button" className="btn-danger" onClick={() => removeJeRow(index)}>
@@ -1246,9 +1246,9 @@ export default function Disbursements() {
                               part.category_values.map((val, vIdx) => (
                                 <tr key={vIdx}>
                                   <td><input className="particulars-input" value={val.category || ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'category', e.target.value)} disabled={!canEditAccounting} /></td>
-                                  <td><input className="particulars-input" type="number" value={val.np !== undefined ? val.np : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'np', e.target.value)} disabled={!canEditAccounting} /></td>
-                                  <td><input className="particulars-input" type="number" value={val.ft !== undefined ? val.ft : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'ft', e.target.value)} disabled={!canEditAccounting} /></td>
-                                  <td><input className="particulars-input" type="number" value={val.tf !== undefined ? val.tf : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'tf', e.target.value)} disabled={!canEditAccounting} /></td>
+                                  <td><span>{(parseFloat(val.ft || 0) + parseFloat(val.tf || 0)).toFixed(2)}</span></td>
+                                  <td><input className="particulars-input" type="number" step="0.01" value={val.ft !== undefined ? val.ft : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'ft', e.target.value)} disabled={!canEditAccounting} /></td>
+                                  <td><input className="particulars-input" type="number" step="0.01" value={val.tf !== undefined ? val.tf : ''} onChange={(e) => handleEditParticularValue(pIdx, vIdx, 'tf', e.target.value)} disabled={!canEditAccounting} /></td>
                                   {canEditAccounting && (
                                     <td className="table-column-center">
                                       <button type="button" className="btn-danger" onClick={() => handleRemoveEditParticularValue(pIdx, vIdx)}>
@@ -1302,9 +1302,8 @@ export default function Disbursements() {
                         {editJeRows.map((row, index) => (
                           <tr key={index}>
                             <td><input className="particulars-input" value={row.particulars || ''} onChange={(e) => handleEditJeRowChange(index, 'particulars', e.target.value)} disabled={!canEditAccounting} /></td>
-                            <td><input className="particulars-input" value={row.account_code || ''} onChange={(e) => handleEditJeRowChange(index, 'account_code', e.target.value)} disabled={!canEditAccounting} /></td>
-                            <td><input className="particulars-input" type="number" value={row.debit !== undefined ? row.debit : ''} onChange={(e) => handleEditJeRowChange(index, 'debit', e.target.value)} disabled={!canEditAccounting} /></td>
-                            <td><input className="particulars-input" type="number" value={row.credit !== undefined ? row.credit : ''} onChange={(e) => handleEditJeRowChange(index, 'credit', e.target.value)} disabled={!canEditAccounting} /></td>
+                            <td><input className="particulars-input" type="number" step="0.01" value={row.debit !== undefined ? row.debit : ''} onChange={(e) => handleEditJeRowChange(index, 'debit', e.target.value)} disabled={!canEditAccounting} /></td>
+                            <td><input className="particulars-input" type="number" step="0.01" value={row.credit !== undefined ? row.credit : ''} onChange={(e) => handleEditJeRowChange(index, 'credit', e.target.value)} disabled={!canEditAccounting} /></td>
                             {canEditAccounting && (
                               <td className="table-column-center">
                                 <button type="button" className="btn-danger" onClick={() => handleRemoveEditJeRow(index)}>
