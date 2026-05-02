@@ -162,7 +162,6 @@ export default function ReportGeneration() {
               title="PDF Preview"
               contentStyle={{
                 width: '98vw',
-                height: '95vh',
                 maxWidth: 'none',
                 margin: '0 auto',
                 padding: '1rem',
@@ -184,7 +183,7 @@ export default function ReportGeneration() {
               {/* BODY CONTENT */}
               <div style={{
                 width: '88vw',
-                height: '85vh',
+                height: '63vh',
                 display: 'flex',
                 flexDirection: 'column'
               }}>
