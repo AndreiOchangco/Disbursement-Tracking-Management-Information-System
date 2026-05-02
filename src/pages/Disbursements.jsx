@@ -751,10 +751,10 @@ export default function Disbursements() {
                   <table className="particulars-table">
                     <thead>
                       <tr>
-                        <th>Category / Particulars</th>
-                        <th>Net Pay</th>
-                        <th>15th</th>
-                        <th>31st</th>
+                        <th className='table-column-center'>Category</th>
+                        <th className='table-column-center'>Net Pay</th>
+                        <th className='table-column-center'>15th</th>
+                        <th className='table-column-center'>31st</th>
                         <th style={{ width: '50px' }}></th>
                       </tr>
                     </thead>
@@ -802,7 +802,7 @@ export default function Disbursements() {
                             <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Description" />
                           </td>
                           <td>
-                            <input className="particulars-input" type="text" value={row.account_code} onChange={(e) => handleJeRowChange(index, 'account_code', e.target.value)} placeholder="Code" />
+                            <input className="particulars-input" type="text" value={row.account_code} onChange={(e) => handleJeRowChange(index, 'account_code', e.target.value)} placeholder="Account Code" />
                           </td>
                           <td><input className="particulars-input" type="number" value={row.debit} onChange={(e) => handleJeRowChange(index, 'debit', e.target.value)} placeholder="0.00" /></td>
                           <td><input className="particulars-input" type="number" value={row.credit} onChange={(e) => handleJeRowChange(index, 'credit', e.target.value)} placeholder="0.00" /></td>
@@ -1291,8 +1291,8 @@ export default function Disbursements() {
                     <table className="particulars-table">
                       <thead>
                         <tr>
-                          <th>Account Code</th>
                           <th>Particulars</th>
+                          <th>Account</th>
                           <th>Debit</th>
                           <th>Credit</th>
                           {canEditAccounting && <th style={{ width: '50px' }}></th>}
@@ -1301,8 +1301,8 @@ export default function Disbursements() {
                       <tbody>
                         {editJeRows.map((row, index) => (
                           <tr key={index}>
-                            <td><input className="particulars-input" value={row.account_code || ''} onChange={(e) => handleEditJeRowChange(index, 'account_code', e.target.value)} disabled={!canEditAccounting} /></td>
                             <td><input className="particulars-input" value={row.particulars || ''} onChange={(e) => handleEditJeRowChange(index, 'particulars', e.target.value)} disabled={!canEditAccounting} /></td>
+                            <td><input className="particulars-input" value={row.account_code || ''} onChange={(e) => handleEditJeRowChange(index, 'account_code', e.target.value)} disabled={!canEditAccounting} /></td>
                             <td><input className="particulars-input" type="number" value={row.debit !== undefined ? row.debit : ''} onChange={(e) => handleEditJeRowChange(index, 'debit', e.target.value)} disabled={!canEditAccounting} /></td>
                             <td><input className="particulars-input" type="number" value={row.credit !== undefined ? row.credit : ''} onChange={(e) => handleEditJeRowChange(index, 'credit', e.target.value)} disabled={!canEditAccounting} /></td>
                             {canEditAccounting && (
