@@ -962,6 +962,9 @@ def dv_report_pdf(request, dv_id):
 
     mop = (payment.get("mop") or "").strip().lower()
     mop_specify = payment.get("mop_specify", "")
+    atm_no = payment.get("atm_no", "")
+    bank = payment.get("bank", "")
+    date = payment.get("date", "")
 
     for pay in payments:
         payment_info += f"""
@@ -1158,13 +1161,170 @@ def dv_report_pdf(request, dv_id):
     <table>
         <tr>
             <td colspan="1" class="center bold medium" style="text-align: center;">Amount in </br> Words: </td>
-            <td colspan="2" class="center bold medium" style="text-align: center; width: 56%;">{amount_in_words}</td>
-            <td colspan="2" class="center bold medium" style="text-align: center;">Amount Due: ></td>
-            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">{amount_due_display}</td>
+            <td colspan="2" class="center bold medium" style="text-align: center; width: 58.33%;">{amount_in_words}</td>
+            <td colspan="2" class="center bold small" style="text-align: center;">Amount Due: ></td>
+            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">PHP {amount_due_display}</td>
         </tr>
     </table>
-    <table>
+    <table style="border-collapse: collapse;">
         <tr>
+            <td colspan="1" class="bold medium" 
+                style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">A</span>
+                    <span style="margin: 0;">Certified:</span><br>
+
+                    <span style="font-size: 8px; margin: 0;">
+                        Expenses/Cash Advances necessary, valid, proper, lawful<br>
+                        and incurred under my direct supervision.
+                    </span>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Signature Over Printed Name/Position
+                    </span><br>
+
+                    <span style="font-size: 10px;">
+                        Head of the Department/Office
+                    </span>
+                </div>
+
+            </td>
+
+            <td colspan="1" class="bold medium" 
+                style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">B</span>
+                    <span style="margin: 0;">Certified:</span><br>
+
+                    <span style="font-size: 8px; margin: 0;">
+                        Completeness and propriety of supporting documents/previous cash<br>
+                        advance liquidated/existence of funds held in trust.
+                    </span>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Signature Over Printed Name/Position
+                    </span><br>
+
+                    <span style="font-size: 10px;">
+                        Head of Accounting Department/Office
+                    </span>
+                </div>
+
+            </td>
+
+            <td colspan="1" class="bold medium" 
+                style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">C</span>
+                    <span style="margin: 0;">Certified:</span><br>
+
+                    <span style="font-size: 8px; margin: 0;">
+                        Funds available for the One
+                    </span>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Signature Over Printed Name/Position
+                    </span><br>
+
+                    <span style="font-size: 10px;">
+                        Head of Treasury Department/Office
+                    </span>
+                </div>
+
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="1" class="bold medium" 
+                style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">D</span>
+                    <span style="margin: 0;">Approved Payment:</span>
+                    <span>PHP {amount_due_display}</span>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Signature Over Printed Name/Position
+                    </span><br>
+
+                    <span style="font-size: 10px;">
+                        Local Chief Executive
+                    </span>
+                </div>
+
+            </td>
+
+            <td style="vertical-align: top; padding: 10px; height: 140px;">
+
+                <!-- Title -->
+                <div style="margin-bottom: 15px;">
+                    <strong>Payment :</strong>
+                </div>
+
+                <!-- Form layout -->
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    
+                    <tr>
+                        <td style="width: 120px;">ATM Number:</td>
+                        <td style="border-bottom: 1px solid black;">
+                            {atm_no}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding-top: 10px;">Bank:</td>
+                        <td style="border-bottom: 1px solid black;">
+                            {bank}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding-top: 10px;">Date:</td>
+                        <td style="border-bottom: 1px solid black;">
+                            {date}
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+
+            <td colspan="1" class="bold medium" 
+                style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">E</span>
+                    <span style="margin: 0;">Received Payment:</span><br>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Signature Over Printed Name/Position
+                    </span><br>
+                </div>
+
+            </td>
         </tr>
     </table>
 
