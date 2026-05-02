@@ -1168,7 +1168,7 @@ def dv_report_pdf(request, dv_id):
     <table>
         <tr>
             <td colspan="1" class="center bold medium" style="text-align: center;">Amount in </br> Words: </td>
-            <td colspan="2" class="center bold medium" style="text-align: center; width: 58.33%;">{amount_in_words}</td>
+            <td colspan="2" class="center bold medium" style="text-align: center; width: 58.48%;">{amount_in_words}</td>
             <td colspan="2" class="center bold small" style="text-align: center;">Amount Due: ></td>
             <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">PHP {amount_due_display}</td>
         </tr>
@@ -1342,7 +1342,7 @@ def dv_report_pdf(request, dv_id):
                 <!-- Date Row -->
                 <div style="border-top: 1px solid black; padding: 4px; font-size: 10px;">
                     Date
-                    <span style="margin-left: 30px;">
+                    <span style="margin-left: 25px;">
                         {date}
                     </span>
                 </div>

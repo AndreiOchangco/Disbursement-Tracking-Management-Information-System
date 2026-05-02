@@ -31,6 +31,7 @@ export default function ReportGeneration() {
   const [filterFrom, setFilterFrom] = useState('')
   const [filterTo, setFilterTo] = useState('')
   const [pdfUrl, setPdfUrl] = useState(null)
+  const [selectedReport, setSelectedReport] = useState(null)
 
   // Redirect admin to dashboard
   useEffect(() => {
@@ -106,35 +107,6 @@ export default function ReportGeneration() {
     }
   }
 
-  const downloadPDF = async () => {
-    setLoading(true)
-    try {
-      const token = getToken()
-      const res = await fetch(`${BASE_URL}/dv/approved/report/pdf/`, {
-        method: 'GET',
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      })
-
-      if (!res.ok) throw new Error('Failed to generate PDF')
-
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'approved-disbursements.pdf'
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div>
       <div className="page-header">
@@ -162,6 +134,7 @@ export default function ReportGeneration() {
               title="PDF Preview"
               contentStyle={{
                 width: '98vw',
+                height: '95vh',
                 maxWidth: 'none',
                 margin: '0 auto',
                 padding: '1rem',
@@ -173,7 +146,7 @@ export default function ReportGeneration() {
               footer={
                 <>
                   {pdfUrl && (
-                    <a href={pdfUrl} download="dv_report.pdf">
+                    <a href={pdfUrl} download={`dv_report_${selectedReport?.id}.pdf`}>
                       <button>Download</button>
                     </a>
                   )}
@@ -185,7 +158,9 @@ export default function ReportGeneration() {
                 width: '88vw',
                 height: '63vh',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                borderRadius: '8px',
+                overflow: 'hidden',
               }}>
 
                 {/* PDF */}
@@ -258,11 +233,9 @@ export default function ReportGeneration() {
                             const blob = await res.blob()
                             const url = URL.createObjectURL(blob)
 
-                            // force fit-to-width
-                            const fitUrl = `${url}#zoom=page-width`
-
                             // store URL instead of downloading
-                            setPdfUrl(fitUrl)
+                            setPdfUrl(url)
+                            setSelectedReport(r)
                             openModal()
                           } catch (err) {
                             console.error(err)
