@@ -1654,7 +1654,7 @@ tbody tr:hover {
 
 /* Table Header Enhancement */
 thead {
-  background: linear-gradient(90deg, #E8F0FF 0%, #FFD700 50%, #E8F0FF 100%);
+  background: linear-gradient(90deg, #E8F0FF 0%, #fff7c8 50%, #E8F0FF 100%);
   border-bottom: 3px solid var(--accent-color);
 }
 
