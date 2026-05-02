@@ -1451,7 +1451,7 @@ def dv_report_pdf(request, dv_id):
         return Response({'error': 'Failed to generate PDF.', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="dv_report_{report.dv.id}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="dv_report_{report.dv.id}.pdf"'
     return response
 
 
