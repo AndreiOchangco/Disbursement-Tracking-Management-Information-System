@@ -38,53 +38,6 @@ export default function Dashboard() {
     }
   }, [isAdmin])
 
-  const testEmail = async () => {
-    const staticTestData = {
-      to: "andrei.ochangco@gmail.com", // Replace with your own email for testing
-      subject: "DTMIS Test Email: Your System Notification Template",
-      html: `
-        <div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
-          <div style="max-width: 600px; margin: auto; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);">
-            <div style="background: #2c5dff; color: #ffffff; padding: 24px; text-align: center;">
-              <h1 style="margin: 0; font-size: 24px;">Municipal Accounting Office</h1>
-              <p style="margin: 8px 0 0; font-size: 16px; opacity: 0.9;">Test Email Notification</p>
-            </div>
-            <div style="padding: 24px; background: #ffffff;">
-              <p style="margin: 0 0 16px;">Hello,</p>
-              <p style="margin: 0 0 16px;">This is a template test email from the Disbursement Tracking Management Information System.</p>
-              <p style="margin: 0 0 16px; font-weight: 600; color: #111827;">Here is a sample notification summary:</p>
-              <ul style="margin: 0 0 24px; padding-left: 20px; color: #374151;">
-                <li>System status: <strong>Operational</strong></li>
-                <li>Notifications enabled: <strong>Yes</strong></li>
-                <li>Generated at: <strong>${new Date().toLocaleString()}</strong></li>
-              </ul>
-              <p style="margin: 0 0 24px;">If you received this email, the notification pipeline is working correctly.</p>
-              <div style="padding: 16px; background: #f3f4f6; border-radius: 8px; color: #111827;">
-                <p style="margin: 0; font-size: 14px;">Need to verify more email templates? Use the admin dashboard or contact support.</p>
-              </div>
-            </div>
-            <div style="background: #f9fafb; color: #6b7280; padding: 16px; text-align: center; font-size: 13px;">
-              Disbursement Tracking Management Information System • Test Email
-            </div>
-          </div>
-        </div>
-      `,
-    };
-
-    try {
-      // You MUST specify 'POST' and pass the body
-      const res = await apiRequest('/send-email/', 'POST', staticTestData);
-      
-      if (res) {
-        console.log('Success:', res.message);
-        alert('Email sent! Check your inbox.');
-      }
-    } catch (err) {
-      console.error('Test Email Failed:', err.message);
-      alert('Failed to send: ' + err.message);
-    }
-  };
-
   const loadData = async () => {
     try {
       const res = await apiRequest('/dashboard/')
@@ -171,9 +124,6 @@ export default function Dashboard() {
 
   return (
     <div>
-      <button onClick={testEmail} style={{ marginBottom: '1rem', padding: '0.5rem 1rem', background: '#2c5dff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-        Send Test Email
-      </button>
       {/* 👑 ADMIN DASHBOARD */}
       {isAdmin && (
               <>

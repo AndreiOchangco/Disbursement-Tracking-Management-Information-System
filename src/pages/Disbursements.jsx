@@ -551,6 +551,60 @@ export default function Disbursements() {
     setShowViewModal(true);
   };
 
+  const sendRejectedDVEmailAuto = async (dv, remarks) => {
+    if (!dv?.payee?.email) {
+      console.warn('No email found for payee');
+      return;
+    }
+
+    const emailData = {
+      to: dv.payee.email,
+      subject: `Disbursement Voucher Rejected (Tracking #${dv.tracking_no})`,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #1f2937;">
+          <div style="max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+            
+            <div style="background:#dc2626;color:#fff;padding:20px;text-align:center;">
+              <h2 style="margin:0;">Disbursement Voucher Rejected</h2>
+            </div>
+
+            <div style="padding:20px;">
+              <p>Hello <strong>${dv.payee.name || 'Payee'}</strong>,</p>
+
+              <p>Your disbursement voucher has been <strong style="color:#dc2626;">rejected</strong>.</p>
+
+              <div style="background:#f9fafb;padding:12px;border-radius:8px;margin:15px 0;">
+                <p><strong>Tracking No:</strong> ${dv.tracking_no}</p>
+                <p><strong>DV No:</strong> ${dv.dv_no || 'N/A'}</p>
+                <p><strong>Date Submitted:</strong> ${formatDateMMDDYYYY(dv.created_date)}</p>
+              </div>
+
+              <p><strong>Reason:</strong></p>
+              <div style="background:#fee2e2;padding:12px;border-radius:8px;color:#991b1b;">
+                ${remarks}
+              </div>
+
+              <p style="margin-top:15px;">
+                Please correct the issues and resubmit the voucher in the system.
+              </p>
+            </div>
+
+            <div style="background:#f3f4f6;text-align:center;padding:12px;font-size:12px;color:#6b7280;">
+              Disbursement Tracking Management Information System
+            </div>
+          </div>
+        </div>
+      `
+    };
+
+    try {
+      await apiRequest('/send-email/', 'POST', emailData);
+      console.log('Rejection email sent');
+    } catch (err) {
+      console.error('Auto email failed:', err.message);
+    }
+  };
+
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     if (!canSave) return;
@@ -596,6 +650,9 @@ export default function Disbursements() {
           await apiRequest(`/dv/${selectedDV.id}/resubmit/`, 'POST', {
             remarks: 'Corrected and resubmitted by Accounting.'
           });
+          await sendRejectedDVEmailAuto(selectedDV, {
+            remarks: 'Corrected and resubmitted by Accounting.'
+          });
           toast.success('Disbursement Voucher updated and resubmitted successfully!');
         } else if (canEditBudget || canEditTreasurer) {
           await apiRequest(`/dv/${selectedDV.id}/approve/`, 'POST');
@@ -607,6 +664,68 @@ export default function Disbursements() {
     } catch (err) {
       console.error("Submission error:", err);
       toast.error(err?.message || 'Failed to update the Disbursement Voucher');
+    }
+  };
+
+  const sendRejectedDVEmail = async () => {
+    if (!selectedDV) return;
+
+    const remarks =
+      selectedDV.workflow_steps
+        ?.filter(step => step.status === 'disapproved')
+        ?.slice(-1)[0]?.remarks || 'No remarks provided.';
+
+    const emailData = {
+      to: editPayeeData.email,
+      subject: `Disbursement Voucher Rejected (Tracking #${selectedDV.tracking_no})`,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
+          <div style="max-width: 600px; margin: auto; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
+            
+            <div style="background: #dc2626; color: #ffffff; padding: 20px; text-align: center;">
+              <h2 style="margin: 0;">Disbursement Voucher Rejected</h2>
+            </div>
+
+            <div style="padding: 20px;">
+              <p>Hello <strong>${editPayeeData.name || 'Payee'}</strong>,</p>
+
+              <p>Your disbursement voucher has been reviewed and <strong style="color:#dc2626;">rejected</strong>.</p>
+
+              <div style="margin: 16px 0; padding: 12px; background: #f9fafb; border-radius: 8px;">
+                <p style="margin: 4px 0;"><strong>Tracking No:</strong> ${selectedDV.tracking_no}</p>
+                <p style="margin: 4px 0;"><strong>DV No:</strong> ${selectedDV.dv_no || 'N/A'}</p>
+                <p style="margin: 4px 0;"><strong>Date Submitted:</strong> ${formatDateMMDDYYYY(selectedDV.created_date)}</p>
+              </div>
+
+              <p><strong>Reason for Rejection:</strong></p>
+              <div style="background:#fee2e2; padding:12px; border-radius:8px; color:#991b1b;">
+                ${remarks}
+              </div>
+
+              <p style="margin-top:16px;">
+                Please review the remarks, correct the necessary details, and resubmit the voucher through the system.
+              </p>
+
+              <p style="margin-top:20px;">Thank you.</p>
+            </div>
+
+            <div style="background: #f3f4f6; text-align:center; padding: 12px; font-size: 12px; color:#6b7280;">
+              Disbursement Tracking Management Information System
+            </div>
+
+          </div>
+        </div>
+      `
+    };
+
+    try {
+      const res = await apiRequest('/send-email/', 'POST', emailData);
+      if (res) {
+        toast.success('Rejection email sent successfully');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to send email: ' + err.message);
     }
   };
   
@@ -1376,9 +1495,19 @@ export default function Disbursements() {
               {canSave && (
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #eee', gap: '10px' }}>
                   {canEditAccounting ? (
-                    <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
-                      <ion-icon name="send-outline"></ion-icon> Save & Resubmit DV
-                    </button>
+                    <>
+                      <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
+                        <ion-icon name="send-outline"></ion-icon> Save & Resubmit DV
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={sendRejectedDVEmail}
+                        className="btn-danger py-0.5 px-1 flex items-center gap-1"
+                      >
+                        <ion-icon name="mail-outline"></ion-icon> Send Rejection Email
+                      </button>
+                    </>
                   ) : (
                     <>
                       <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
