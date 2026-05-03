@@ -565,7 +565,7 @@ export default function Disbursements() {
           <div style="max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
             
             <div style="background:#2c5dff;color:#fff;padding:20px;text-align:center;">
-              <img src="/MuniLuna.png" alt="MuniLuna Logo" style="height: 50px; width: auto; margin-bottom: 10px;">
+              <img src="MuniLuna.png" alt="MuniLuna Logo" style="height: 50px; width: auto; margin-bottom: 10px;">
               <h2 style="margin:0;">Disbursement Voucher Rejected</h2>
             </div>
 
