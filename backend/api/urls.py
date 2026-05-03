@@ -7,8 +7,6 @@ urlpatterns = [
     path('auth/refresh/', views.refresh_token, name='token_refresh'),
     path('auth/logout/', views.logout, name='logout'),
     path('auth/me/', views.me, name='me'),
-    path('auth/csrf/', views.get_csrf_token, name='csrf_token'),
-    path('auth/sso-login/', views.sso_login, name='sso-login'),
 
     # Admin
     path('users/signup/', views.register, name='register'),

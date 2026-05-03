@@ -58,7 +58,6 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -153,18 +152,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-]
-
-CSRF_COOKIE_HTTPONLY = False
-
-# Use Lax if frontend and backend share the same parent domain (e.g., localhost), 
-# use 'None' if they are on completely different domains (requires HTTPS).
-CSRF_COOKIE_SAMESITE = 'Lax'
-
-JWT_EXPIRATION_HOURS = 8928
+JWT_REFRESH_EXP_DAYS = 5
+JWT_ACCESS_EXP_MINUTES = 3
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

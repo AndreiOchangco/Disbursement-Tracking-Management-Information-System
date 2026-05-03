@@ -1,7 +1,6 @@
 import jwt
 import datetime
 from django.conf import settings
-from django.middleware.csrf import CsrfViewMiddleware, get_token
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -84,42 +83,17 @@ STEP_DEPT_LABEL = {
     5: "Mayor's Office",
 }
 
-# --- Custom CSRF Permission ---
-class EnforceCSRF(BasePermission):
-    """
-    DRF disables CSRF for non-session auth. This custom permission 
-    forces Django's standard CSRF check on specific endpoints.
-    """
-    def has_permission(self, request, view):
-        # Use Django's built-in CSRF middleware manually
-        check = CsrfViewMiddleware(lambda req: None)
-        check.process_request(request._request)
-        reason = check.process_view(request._request, None, (), {})
-        
-        if reason:
-            raise PermissionDenied(f'CSRF Failed: {reason}')
-        return True
-
-
-# --- CSRF Token Endpoint ---
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def get_csrf_token(request):
-    """Sets the CSRF cookie on the frontend."""
-    return Response({'csrfToken': get_token(request)})
-
 # ─────────────────── AUTH ───────────────────
-
 def get_tokens_for_user(user):
     access_payload = {
         'user_id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.JWT_EXPIRATION_HOURS),
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=settings.JWT_ACCESS_EXP_MINUTES),
         'iat': datetime.datetime.utcnow(),
         'type': 'access'
     }
     refresh_payload = {
         'user_id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7),
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=settings.JWT_REFRESH_EXP_DAYS),
         'iat': datetime.datetime.utcnow(),
         'type': 'refresh'
     }
@@ -170,62 +144,73 @@ def login(request):
     access_token, refresh_token = get_tokens_for_user(user)
 
     response = Response({
-        'access_token': access_token,
         'user': UserSerializer(user).data,
+        'message': 'Login successful'
     })
 
-    # Set the refresh token in an HttpOnly cookie
+    response.set_cookie(
+        key='access_token',
+        value=access_token,
+        httponly=True,
+        secure=not settings.DEBUG,
+        samesite='Lax',
+        max_age=60 * settings.JWT_ACCESS_EXP_MINUTES
+    )
+
     response.set_cookie(
         key='refresh_token',
         value=refresh_token,
         httponly=True,
-        secure=settings.DEBUG is False, # Use True in production (HTTPS)
-        samesite='Lax', # Adjust to 'None' if frontend/backend are on different domains
-        max_age=7 * 24 * 60 * 60 # 7 days in seconds
+        secure=not settings.DEBUG,
+        samesite='Lax',
+        max_age=settings.JWT_REFRESH_EXP_DAYS * 24 * 60 * 60
     )
     
     return response
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny, EnforceCSRF])
+@permission_classes([AllowAny])
 def refresh_token(request):
-    """Generate a new access token using the HttpOnly refresh token cookie."""
     refresh_token = request.COOKIES.get('refresh_token')
     
     if not refresh_token:
-        return Response({'error': 'Refresh token missing.'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'Refresh token missing.'}, status=401)
         
     try:
         payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=['HS256'])
-        if payload.get('type') != 'refresh':
-            raise jwt.InvalidTokenError
-            
         user = User.objects.get(id=payload['user_id'])
-        if user.status != 'active':
-            return Response({'error': 'Account deactivated.'}, status=status.HTTP_401_UNAUTHORIZED)
-            
+        
+        # Create a new access token
         access_payload = {
             'user_id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=4320),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=settings.JWT_ACCESS_EXP_MINUTES),
             'iat': datetime.datetime.utcnow(),
             'type': 'access'
         }
         new_access_token = jwt.encode(access_payload, settings.SECRET_KEY, algorithm='HS256')
         
-        return Response({'access_token': new_access_token})
+        response = Response({'message': 'Token refreshed'})
         
-    except jwt.ExpiredSignatureError:
-        return Response({'error': 'Refresh token expired. Please log in again.'}, status=status.HTTP_401_UNAUTHORIZED)
-    except (jwt.InvalidTokenError, User.DoesNotExist):
-        return Response({'error': 'Invalid refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
+        response.set_cookie(
+            key='access_token',
+            value=new_access_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            max_age=60 * settings.JWT_ACCESS_EXP_MINUTES
+        )
+        return response
+        
+    except:
+        return Response({'error': 'Session expired'}, status=401)
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny, EnforceCSRF])
+@permission_classes([AllowAny])
 def logout(request):
-    """Clear the refresh token cookie."""
     response = Response({'message': 'You have been logged out successfully.'})
+    response.delete_cookie('access_token')
     response.delete_cookie('refresh_token')
     return response
 
@@ -237,50 +222,50 @@ def me(request):
     return Response(UserSerializer(request.user).data)
 
 
-@api_view(['POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-def sso_login(request):
-    """Create a Django session for the authenticated user so they can access Django admin.
+# @api_view(['POST'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+# def sso_login(request):
+#     """Create a Django session for the authenticated user so they can access Django admin.
 
-    Frontend should POST to this endpoint with the current Bearer access token
-    and use `fetch` with `credentials: 'include'` so the session cookie is accepted.
-    """
-    user = request.user
-    # Only allow system administrators to SSO into Django admin
-    if getattr(user, 'department', '') != 'admin':
-        return Response({'error': 'Only system administrators can access Django admin.'}, status=status.HTTP_403_FORBIDDEN)
+#     Frontend should POST to this endpoint with the current Bearer access token
+#     and use `fetch` with `credentials: 'include'` so the session cookie is accepted.
+#     """
+#     user = request.user
+#     # Only allow system administrators to SSO into Django admin
+#     if getattr(user, 'department', '') != 'admin':
+#         return Response({'error': 'Only system administrators can access Django admin.'}, status=status.HTTP_403_FORBIDDEN)
 
-    try:
-        # Find corresponding Django auth user (required for admin session)
-        try:
-            dj_user = DjangoUser.objects.get(email__iexact=user.email)
-        except DjangoUser.DoesNotExist:
-            return Response({'error': 'No Django admin account found for this user.'}, status=status.HTTP_404_NOT_FOUND)
+#     try:
+#         # Find corresponding Django auth user (required for admin session)
+#         try:
+#             dj_user = DjangoUser.objects.get(email__iexact=user.email)
+#         except DjangoUser.DoesNotExist:
+#             return Response({'error': 'No Django admin account found for this user.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if not dj_user.is_active:
-            return Response({'error': 'Django admin account is inactive.'}, status=status.HTTP_403_FORBIDDEN)
+#         if not dj_user.is_active:
+#             return Response({'error': 'Django admin account is inactive.'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Establish Django session using the Django auth user
-        dj_request = request._request
-        django_login(dj_request, dj_user)
-        dj_request.session.save()
+#         # Establish Django session using the Django auth user
+#         dj_request = request._request
+#         django_login(dj_request, dj_user)
+#         dj_request.session.save()
 
-        session_key = dj_request.session.session_key
-        response = Response({'next': '/admin/'})
+#         session_key = dj_request.session.session_key
+#         response = Response({'next': '/admin/'})
 
-        response.set_cookie(
-            key=settings.SESSION_COOKIE_NAME,
-            value=session_key,
-            httponly=True,
-            secure=not settings.DEBUG,
-            samesite=getattr(settings, 'CSRF_COOKIE_SAMESITE', 'Lax') or 'Lax'
-        )
+#         response.set_cookie(
+#             key=settings.SESSION_COOKIE_NAME,
+#             value=session_key,
+#             httponly=True,
+#             secure=not settings.DEBUG,
+#             samesite=getattr(settings, 'CSRF_COOKIE_SAMESITE', 'Lax') or 'Lax'
+#         )
 
-        return response
-    except Exception as e:
-        # Return JSON error instead of 500 to help debugging from frontend
-        return Response({'error': 'SSO failed', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#         return response
+#     except Exception as e:
+#         # Return JSON error instead of 500 to help debugging from frontend
+#         return Response({'error': 'SSO failed', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # ─────────────────── USER LISTS REGISTRATION, UPDATE ───────────────────

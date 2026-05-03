@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { apiRequest, BASE_URL, getToken, getCurrentUser } from '../api'
+import { apiRequest, BASE_URL, getCurrentUser } from '../api'
 import ReactModal from '../components/ReactModal'
 import {toast} from 'react-toastify'
 
@@ -222,12 +222,9 @@ export default function ReportGeneration() {
                       <td className='table-column-center'>
                         <button className="btn-primary" onClick={async () => {
                           try {
-                            const token = getToken()
                             const res = await fetch(`${BASE_URL}/dv/reports/${r.dv}/pdf/`, {
                               method: 'GET',
-                              headers: {
-                                ...(token && { Authorization: `Bearer ${token}` })
-                              }
+                              credentials: 'include',
                             })
                             if (!res.ok) throw new Error('Failed to generate PDF')
                             const blob = await res.blob()
