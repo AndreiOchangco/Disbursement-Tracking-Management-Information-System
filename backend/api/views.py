@@ -1,7 +1,6 @@
 import jwt
 import datetime
 from django.conf import settings
-from django.middleware.csrf import CsrfViewMiddleware, get_token
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -84,42 +83,17 @@ STEP_DEPT_LABEL = {
     5: "Mayor's Office",
 }
 
-# --- Custom CSRF Permission ---
-class EnforceCSRF(BasePermission):
-    """
-    DRF disables CSRF for non-session auth. This custom permission 
-    forces Django's standard CSRF check on specific endpoints.
-    """
-    def has_permission(self, request, view):
-        # Use Django's built-in CSRF middleware manually
-        check = CsrfViewMiddleware(lambda req: None)
-        check.process_request(request._request)
-        reason = check.process_view(request._request, None, (), {})
-        
-        if reason:
-            raise PermissionDenied(f'CSRF Failed: {reason}')
-        return True
-
-
-# --- CSRF Token Endpoint ---
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def get_csrf_token(request):
-    """Sets the CSRF cookie on the frontend."""
-    return Response({'csrfToken': get_token(request)})
-
 # ─────────────────── AUTH ───────────────────
-
 def get_tokens_for_user(user):
     access_payload = {
         'user_id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=settings.JWT_EXPIRATION_HOURS),
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=settings.JWT_ACCESS_EXP_MINUTES),
         'iat': datetime.datetime.utcnow(),
         'type': 'access'
     }
     refresh_payload = {
         'user_id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7),
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=settings.JWT_REFRESH_EXP_DAYS),
         'iat': datetime.datetime.utcnow(),
         'type': 'refresh'
     }
@@ -170,62 +144,73 @@ def login(request):
     access_token, refresh_token = get_tokens_for_user(user)
 
     response = Response({
-        'access_token': access_token,
         'user': UserSerializer(user).data,
+        'message': 'Login successful'
     })
 
-    # Set the refresh token in an HttpOnly cookie
+    response.set_cookie(
+        key='access_token',
+        value=access_token,
+        httponly=True,
+        secure=not settings.DEBUG,
+        samesite='Lax',
+        max_age=60 * settings.JWT_ACCESS_EXP_MINUTES
+    )
+
     response.set_cookie(
         key='refresh_token',
         value=refresh_token,
         httponly=True,
-        secure=settings.DEBUG is False, # Use True in production (HTTPS)
-        samesite='Lax', # Adjust to 'None' if frontend/backend are on different domains
-        max_age=7 * 24 * 60 * 60 # 7 days in seconds
+        secure=not settings.DEBUG,
+        samesite='Lax',
+        max_age=settings.JWT_REFRESH_EXP_DAYS * 24 * 60 * 60
     )
     
     return response
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny, EnforceCSRF])
+@permission_classes([AllowAny])
 def refresh_token(request):
-    """Generate a new access token using the HttpOnly refresh token cookie."""
     refresh_token = request.COOKIES.get('refresh_token')
     
     if not refresh_token:
-        return Response({'error': 'Refresh token missing.'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'Refresh token missing.'}, status=401)
         
     try:
         payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=['HS256'])
-        if payload.get('type') != 'refresh':
-            raise jwt.InvalidTokenError
-            
         user = User.objects.get(id=payload['user_id'])
-        if user.status != 'active':
-            return Response({'error': 'Account deactivated.'}, status=status.HTTP_401_UNAUTHORIZED)
-            
+        
+        # Create a new access token
         access_payload = {
             'user_id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=4320),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=settings.JWT_ACCESS_EXP_MINUTES),
             'iat': datetime.datetime.utcnow(),
             'type': 'access'
         }
         new_access_token = jwt.encode(access_payload, settings.SECRET_KEY, algorithm='HS256')
         
-        return Response({'access_token': new_access_token})
+        response = Response({'message': 'Token refreshed'})
         
-    except jwt.ExpiredSignatureError:
-        return Response({'error': 'Refresh token expired. Please log in again.'}, status=status.HTTP_401_UNAUTHORIZED)
-    except (jwt.InvalidTokenError, User.DoesNotExist):
-        return Response({'error': 'Invalid refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
+        response.set_cookie(
+            key='access_token',
+            value=new_access_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            max_age=60 * settings.JWT_ACCESS_EXP_MINUTES
+        )
+        return response
+        
+    except:
+        return Response({'error': 'Session expired'}, status=401)
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny, EnforceCSRF])
+@permission_classes([AllowAny])
 def logout(request):
-    """Clear the refresh token cookie."""
     response = Response({'message': 'You have been logged out successfully.'})
+    response.delete_cookie('access_token')
     response.delete_cookie('refresh_token')
     return response
 
@@ -237,50 +222,50 @@ def me(request):
     return Response(UserSerializer(request.user).data)
 
 
-@api_view(['POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-def sso_login(request):
-    """Create a Django session for the authenticated user so they can access Django admin.
+# @api_view(['POST'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+# def sso_login(request):
+#     """Create a Django session for the authenticated user so they can access Django admin.
 
-    Frontend should POST to this endpoint with the current Bearer access token
-    and use `fetch` with `credentials: 'include'` so the session cookie is accepted.
-    """
-    user = request.user
-    # Only allow system administrators to SSO into Django admin
-    if getattr(user, 'department', '') != 'admin':
-        return Response({'error': 'Only system administrators can access Django admin.'}, status=status.HTTP_403_FORBIDDEN)
+#     Frontend should POST to this endpoint with the current Bearer access token
+#     and use `fetch` with `credentials: 'include'` so the session cookie is accepted.
+#     """
+#     user = request.user
+#     # Only allow system administrators to SSO into Django admin
+#     if getattr(user, 'department', '') != 'admin':
+#         return Response({'error': 'Only system administrators can access Django admin.'}, status=status.HTTP_403_FORBIDDEN)
 
-    try:
-        # Find corresponding Django auth user (required for admin session)
-        try:
-            dj_user = DjangoUser.objects.get(email__iexact=user.email)
-        except DjangoUser.DoesNotExist:
-            return Response({'error': 'No Django admin account found for this user.'}, status=status.HTTP_404_NOT_FOUND)
+#     try:
+#         # Find corresponding Django auth user (required for admin session)
+#         try:
+#             dj_user = DjangoUser.objects.get(email__iexact=user.email)
+#         except DjangoUser.DoesNotExist:
+#             return Response({'error': 'No Django admin account found for this user.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if not dj_user.is_active:
-            return Response({'error': 'Django admin account is inactive.'}, status=status.HTTP_403_FORBIDDEN)
+#         if not dj_user.is_active:
+#             return Response({'error': 'Django admin account is inactive.'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Establish Django session using the Django auth user
-        dj_request = request._request
-        django_login(dj_request, dj_user)
-        dj_request.session.save()
+#         # Establish Django session using the Django auth user
+#         dj_request = request._request
+#         django_login(dj_request, dj_user)
+#         dj_request.session.save()
 
-        session_key = dj_request.session.session_key
-        response = Response({'next': '/admin/'})
+#         session_key = dj_request.session.session_key
+#         response = Response({'next': '/admin/'})
 
-        response.set_cookie(
-            key=settings.SESSION_COOKIE_NAME,
-            value=session_key,
-            httponly=True,
-            secure=not settings.DEBUG,
-            samesite=getattr(settings, 'CSRF_COOKIE_SAMESITE', 'Lax') or 'Lax'
-        )
+#         response.set_cookie(
+#             key=settings.SESSION_COOKIE_NAME,
+#             value=session_key,
+#             httponly=True,
+#             secure=not settings.DEBUG,
+#             samesite=getattr(settings, 'CSRF_COOKIE_SAMESITE', 'Lax') or 'Lax'
+#         )
 
-        return response
-    except Exception as e:
-        # Return JSON error instead of 500 to help debugging from frontend
-        return Response({'error': 'SSO failed', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#         return response
+#     except Exception as e:
+#         # Return JSON error instead of 500 to help debugging from frontend
+#         return Response({'error': 'SSO failed', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # ─────────────────── USER LISTS REGISTRATION, UPDATE ───────────────────
@@ -938,20 +923,27 @@ def dv_report_pdf(request, dv_id):
 
     # --- BUILD JOURNAL ENTRIES ---
     je_rows = ""
-    journal_entries = payload.get('journal_entries', [])
+    journal_entries = payload.get("journal_entries", [])
 
     for je in journal_entries:
+        particular = je.get("particular", "")
+        code = je.get("account_code", "")
+        debit = je.get("debit", "")
+        credit = je.get("credit", "")
+
+        # format numbers
+        debit_display = f"{float(debit):,.2f}" if debit else ""
+        credit_display = f"{float(credit):,.2f}" if credit else ""
+
         je_rows += f"""
         <tr>
-            <td>{je.get('account_title','-')}</td>
-            <td>{je.get('account_code','-')}</td>
-            <td>{je.get('debit','-')}</td>
-            <td>{je.get('credit','-')}</td>
+            <td style="border: 1px solid black; width: 48%;">{particular}</td>
+            <td style="border: 1px solid black; text-align:center; width: 22%;">{code}</td>
+            <td style="border: 1px solid black; text-align:right; width: 15%;">{debit_display}</td>
+            <td style="border: 1px solid black; text-align:right; width: 15%;">{credit_display}</td>
         </tr>
         """
 
-    if not je_rows:
-        je_rows = "<tr><td colspan='4'>No journal entries</td></tr>"
 
 
     # --- BUILD PAYMENTS ---
@@ -962,11 +954,14 @@ def dv_report_pdf(request, dv_id):
 
     mop = (payment.get("mop") or "").strip().lower()
     mop_specify = payment.get("mop_specify", "")
+    atm_no = payment.get("atm_no", "")
+    bank = payment.get("bank", "")
+    pdate = payment.get("date", "")
 
     for pay in payments:
         payment_info += f"""
         Bank: {pay.get('bank','-')}<br>
-        Date: {pay.get('date','-')}<br>
+        Date: {pay.get('pdate','-')}<br>
         Ref No: {pay.get('reference_no','-')}<br><br>
         """
 
@@ -1158,14 +1153,258 @@ def dv_report_pdf(request, dv_id):
     <table>
         <tr>
             <td colspan="1" class="center bold medium" style="text-align: center;">Amount in </br> Words: </td>
-            <td colspan="2" class="center bold medium" style="text-align: center; width: 56%;">{amount_in_words}</td>
-            <td colspan="2" class="center bold medium" style="text-align: center;">Amount Due: ></td>
-            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">{amount_due_display}</td>
+            <td colspan="2" class="center bold medium" style="text-align: center; width: 58.48%;">{amount_in_words}</td>
+            <td colspan="2" class="center bold small" style="text-align: center;">Amount Due: ></td>
+            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">PHP {amount_due_display}</td>
         </tr>
     </table>
-    <table>
+    <table style="border-collapse: collapse;">
         <tr>
+            <td colspan="1" class="medium" 
+                style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">A.</span>
+                    <span style="margin: 0;">Certified:</span><br>
+
+                    <span style="font-size: 8px; margin: 0;">
+                        Expenses/Cash Advances necessary, valid, proper, lawful<br>
+                        and incurred under my direct supervision.
+                    </span>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Signature Over Printed Name/Position
+                    </span><br>
+
+                    <span style="font-size: 10px;">
+                        Head of the Department/Office
+                    </span>
+                </div>
+
+            </td>
+
+            <td colspan="1" class="medium" 
+                style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">B.</span>
+                    <span style="margin: 0;">Certified:</span><br>
+
+                    <span style="font-size: 8px; margin: 0;">
+                        Completeness and propriety of supporting documents/previous cash<br>
+                        advance liquidated/existence of funds held in trust.
+                    </span>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Signature Over Printed Name/Position
+                    </span><br>
+
+                    <span style="font-size: 10px;">
+                        Head of Accounting Department/Office
+                    </span>
+                </div>
+
+            </td>
+
+            <td colspan="1" class="medium" 
+                style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">C.</span>
+                    <span style="margin: 0;">Certified:</span><br>
+
+                    <span style="font-size: 8px; margin: 0;">
+                        Funds available for the One
+                    </span>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Signature Over Printed Name/Position
+                    </span><br>
+
+                    <span style="font-size: 10px;">
+                        Head of Treasury Department/Office
+                    </span>
+                </div>
+
+            </td>
         </tr>
+
+        <tr>
+            <td colspan="1" class="medium" 
+                style="vertical-align: top; text-align: left; height: 100px; width: 33.33%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">D.</span>
+                    <span style="margin: 0;">Approved Payment:</span>
+                    <span>PHP {amount_due_display}</span>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Signature Over Printed Name/Position
+                    </span><br>
+
+                    <span style="font-size: 10px;">
+                        Local Chief Executive
+                    </span>
+                </div>
+
+            </td>
+
+            <td style="vertical-align: top; padding: 10px; height: 140px;">
+
+                <!-- Title -->
+                <div style="margin-bottom: 10px;">
+                    <strong>Payment :</strong>
+                </div>
+
+                <!-- Form layout -->
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    
+                    <tr>
+                        <td style="width: 120px;">ATM Number:</td>
+                        <td style="border-bottom: 1px solid black;">
+                            {atm_no}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding-top: 10px;">Bank:</td>
+                        <td style="border-bottom: 1px solid black;">
+                            {bank}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding-top: 10px;">Date:</td>
+                        <td style="border-bottom: 1px solid black;">
+                            {pdate}
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+
+            <td colspan="1" class="medium" 
+                style="vertical-align: top; text-align: left; height: 160px; width: 33.33%; padding: 0;">
+
+                <!-- Header -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="border: 1px solid black; padding: 0 4px; margin: 0;">E.</span>
+                    <span style="margin: 0;">Received Payment:</span><br>
+                </div>
+
+                <!-- Signature Area -->
+                <div style="text-align: center; margin-top: 50px; margin-bottom: 33px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Signature Over Printed Name/Position
+                    </span>
+                </div>
+
+                <!-- JEV Row -->
+                <div style="border-top: 1px solid black; padding: 4px; font-size: 10px;">
+                    JEV no.
+                    <span style="margin-left: 10px;">
+                        {jev}
+                    </span>
+                </div>
+
+                <!-- Date Row -->
+                <div style="border-top: 1px solid black; padding: 4px; font-size: 10px;">
+                    Date
+                    <span style="margin-left: 25px;">
+                        {date}
+                    </span>
+                </div>
+
+            </td>
+        </tr>
+    </table>
+
+    <table style="border-collapse: collapse; width: 100%;">
+
+        <!-- Header row -->
+        <tr>
+            <td style="vertical-align: top; text-align: left; padding: 0;">
+                <span style="border: 1px solid black; padding: 0 4px;">F.</span>
+                <span>Accounting Entries</span>
+            </td>
+        </tr>
+
+        <!-- Table content row -->
+        <tr>
+            <td style="padding: 0;">
+                <table style="width: 100%; border-collapse: collapse;">
+
+                    <tr>
+                        <th style="border: 1px solid black; text-align: left;">Particulars</th>
+                        <th style="border: 1px solid black;">Account Code</th>
+                        <th style="border: 1px solid black;">Debit</th>
+                        <th style="border: 1px solid black;">Credit</th>
+                    </tr>
+
+                    {je_rows}
+
+                </table>
+            </td>
+        </tr>
+
+    </table>
+
+    <table style="border-collapse: collapse;">
+
+        <tr>
+
+            <td style="height: 25px; width: 48%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                    <span style="margin: 0;">Prepared by:</span><br>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 20px; margin-bottom: 10px;">
+                    <span>{report.dv.accounting.full_name}</span><br>
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Accounting Personnel
+                    </span><br>
+                </div>
+
+            </td>
+
+            <td style="width: 52%; padding: 0; margin: 0;">
+
+                <!-- Top-left (forced tight) -->
+                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                <br>
+                </div>
+
+                <!-- Centered bottom -->
+                <div style="text-align: center; margin-top: 30px; margin-bottom: 10px;">
+                    <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
+                        Head, Accounting Division/Unit
+                    </span><br>
+                </div>
+
+            </td>
+
+        </tr>
+
     </table>
 
     </body>
@@ -1197,7 +1436,7 @@ def dv_report_pdf(request, dv_id):
         return Response({'error': 'Failed to generate PDF.', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="dv_report_{report.dv.id}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="dv_report_{report.dv.id}.pdf"'
     return response
 
 

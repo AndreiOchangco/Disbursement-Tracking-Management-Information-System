@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react'
 import { apiRequest, getCurrentUser } from '../api'

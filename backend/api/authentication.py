@@ -6,12 +6,11 @@ from .models import User
 
 class JWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        auth_header = request.headers.get('Authorization', '')
-        if not auth_header.startswith('Bearer '):
+        token = request.COOKIES.get('access_token')
+        
+        if not token:
             return None
             
-        token = auth_header.split(' ')[1]
-        
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             
@@ -25,6 +24,10 @@ class JWTAuthentication(BaseAuthentication):
             return (user, token)
             
         except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Token is expired.')
+            # Let the frontend catch the 401 and hit the refresh endpoint
+            raise AuthenticationFailed('Access token expired.')
         except (jwt.InvalidTokenError, User.DoesNotExist):
-            raise AuthenticationFailed('Token is invalid.')
+            raise AuthenticationFailed('Invalid token.')
+        
+    def authenticate_header(self, request):
+        return 'Cookie'

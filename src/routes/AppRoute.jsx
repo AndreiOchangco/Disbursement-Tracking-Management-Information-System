@@ -9,7 +9,7 @@ import ArchivedDisbursements from '../pages/ArchivedDisbursements'
 import NotFound from '../pages/NotFound'
 import ReportGeneration from '../pages/ReportGeneration'
 import PrivateRoute from './PrivateRoute'
-import { getCurrentUser, clearCurrentUser, API_ORIGIN } from '../api'
+import { getCurrentUser, clearCurrentUser, API_ORIGIN, logout } from '../api'
 import ReactModal from '../components/ReactModal'
 
 // <ion-icon name="lock-closed"></ion-icon> Layout
@@ -17,11 +17,8 @@ function AppLayout() {
   const location = useLocation()
   const currentUser = getCurrentUser()
 
-  const logout = () => {
-    clearCurrentUser()
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    window.location.href = "/login"
+  const handleLogout = () => {
+    logout()
   }
 
   /*const openDjangoAdmin = async () => {
@@ -62,7 +59,7 @@ function AppLayout() {
               🔐 Open Django Admin
             </button>
           )} */}
-          <button type="button" onClick={logout} className="btn-logout">
+          <button type="button" onClick={handleLogout} className="btn-logout">
             <ion-icon name="log-out" style={{ fontSize: '18px' }}></ion-icon> Logout
           </button>
           <ReactModal />
@@ -162,7 +159,7 @@ export const router = createBrowserRouter([
       {
         path: 'dashboard',
         element: (
-          <PrivateRoute>
+          <PrivateRoute allowedDepartments={['accounting', 'budget', 'treasurer', 'bac_gso', 'mayors_office']}>
             <Dashboard />
           </PrivateRoute>
         ),
@@ -172,7 +169,7 @@ export const router = createBrowserRouter([
       {
         path: 'admin/dashboard',
         element: (
-          <PrivateRoute>
+          <PrivateRoute allowedDepartments={['admin']}>
             <Dashboard />
           </PrivateRoute>
         ),
@@ -182,7 +179,7 @@ export const router = createBrowserRouter([
       {
         path: 'admin/users',
         element: (
-          <PrivateRoute>
+          <PrivateRoute allowedDepartments={['admin']}>
             <UserManagement />
           </PrivateRoute>
         ),
@@ -192,7 +189,7 @@ export const router = createBrowserRouter([
       {
         path: 'reports',
         element: (
-          <PrivateRoute>
+          <PrivateRoute allowedDepartments={['accounting']}>
             <ReportGeneration />
           </PrivateRoute>
         ),
@@ -202,7 +199,7 @@ export const router = createBrowserRouter([
       {
         path: 'disbursements',
         element: (
-          <PrivateRoute>
+          <PrivateRoute allowedDepartments={['accounting', 'budget', 'treasurer', 'bac_gso', 'mayors_office']}>
             <Disbursements />
           </PrivateRoute>
         ),
@@ -211,7 +208,7 @@ export const router = createBrowserRouter([
       {
         path: 'disbursements/:id',
         element: (
-          <PrivateRoute>
+          <PrivateRoute allowedDepartments={['accounting', 'budget', 'treasurer', 'bac_gso', 'mayors_office']}>
             <DisbursementDetail />
           </PrivateRoute>
         ),
@@ -220,7 +217,7 @@ export const router = createBrowserRouter([
       {
         path: 'disbursements/archived',
         element: (
-          <PrivateRoute>
+          <PrivateRoute allowedDepartments={['accounting', 'budget', 'treasurer', 'bac_gso', 'mayors_office']}>
             <ArchivedDisbursements />
           </PrivateRoute>
         ),

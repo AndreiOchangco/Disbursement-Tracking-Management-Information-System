@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { setToken, setCurrentUser, apiRequest, getToken, getCurrentUser } from '../api'
+import { setCurrentUser, apiRequest, getCurrentUser } from '../api'
 import logo from '/MuniLuna.png'
 
 export default function Login() {
@@ -18,54 +18,28 @@ export default function Login() {
   const navigate = useNavigate()
 
   const onSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
+  e.preventDefault()
+  setLoading(true)
+  try {
+    const res = await fetch('http://localhost:8000/api/auth/login/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+      credentials: 'include', // ✅ Receives cookies from backend
+    })
 
-    if (!email.trim() || !password) {
-      setError('Please enter email and password')
-      return
-    }
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error)
 
-    setLoading(true)
-
-    try {
-      // 🔥 LOGIN REQUEST
-      const res = await fetch('http://localhost:8000/api/auth/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || 'Login failed')
-        setLoading(false)
-        return
-      }
-
-      // 🔥 SAVE TOKEN (CENTRALIZED)
-      setToken(data.access_token)
-
-      // 🔥 GET USER INFO FROM BACKEND
-      const me = await apiRequest('/auth/me/')
-
-      // 🔥 SAVE USER
-      setCurrentUser(me)
-
-      navigate('/dashboard')
-
-    } catch (err) {
-      console.error(err)
-      setError('Cannot connect to server. Please try again.')
-      setLoading(false)
-    }
+    // Only save profile info for the UI (name, avatar, etc.)
+    setCurrentUser(data.user) 
+    navigate('/dashboard')
+  } catch (err) {
+    setError(err.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleFieldTouched = (field) => {
     setTouched({ ...touched, [field]: true })
@@ -82,10 +56,9 @@ export default function Login() {
 
   // Check if user is already logged in on mount
   useEffect(() => {
-    const token = getToken()
     const currentUser = getCurrentUser()
     
-    if (token && currentUser) {
+    if (currentUser) {
       navigate('/dashboard')
     } else {
       setIsChecking(false)

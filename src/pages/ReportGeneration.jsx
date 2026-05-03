@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { apiRequest, BASE_URL, getToken, getCurrentUser } from '../api'
+import { apiRequest, BASE_URL, getCurrentUser } from '../api'
 import ReactModal from '../components/ReactModal'
 import {toast} from 'react-toastify'
 
@@ -30,6 +30,8 @@ export default function ReportGeneration() {
   const [filterDvNo, setFilterDvNo] = useState('')
   const [filterFrom, setFilterFrom] = useState('')
   const [filterTo, setFilterTo] = useState('')
+  const [pdfUrl, setPdfUrl] = useState(null)
+  const [selectedReport, setSelectedReport] = useState(null)
 
   // Redirect admin to dashboard
   useEffect(() => {
@@ -41,6 +43,12 @@ export default function ReportGeneration() {
   useEffect(() => {
     fetchReports()
   }, [])
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl)
+    }
+  }, [pdfUrl])
 
   const fetchReports = async (p = 1) => {
     setLoading(true)
@@ -99,47 +107,6 @@ export default function ReportGeneration() {
     }
   }
 
-  const downloadJSON = (data) => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'approved-disbursements.json'
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
-  }
-
-  const downloadPDF = async () => {
-    setLoading(true)
-    try {
-      const token = getToken()
-      const res = await fetch(`${BASE_URL}/dv/approved/report/pdf/`, {
-        method: 'GET',
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      })
-
-      if (!res.ok) throw new Error('Failed to generate PDF')
-
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'approved-disbursements.pdf'
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div>
       <div className="page-header">
@@ -164,18 +131,49 @@ export default function ReportGeneration() {
             <ReactModal
               isOpen={isOpen}
               onClose={closeModal}
-              title="Disbursement Info"
+              title="PDF Preview"
+              contentStyle={{
+                width: '98vw',
+                height: '95vh',
+                maxWidth: 'none',
+                margin: '0 auto',
+                padding: '1rem',
+                borderRadius: '8px'
+              }}
+              overlayStyle={{
+                backgroundColor: 'rgba(0,0,0,0.7)'
+              }}
               footer={
                 <>
-                  <button onClick={closeModal}>Cancel</button>
-                  <button onClick={() => toast.success('Confirmed')}>
-                    Confirm
-                  </button>
+                  {pdfUrl && (
+                    <a href={pdfUrl} download={`dv_report_${selectedReport?.id}.pdf`}>
+                      <button>Download</button>
+                    </a>
+                  )}
                 </>
               }
             >
               {/* BODY CONTENT */}
-              <p>This is your modal content.</p>
+              <div style={{
+                width: '88vw',
+                height: '63vh',
+                display: 'flex',
+                flexDirection: 'column',
+                borderRadius: '8px',
+                overflow: 'hidden',
+              }}>
+
+                {/* PDF */}
+                <iframe
+                  src={pdfUrl}
+                  title="PDF Preview"
+                  style={{
+                    flex: 1,
+                    width: '100%',
+                    border: 'none'
+                  }}
+                />
+              </div>
             </ReactModal>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginLeft: '1rem' }}>
               <input placeholder="Filter DV#" value={filterDvNo} className="search search--wide" onChange={e => setFilterDvNo(e.target.value)} />
@@ -224,28 +222,23 @@ export default function ReportGeneration() {
                       <td className='table-column-center'>
                         <button className="btn-primary" onClick={async () => {
                           try {
-                            const token = getToken()
                             const res = await fetch(`${BASE_URL}/dv/reports/${r.dv}/pdf/`, {
                               method: 'GET',
-                              headers: {
-                                ...(token && { Authorization: `Bearer ${token}` })
-                              }
+                              credentials: 'include',
                             })
                             if (!res.ok) throw new Error('Failed to generate PDF')
                             const blob = await res.blob()
                             const url = URL.createObjectURL(blob)
-                            const a = document.createElement('a')
-                            a.href = url
-                            a.download = `dv_report_${r.dv}.pdf`
-                            document.body.appendChild(a)
-                            a.click()
-                            a.remove()
-                            URL.revokeObjectURL(url)
+
+                            // store URL instead of downloading
+                            setPdfUrl(url)
+                            setSelectedReport(r)
+                            openModal()
                           } catch (err) {
                             console.error(err)
                             toast.error('Failed to download report PDF')
                           }
-                        }}>⤓ Export PDF</button>
+                        }}>👁 Preview PDF</button>
                       </td>
                   </tr>
                 )
