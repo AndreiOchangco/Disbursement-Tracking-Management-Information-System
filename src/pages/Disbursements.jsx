@@ -564,14 +564,15 @@ export default function Disbursements() {
         <div style="font-family: Arial, sans-serif; color: #1f2937;">
           <div style="max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
             
-            <div style="background:#dc2626;color:#fff;padding:20px;text-align:center;">
+            <div style="background:#2c5dff;color:#fff;padding:20px;text-align:center;">
+              <img src="/MuniLuna.png" alt="MuniLuna Logo" style="height: 50px; width: auto; margin-bottom: 10px;">
               <h2 style="margin:0;">Disbursement Voucher Rejected</h2>
             </div>
 
             <div style="padding:20px;">
               <p>Hello <strong>${dv.payee.name || 'Payee'}</strong>,</p>
 
-              <p>Your disbursement voucher has been <strong style="color:#dc2626;">rejected</strong>.</p>
+              <p>Your disbursement voucher has been <strong style="color:#2c5dff;">rejected</strong>.</p>
 
               <div style="background:#f9fafb;padding:12px;border-radius:8px;margin:15px 0;">
                 <p><strong>Tracking No:</strong> ${dv.tracking_no}</p>
@@ -682,14 +683,15 @@ export default function Disbursements() {
         <div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
           <div style="max-width: 600px; margin: auto; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
             
-            <div style="background: #dc2626; color: #ffffff; padding: 20px; text-align: center;">
+            <div style="background: #2c5dff; color: #ffffff; padding: 20px; text-align: center;">
+              <img src="/MuniLuna.png" alt="MuniLuna Logo" style="height: 50px; width: auto; margin-bottom: 10px;">
               <h2 style="margin: 0;">Disbursement Voucher Rejected</h2>
             </div>
 
             <div style="padding: 20px;">
               <p>Hello <strong>${editPayeeData.name || 'Payee'}</strong>,</p>
 
-              <p>Your disbursement voucher has been reviewed and <strong style="color:#dc2626;">rejected</strong>.</p>
+              <p>Your disbursement voucher has been reviewed and <strong style="color:#2c5dff;">rejected</strong>.</p>
 
               <div style="margin: 16px 0; padding: 12px; background: #f9fafb; border-radius: 8px;">
                 <p style="margin: 4px 0;"><strong>Tracking No:</strong> ${selectedDV.tracking_no}</p>
