@@ -81,15 +81,21 @@ export async function apiRequest(endpoint, method = 'GET', body = null, _retry =
       }
     }
 
-    // Parse JSON safely
-    const data = await res.json().catch(() => null)
-
+    // 🔴 ERROR HANDLING: If response is bad, parse the JSON error message
     if (!res.ok) {
+      const data = await res.json().catch(() => null)
       const message = data?.error || data?.detail || `HTTP Error ${res.status}`
       throw new Error(message)
     }
 
-    return data
+    // 🟢 SUCCESS HANDLING: Check Content-Type to see if it's a PDF
+    const contentType = res.headers.get('content-type')
+    if (contentType && contentType.includes('application/pdf')) {
+      return await res.blob() // Return binary data for the PDF
+    }
+
+    // Default: Parse JSON safely for standard API requests
+    return await res.json().catch(() => null)
 
   } catch (err) {
     console.error('NETWORK/API ERROR:', err)
