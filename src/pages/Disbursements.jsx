@@ -565,7 +565,6 @@ export default function Disbursements() {
           <div style="max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
             
             <div style="background:#2c5dff;color:#fff;padding:20px;text-align:center;">
-              <img src="/MuniLuna.png" alt="MuniLuna Logo" style="height: 50px; width: auto; margin-bottom: 10px;">
               <h2 style="margin:0;">Disbursement Voucher Rejected</h2>
             </div>
 
@@ -684,7 +683,6 @@ export default function Disbursements() {
           <div style="max-width: 600px; margin: auto; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
             
             <div style="background: #2c5dff; color: #ffffff; padding: 20px; text-align: center;">
-              <img src="/MuniLuna.png" alt="MuniLuna Logo" style="height: 50px; width: auto; margin-bottom: 10px;">
               <h2 style="margin: 0;">Disbursement Voucher Rejected</h2>
             </div>
 
@@ -829,16 +827,12 @@ export default function Disbursements() {
                   <input type="date" value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} />
                 </label>
                 <label>
-                  <span>Created Date</span>
+                  <span>Request Date</span>
                   <input type="date" value={createdDate} readOnly disabled onChange={(e) => setCreatedDate(e.target.value)} />
                 </label>
                 <label>
                   <span>Created By</span>
                   <input value={officer} readOnly disabled placeholder="Auto-filled by your account" />
-                </label>
-                <label>
-                  <span>Status</span>
-                  <input value={status} readOnly disabled />
                 </label>
               </div>
 
@@ -859,7 +853,7 @@ export default function Disbursements() {
                     />
                     
                     <label className="general-label">
-                      <span>General Description</span>
+                      <span>Description</span>
                     </label>
                     <textarea
                       className="general-description"
@@ -920,7 +914,7 @@ export default function Disbursements() {
                       {jeRows.map((row, index) => (
                         <tr key={index}>
                           <td>
-                            <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Description" />
+                            <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Category Name" />
                           </td>
                           <td>
                             <input className="particulars-input" type="text" value={row.account_code} onChange={(e) => handleJeRowChange(index, 'account_code', e.target.value)} placeholder="Account Code" />
