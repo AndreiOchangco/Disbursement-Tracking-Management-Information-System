@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { apiRequest, getCurrentUser } from '../api'
 import ReactModal from '../components/ReactModal'
-import ReactModal from '../components/Modal.jsx'
 import Swal from 'sweetalert2'
 
 const statusOptions = ['Pending', 'Approved', 'Rejected']
