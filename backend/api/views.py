@@ -1195,15 +1195,15 @@ def dv_report_pdf(request, dv_id):
         <td colspan="3">
             {particulars_details_html}
         </td>
-        <td colspan="1">{total_ft_display}</td>
+        <td colspan="1" style="text-align: right;">{total_ft_display}</td>
     </tr>
     </table>
     <table>
         <tr>
-            <td colspan="1" class="center bold medium" style="text-align: center;">Amount in </br> Words: </td>
+            <td colspan="1" class="center bold" style="text-align: center; font-size: 11px;">Amount in </br> Words: </td>
             <td colspan="2" class="center bold medium" style="text-align: center; width: 58.48%;">{amount_in_words}</td>
-            <td colspan="2" class="center bold small" style="text-align: center;">Amount Due: ></td>
-            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">PHP {amount_due_display}</td>
+            <td colspan="2" class="center bold" style="text-align: center; font-size: 8px;">Amount Due: ></td>
+            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%; font-size: 10px;">PHP {amount_due_display}</td>
         </tr>
     </table>
     <table style="border-collapse: collapse;">
@@ -1297,7 +1297,7 @@ def dv_report_pdf(request, dv_id):
                 <div style="margin: 0; padding: 0; line-height: 1.2;">
                     <span style="border: 1px solid black; padding: 0 4px; margin: 0;">D.</span>
                     <span style="margin: 0;">Approved Payment:</span>
-                    <span>PHP {amount_due_display}</span>
+                    <span style="font-size: 10px; text-align: right; display: block; margin-top: -12px; margin-right: 25px;">PHP {amount_due_display}</span>
                 </div>
 
                 <!-- Centered bottom -->
