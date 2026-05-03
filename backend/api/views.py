@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVReport
 from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DVWorkflowSerializer, DVArchivedSerializer
 from .authentication import JWTAuthentication
@@ -210,8 +211,22 @@ def refresh_token(request):
 @permission_classes([AllowAny])
 def logout(request):
     response = Response({'message': 'You have been logged out successfully.'})
+    
+    refresh_token = request.COOKIES.get('refresh_token')
+    
+    if refresh_token:
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except Exception as e:
+            # If the token is already blacklisted or invalid, we can just ignore 
+            # the error and proceed to delete the cookies anyway.
+            print(f"Warning: Token blacklisting failed: {e}")
+
+    # 3. Delete the cookies to clean up the client side
     response.delete_cookie('access_token')
     response.delete_cookie('refresh_token')
+    
     return response
 
 
