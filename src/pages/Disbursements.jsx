@@ -268,12 +268,17 @@ export default function Disbursements() {
             description: particularDescription,
             jev_no: particularJevNo,
             date: particularDate,
-            category_values: particulars.map((item) => ({
-              category: item.category,
-              np: parseFloat(item.np) || 0,
-              ft: parseFloat(item.ft) || 0,
-              tf: parseFloat(item.tf) || 0,
-            })),
+            category_values: particulars.map((item) => {
+              const parsedFt = parseFloat(item.ft) || 0;
+              const parsedTf = parseFloat(item.tf) || 0;
+              
+              return {
+                category: item.category,
+                np: parsedFt + parsedTf,
+                ft: parsedFt,
+                tf: parsedTf,
+              };
+            }),
           },
         ],
         journal_entries: jeRows.map(je => ({
@@ -885,7 +890,16 @@ export default function Disbursements() {
                           <td>
                             <input className="particulars-input" type="text" value={item.category} onChange={(e) => handleParticularChange(idx, 'category', e.target.value)} placeholder="Category name" />
                           </td>
-                          <td><span>{(parseFloat(item.ft || 0) + parseFloat(item.tf || 0)).toFixed(2)}</span></td>
+                          <td>
+                            <input 
+                              className="particulars-input" 
+                              type="number" 
+                              step="0.01" 
+                              value={((parseFloat(item.ft) || 0) + (parseFloat(item.tf) || 0)).toFixed(2)} 
+                              disabled
+                              placeholder="0.00" 
+                            />
+                          </td>
                           <td><input className="particulars-input" type="number" step="0.01" value={item.ft} onChange={(e) => handleParticularChange(idx, 'ft', e.target.value)} placeholder="0.00" /></td>
                           <td><input className="particulars-input" type="number" step="0.01" value={item.tf} onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)} placeholder="0.00" /></td>
                           <td className="table-column-center">
