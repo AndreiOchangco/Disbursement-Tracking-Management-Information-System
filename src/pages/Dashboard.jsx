@@ -339,7 +339,7 @@ export default function Dashboard() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
             {/* 📋 RECENT DISBURSEMENTS TABLE */}
             <section className="panel">
-              <div style={{ marginBottom: '1.5rem' }}>
+              <div className="table-toolbar" style={{ marginBottom: '1.5rem' }}>
                 <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="receipt"></ion-icon> Recent Disbursements</h3>
               </div>
               <div className="table-wrap">
