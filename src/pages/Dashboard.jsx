@@ -336,21 +336,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* 📊 FINANCIAL CHARTS */}
-          <div className="charts-grid" style={{ marginBottom: '2rem' }}>
-            {/* FORECAST BAR */}
-            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="cash"></ion-icon> Financial Forecast</h3>
-              <Bar data={forecastChartData} />
-            </div>
-
-            {/* FUND DISTRIBUTION PIE */}
-            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="pie-chart"></ion-icon> Fund Utilization</h3>
-              <Pie data={fundData} />
-            </div>
-          </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
             {/* 📋 RECENT DISBURSEMENTS TABLE */}
             <section className="panel">
@@ -386,33 +371,21 @@ export default function Dashboard() {
                 </table>
               </div>
             </section>
+          </div>
 
-            {/* 🏆 TOP PAYEES TABLE */}
-            <section className="panel" style={{ overflow: 'auto' }}>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="trophy"></ion-icon> Top Payee Concentration</h3>
-              </div>
-              <div className="table-wrap">
-                <table>
-                  <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
-                    <tr>
-                      <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Payee Name</th>
-                      <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="cash"></ion-icon> Total Disbursed</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topPayees.map((payee, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #fef3c7' }}>
-                        <td style={{ fontWeight: '500' }}>{payee.name || '-'}</td>
-                        <td className='table-column-center' style={{ fontWeight: 'bold', color: '#059669' }}>
-                          {formatCurrency(payee.total_received)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+          {/* 📊 FINANCIAL CHARTS */}
+          <div className="charts-grid" style={{ marginBottom: '2rem' }}>
+            {/* FORECAST BAR */}
+            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="cash"></ion-icon> Financial Forecast</h3>
+              <Bar data={forecastChartData} />
+            </div>
+
+            {/* FUND DISTRIBUTION PIE */}
+            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="pie-chart"></ion-icon> Fund Utilization</h3>
+              <Pie data={fundData} />
+            </div>
           </div>
 
           {/* 📊 OLDER CHARTS (Status overview and Monthly Trend) */}
