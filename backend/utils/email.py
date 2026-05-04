@@ -8,17 +8,18 @@ def generate_dv_email_template(
 ):
     title_map = {
         'update': 'Disbursement Voucher Updates',
+        'approved': 'Disbursement Voucher Updated',
         'rejected': 'Disbursement Voucher Rejected',
-        'approved': 'Disbursement Voucher Approved',
+        'completed': 'Disbursement Voucher Approved',
     }
 
     message_map = {
         'update': 'Your disbursement voucher has been reviewed and <strong style="color:#2c5dff;">updated</strong>.',
         'rejected': 'Your disbursement voucher has been <strong style="color:#e11d48;">rejected</strong>.',
-        'approved': 'Your disbursement voucher has been <strong style="color:#059669;">approved</strong>.',
+        'completed': 'Your disbursement voucher has been <strong style="color:#059669;">approved</strong>.',
     }
 
-    show_remarks = type != 'approved'
+    show_remarks = type not in ('completed', 'update', 'rejected')
 
     html = f"""
     <div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
