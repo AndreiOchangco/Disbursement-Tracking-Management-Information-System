@@ -119,7 +119,7 @@ export default function ReportGeneration() {
       <section className="panel">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <div>
-            <h3 style={{ color: '#2c5dff' }}>Generated Reports</h3>
+            <h3 style={{ color: '#2c5dff' }}><ion-icon style={{fontSize: '1.25rem'}} name="newspaper-sharp"></ion-icon> Generated Reports</h3>
             <p style={{ margin: 0, color: '#4b5563' }}>{totalCount} generated reports</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
