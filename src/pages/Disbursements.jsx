@@ -6,7 +6,6 @@ import { toast } from 'react-toastify'
 import { apiRequest, getCurrentUser } from '../api'
 import ReactModal from '../components/ReactModal'
 import Swal from 'sweetalert2'
-import { generateDVEmailTemplate } from '../components/emailTemplates';
 
 const statusOptions = ['Pending', 'Approved', 'Rejected']
 
@@ -330,53 +329,88 @@ export default function Disbursements() {
   const approveItem = async (item) => {
     const result = await Swal.fire({
       title: 'Approve Disbursement?',
-      text: 'Are you sure?',
+      text: `Are you sure you want to approve this disbursement voucher?`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#059669'
-    });
-
-    if (!result.isConfirmed) return;
-
+      confirmButtonText: 'Yes, Approve',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6b7280',
+      background: '#F0F4FF',
+      color: '#1f2937',
+    })
+    
+    if (!result.isConfirmed) return
+    
     try {
-      await apiRequest(`/approve-dv/${item.id}/`, 'POST');
-
-      toast.success('Approved');
-      fetchData();
-
+      await apiRequest(`/dv/${item.id}/approve/`, 'POST')
+      await Swal.fire({
+        title: 'Success!',
+        text: 'Disbursement approved successfully.',
+        icon: 'success',
+        confirmButtonColor: '#0052CC',
+        background: '#F0F4FF',
+        color: '#1f2937',
+      })
+      await reload()
     } catch (err) {
-      toast.error(err.message);
+      console.error('Approve failed', err)
+      await Swal.fire({
+        title: 'Error!',
+        text: err?.message || 'Approve failed',
+        icon: 'error',
+        confirmButtonColor: '#e11d48',
+      })
     }
-  };
+  }
 
   const rejectItem = async (item) => {
     const result = await Swal.fire({
       title: 'Reject Disbursement?',
       input: 'textarea',
       inputLabel: 'Rejection Remarks',
+      inputPlaceholder: 'Enter your remarks for rejection...',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Reject',
+      cancelButtonText: 'Cancel',
       confirmButtonColor: '#e11d48',
-    });
-
-    if (!result.isConfirmed) return;
-
-    const remarks = result.value?.trim();
-    if (!remarks) {
-      return Swal.fire('Required', 'Remarks are required', 'warning');
+      cancelButtonColor: '#6b7280',
+      background: '#F0F4FF',
+      color: '#1f2937',
+    })
+    
+    if (!result.isConfirmed) return
+    if (!result.value?.trim()) {
+      await Swal.fire({
+        title: 'Required!',
+        text: 'Rejection remarks are required',
+        icon: 'warning',
+        confirmButtonColor: '#f97316',
+      })
+      return
     }
-
+    
     try {
-      await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks });
-
-      toast.success('Rejected');
-      reload();
-
+      await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: result.value || 'No remarks provided.' })
+      await Swal.fire({
+        title: 'Rejected!',
+        text: 'Disbursement rejected successfully.',
+        icon: 'success',
+        confirmButtonColor: '#0052CC',
+      })
+      if(showViewModal) setShowViewModal(false)
+      await reload()
     } catch (err) {
-      toast.error(err.message);
+      console.error('Reject failed', err)
+      await Swal.fire({
+        title: 'Error!',
+        text: err?.message || 'Reject failed',
+        icon: 'error',
+        confirmButtonColor: '#e11d48',
+      })
     }
-  };
+  }
 
   const handleArchive = async (d) => {
   const result = await Swal.fire({
@@ -561,34 +595,19 @@ export default function Disbursements() {
         ]
       };
 
-      const updated = await apiRequest(`/dv/${selectedDV.id}/`, 'PUT', payload);
-      
+      const updated = await apiRequest(`/dv/${selectedDV.id}/`, 'PUT', payload);      
       if (updated) {
         if (canEditAccounting) {
-          const remarks = 'Corrected and resubmitted by Accounting.';
-
-          await apiRequest(`/dv/${selectedDV.id}/resubmit/`, 'POST', { remarks });
-
-          await sendDVEmail({
-            type: 'update',
-            dv: selectedDV,
-            payee: selectedDV.payee,
-            remarks,
+          await apiRequest(`/dv/${selectedDV.id}/resubmit/`, 'POST', {
+            remarks: 'Corrected and resubmitted by Accounting.'
           });
-
-          toast.success('Updated & resubmitted');
-        }
-
-        if (canEditBudget || canEditTreasurer) {
+          await sendRejectedDVEmailAuto(selectedDV, {
+            remarks: 'Corrected and resubmitted by Accounting.'
+          });
+          toast.success('Disbursement Voucher updated and resubmitted successfully!');
+        } else if (canEditBudget || canEditTreasurer) {
           await apiRequest(`/dv/${selectedDV.id}/approve/`, 'POST');
-
-          await sendDVEmail({
-            type: 'update',
-            dv: selectedDV,
-            payee: selectedDV.payee,
-          });
-
-          toast.success('Updated & approved');
+          toast.success('Disbursement Voucher updated and approved successfully!');
         }
 
         setShowViewModal(false);
