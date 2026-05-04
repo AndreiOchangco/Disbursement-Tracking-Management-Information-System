@@ -1,9 +1,10 @@
+// dashboard.jsx
 /* eslint-disable react-hooks/immutability */
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react'
 import { apiRequest, getCurrentUser } from '../api'
 import '../chart.js'
-import { Bar, Pie, Line } from 'react-chartjs-2'
+import { Bar, Line, Pie } from 'react-chartjs-2'
 
 // Helper for currency formatting
 const formatCurrency = (amount) => {
@@ -13,6 +14,8 @@ const formatCurrency = (amount) => {
     minimumFractionDigits: 2
   }).format(amount || 0)
 }
+
+const currentMonth = new Date().toLocaleString('default', { month: 'long' })
 
 export default function Dashboard() {
   const currentUser = getCurrentUser()
@@ -105,7 +108,7 @@ export default function Dashboard() {
     }
   }
 
-  // <ion-icon name="bar-chart"></ion-icon> STATUS DATA
+  // 📊 STATUS DATA
   const statusData = {
     labels: ['Completed', 'Pending', 'Archived', 'Rejected'],
     datasets: [
@@ -124,24 +127,104 @@ export default function Dashboard() {
     ],
   }
 
-  // 📊 FINANCIAL FORECAST DATA (15th vs 31st vs Total)
+  // 📊 FINANCIAL FORECAST DATA (VERTICAL BAR)
   const forecastChartData = {
-    labels: ['15th Period', '31st Period', 'Total Net Pay'],
+    labels: ['0-15th Period', '15th-31st Period'],
     datasets: [
       {
-        label: 'Obligated Amount (PHP)',
-        data: [forecast.total_15th, forecast.total_31st, forecast.total_net_pay],
+        label: 'Obligated Amount',
+        data: [forecast.total_15th, forecast.total_31st],
         backgroundColor: [
-          'rgba(249, 115, 22, 0.8)', // Orange
-          'rgba(139, 92, 246, 0.8)', // Purple
-          'rgba(5, 150, 105, 0.8)',  // Green
+          '#FFD700', // Yellow
+          '#0052CC', // Blue
         ],
         borderWidth: 1,
       },
     ],
   }
 
-  // 📊 FUND SOURCE DISTRIBUTION (PIE)
+  const forecastOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        // Click handler to toggle individual bar visibility
+        onClick: (e, legendItem, legend) => {
+          const index = legendItem.index;
+          const chart = legend.chart;
+          chart.toggleDataVisibility(index);
+          chart.update();
+        },
+        labels: {
+          generateLabels: (chart) => {
+            const data = chart.data;
+            return data.labels.map((label, i) => {
+              // Check if this specific bar is hidden
+              const isHidden = !chart.getDataVisibility(i);
+              return {
+                text: label,
+                fillStyle: data.datasets[0].backgroundColor[i],
+                hidden: isHidden, // Applies the strikethrough when clicked
+                index: i
+              };
+            });
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => ` ${context.label}: ${formatCurrency(context.raw)}`
+        }
+      }
+    },
+    scales: {
+      y: {
+        ticks: {
+          callback: (value) => formatCurrency(value)
+        }
+      }
+    }
+  }
+
+  const statusOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true, 
+        // Click handler to toggle individual bar visibility
+        onClick: (e, legendItem, legend) => {
+          const index = legendItem.index;
+          const chart = legend.chart;
+          chart.toggleDataVisibility(index);
+          chart.update();
+        },
+        labels: {
+          generateLabels: (chart) => {
+            const data = chart.data;
+            return data.labels.map((label, i) => {
+              // Check if this specific bar is hidden
+              const isHidden = !chart.getDataVisibility(i);
+              return {
+                text: label,
+                fillStyle: data.datasets[0].backgroundColor[i],
+                strokeStyle: data.datasets[0].borderColor[i],
+                lineWidth: 1,
+                hidden: isHidden, // Applies the strikethrough when clicked
+                index: i
+              };
+            });
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => ` ${context.label}: ${context.raw}`
+        }
+      }
+    }
+  }
+
+  // 📊 FUND SOURCE DISTRIBUTION (VERTICAL BAR)
   const fundColors = [
     'rgba(0, 82, 204, 0.8)', 'rgba(5, 150, 105, 0.8)', 'rgba(249, 115, 22, 0.8)',
     'rgba(242, 63, 56, 0.8)', 'rgba(139, 92, 246, 0.8)', 'rgba(234, 179, 8, 0.8)'
@@ -150,12 +233,38 @@ export default function Dashboard() {
     labels: fundDistribution.map(f => f.fund_source || 'Unspecified'),
     datasets: [
       {
-        label: 'Utilization (PHP)',
+        label: 'Total Disbursed',
         data: fundDistribution.map(f => f.total_amount),
         backgroundColor: fundColors.slice(0, fundDistribution.length),
         borderWidth: 1,
       },
     ],
+  }
+
+  const fundOptions = {
+    responsive: true,
+    maintainAspectRatio: false, // Helps the pie chart fit nicely in the panel
+    onClick: (event, elements, chart) => {
+      if (elements.length > 0) {
+        const index = elements[0].index;
+        const categoryName = chart.data.labels[index];
+        console.log(`Navigating to or filtering by category: ${categoryName}`);
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'top', // Moves labels to the side so the pie isn't squished
+        labels: {
+          font: { weight: 'bold' }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          // Formats the hover label to show: "Fund Source: ₱1,234.00"
+          label: (context) => ` ${context.label}: ${formatCurrency(context.raw)}`
+        }
+      }
+    }
   }
 
   // 📊 MONTHLY TREND
@@ -336,6 +445,45 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* 📊 FINANCIAL CHARTS */}
+          <div className="charts-grid" style={{ marginBottom: '2rem' }}>
+            {/* FORECAST BAR */}
+            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>
+                <ion-icon name="cash"></ion-icon> Financial Forecast for the month of {currentMonth}
+              </h3>
+              <Bar data={forecastChartData} options={forecastOptions} />
+            </div>
+
+            {/* FUND DISTRIBUTION PIE */}
+            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>
+                <ion-icon name="pie-chart"></ion-icon> Fund Utilization for the month of {currentMonth}
+              </h3>
+              <div style={{ position: 'relative', height: '300px', width: '100%' }}>
+                <Pie data={fundData} options={fundOptions} />
+              </div>
+            </div>
+          </div>
+
+          {/* 📊 OLDER CHARTS (Status overview and Monthly Trend) */}
+          <div className="charts-grid">
+            {/* 📊 STATUS BAR */}
+            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>
+                <ion-icon name="trending-up"></ion-icon> Status Overview
+              </h3>
+              {/* Added the new statusOptions here */}
+              <Bar data={statusData} options={statusOptions} />
+            </div>
+
+            {/* 📊 LINE */}
+            <div className="panel" style={{ gridColumn: 'span 1', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
+              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="calendar"></ion-icon> Monthly Trend</h3>
+              <Line data={monthlyData} />
+            </div>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
             {/* 📋 RECENT DISBURSEMENTS TABLE */}
             <section className="panel">
@@ -371,36 +519,6 @@ export default function Dashboard() {
                 </table>
               </div>
             </section>
-          </div>
-
-          {/* 📊 FINANCIAL CHARTS */}
-          <div className="charts-grid" style={{ marginBottom: '2rem' }}>
-            {/* FORECAST BAR */}
-            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="cash"></ion-icon> Financial Forecast</h3>
-              <Bar data={forecastChartData} />
-            </div>
-
-            {/* FUND DISTRIBUTION PIE */}
-            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="pie-chart"></ion-icon> Fund Utilization</h3>
-              <Pie data={fundData} />
-            </div>
-          </div>
-
-          {/* 📊 OLDER CHARTS (Status overview and Monthly Trend) */}
-          <div className="charts-grid">
-            {/* 📊 STATUS BAR */}
-            <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="trending-up"></ion-icon> Status Overview</h3>
-              <Bar data={statusData} />
-            </div>
-
-            {/* 📊 LINE */}
-            <div className="panel" style={{ gridColumn: 'span 1', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="calendar"></ion-icon> Monthly Trend</h3>
-              <Line data={monthlyData} />
-            </div>
           </div>
         </>
       )}

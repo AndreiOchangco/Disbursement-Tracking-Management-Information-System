@@ -17,6 +17,7 @@ from django.contrib.auth.models import User as DjangoUser
 from django.contrib.auth import login as django_login
 from django.http import HttpResponse
 from django.core.mail import EmailMultiAlternatives
+from django.utils import timezone
 from django.utils.html import strip_tags
 import os
 from pathlib import Path
@@ -687,12 +688,19 @@ def dashboard_stats(request):
             status=403
         )
 
-    # 1. Base Querysets
+    # Get the current date to filter by the current month and year
+    now = timezone.now()
+
+    # Base Querysets
     active_dvs = DV.objects.exclude(status='archived')
-    
-    # NEW: Create a specific queryset just for completed DVs
     completed_dvs = active_dvs.filter(status='completed')
     
+    # Filtered queryset for completed DVs in the current month
+    current_month_completed_dvs = completed_dvs.filter(
+        created_at__year=now.year,
+        created_at__month=now.month
+    )
+
     # 2. Basic Workflow Stats
     if user.department == 'accounting':
         stats = {
@@ -715,32 +723,26 @@ def dashboard_stats(request):
             'approved_by_me': DVWorkflow.objects.filter(action_by=user, status='approved').count(),
         }
 
-    # 3. Financial Forecasting (Filtered by COMPLETED only)
+    # Financial Forecasting (Filtered by COMPLETED DVs in CURRENT MONTH)
     forecast = DVParticularValue.objects.filter(
-        particulars__dv__in=completed_dvs
+        particulars__dv__in=current_month_completed_dvs
     ).aggregate(
         total_15th=Sum('ft') or 0,
         total_31st=Sum('tf') or 0,
         total_net_pay=Sum('np') or 0
     )
 
-    # 4. Fund Source Distribution (Filtered by COMPLETED only)
-    fund_distribution = completed_dvs.values('fund_source').annotate(
-        total_amount=Sum('particulars__category_values__np')
+    # Fund Source Distribution / Utilization (Filtered by CURRENT MONTH)
+    # We now base this on the 'grand_total' field. 
+    # NOTE: Change 'grand_total' to 'amount_due' if that is your exact model field name.
+    fund_distribution = current_month_completed_dvs.values('fund_source').annotate(
+        total_amount=Sum('particulars__category_values__np') 
     ).filter(
-        total_amount__gt=0 # Optional, but keeps empty funds out of the Pie Chart
+        total_amount__gt=0 
     ).order_by('-total_amount')
 
-    # 5. Top Payee Concentration (Filtered by COMPLETED and > 0)
-    top_payees = Payee.objects.filter(
-        dv__in=completed_dvs
-    ).values('name').annotate(
-        total_received=Sum('dv__particulars__category_values__np')
-    ).filter(
-        total_received__gt=0  # Excludes payees with 0.00 disbursed
-    ).order_by('-total_received')[:5]
 
-    # 6. Recent Activity (Keep using active_dvs so users still see pending/drafts in the recent table)
+    # Recent Activity
     recent_dvs = active_dvs.order_by('-updated_at')[:5]
     recent = DVSerializer(recent_dvs, many=True).data
 
@@ -748,7 +750,6 @@ def dashboard_stats(request):
         'workflow_stats': stats,
         'financial_forecast': forecast,
         'fund_distribution': list(fund_distribution),
-        'top_payees': list(top_payees),
         'recent_dvs': recent
     })
 
