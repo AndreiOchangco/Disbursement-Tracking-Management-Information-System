@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from rest_framework_simplejwt.tokens import RefreshToken
+from utils.email import generate_dv_email_template
 from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVReport, Payee, DVParticularValue
 from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DVWorkflowSerializer, DVArchivedSerializer
 from .authentication import JWTAuthentication
@@ -67,6 +68,31 @@ def is_checked(value, expected):
             return "checked"
 
     return ""
+
+def send_dv_email(dv, type='update', remarks=None):
+    if not dv.payee or not dv.payee.email:
+        return
+
+    subject = f'DV {type.upper()} (Tracking #{dv.tracking_no})'
+
+    html_content = generate_dv_email_template(
+        type=type,
+        name=dv.payee.name,
+        tracking_no=dv.tracking_no,
+        dv_no=dv.dv_no,
+        created_date=dv.created_date.strftime('%m/%d/%Y'),
+        remarks=remarks,
+    )
+
+    text_content = strip_tags(html_content)
+
+    msg = EmailMultiAlternatives(
+        subject,
+        text_content,
+        to=[dv.payee.email],
+    )
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
 
 DEPT_STEP = {
     'accounting': 1,
@@ -529,6 +555,8 @@ def dv_approve(request, pk):
         dv.current_step = user_step + 1
 
     dv.save()
+
+    send_dv_email(dv, type='approved')
     
     # Create DVReport snapshot when DV is completed
     if dv.status == 'completed' and not hasattr(dv, 'report'):
@@ -570,6 +598,8 @@ def dv_disapprove(request, pk):
     dv.last_disapproved_step = user_step
     dv.save()
 
+    send_dv_email(dv, type='rejected', remarks=remarks)
+
     return Response(DVSerializer(dv).data)
 
 
@@ -603,6 +633,8 @@ def dv_resubmit(request, pk):
     dv.status = 'pending'
     dv.current_step = resubmit_step
     dv.save()
+
+    send_dv_email(dv, type='update', remarks='Your disbursement voucher has been corrected and resubmitted for review.')
 
     return Response(DVSerializer(dv).data)
 
