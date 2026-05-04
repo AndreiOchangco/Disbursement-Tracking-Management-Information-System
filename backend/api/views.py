@@ -1,13 +1,14 @@
 import jwt
 import datetime
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, Sum
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
-from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVReport
+from rest_framework_simplejwt.tokens import RefreshToken
+from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVReport, Payee, DVParticularValue
 from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DVWorkflowSerializer, DVArchivedSerializer
 from .authentication import JWTAuthentication
 from django.contrib.auth import authenticate as django_authenticate
@@ -210,8 +211,22 @@ def refresh_token(request):
 @permission_classes([AllowAny])
 def logout(request):
     response = Response({'message': 'You have been logged out successfully.'})
+    
+    refresh_token = request.COOKIES.get('refresh_token')
+    
+    if refresh_token:
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except Exception as e:
+            # If the token is already blacklisted or invalid, we can just ignore 
+            # the error and proceed to delete the cookies anyway.
+            print(f"Warning: Token blacklisting failed: {e}")
+
+    # 3. Delete the cookies to clean up the client side
     response.delete_cookie('access_token')
     response.delete_cookie('refresh_token')
+    
     return response
 
 
@@ -628,7 +643,6 @@ def dv_archive(request, pk):
 
 
 # ─────────────────── DASHBOARD ───────────────────
-
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -637,40 +651,74 @@ def dashboard_stats(request):
 
     if user.department == 'admin':
         return Response(
-            {'error': 'System Administrators do not have access to Disbursement Voucher statistics.'},
-            status=status.HTTP_403_FORBIDDEN
+            {'error': 'System Administrators do not have access to statistics.'},
+            status=403
         )
 
+    # 1. Base Querysets
+    active_dvs = DV.objects.exclude(status='archived')
+    
+    # NEW: Create a specific queryset just for completed DVs
+    completed_dvs = active_dvs.filter(status='completed')
+    
+    # 2. Basic Workflow Stats
     if user.department == 'accounting':
         stats = {
-            'total': DV.objects.exclude(status='archived').count(),
-            'pending': DV.objects.filter(status='pending').count(),
-            'disapproved': DV.objects.filter(status='disapproved').count(),
-            'completed': DV.objects.filter(status='completed').count(),
+            'total': active_dvs.count(),
+            'pending': active_dvs.filter(status='pending').count(),
+            'disapproved': active_dvs.filter(status='disapproved').count(),
+            'completed': completed_dvs.count(),
             'archived': DV.objects.filter(status='archived').count(),
-            'for_action': DV.objects.filter(status__in=['draft', 'disapproved']).count(),
+            'for_action': active_dvs.filter(status__in=['pending', 'disapproved']).count(),
         }
     else:
         user_step = DEPT_STEP.get(user.department, 0)
-        for_approval = DV.objects.filter(status='pending', current_step=user_step).count()
-        approved_by_me = DVWorkflow.objects.filter(action_by=user, status='approved').count()
-        disapproved_by_me = DVWorkflow.objects.filter(action_by=user, status='disapproved').count()
+        for_approval = active_dvs.filter(status='pending', current_step=user_step).count()
         stats = {
-            'total': DV.objects.exclude(status='archived').count(),
+            'total': active_dvs.count(),
             'pending': for_approval,
-            'disapproved': disapproved_by_me,
-            'completed': DV.objects.filter(status='completed').count(),
-            'archived': 0,
+            'disapproved': DVWorkflow.objects.filter(action_by=user, status='disapproved').count(),
+            'completed': completed_dvs.count(),
             'for_action': for_approval,
-            'approved_by_me': approved_by_me,
+            'approved_by_me': DVWorkflow.objects.filter(action_by=user, status='approved').count(),
         }
 
-    # Recent activity
-    recent_dvs = DV.objects.exclude(status='archived').order_by('-updated_at')[:5]
+    # 3. Financial Forecasting (Filtered by COMPLETED only)
+    forecast = DVParticularValue.objects.filter(
+        particulars__dv__in=completed_dvs
+    ).aggregate(
+        total_15th=Sum('ft') or 0,
+        total_31st=Sum('tf') or 0,
+        total_net_pay=Sum('np') or 0
+    )
+
+    # 4. Fund Source Distribution (Filtered by COMPLETED only)
+    fund_distribution = completed_dvs.values('fund_source').annotate(
+        total_amount=Sum('particulars__category_values__np')
+    ).filter(
+        total_amount__gt=0 # Optional, but keeps empty funds out of the Pie Chart
+    ).order_by('-total_amount')
+
+    # 5. Top Payee Concentration (Filtered by COMPLETED and > 0)
+    top_payees = Payee.objects.filter(
+        dv__in=completed_dvs
+    ).values('name').annotate(
+        total_received=Sum('dv__particulars__category_values__np')
+    ).filter(
+        total_received__gt=0  # Excludes payees with 0.00 disbursed
+    ).order_by('-total_received')[:5]
+
+    # 6. Recent Activity (Keep using active_dvs so users still see pending/drafts in the recent table)
+    recent_dvs = active_dvs.order_by('-updated_at')[:5]
     recent = DVSerializer(recent_dvs, many=True).data
 
-    return Response({**stats, 'recent_dvs': recent})
-
+    return Response({
+        'workflow_stats': stats,
+        'financial_forecast': forecast,
+        'fund_distribution': list(fund_distribution),
+        'top_payees': list(top_payees),
+        'recent_dvs': recent
+    })
 
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
@@ -1147,15 +1195,15 @@ def dv_report_pdf(request, dv_id):
         <td colspan="3">
             {particulars_details_html}
         </td>
-        <td colspan="1">{total_ft_display}</td>
+        <td colspan="1" style="text-align: right;">{total_ft_display}</td>
     </tr>
     </table>
     <table>
         <tr>
-            <td colspan="1" class="center bold medium" style="text-align: center;">Amount in </br> Words: </td>
+            <td colspan="1" class="center bold" style="text-align: center; font-size: 11px;">Amount in </br> Words: </td>
             <td colspan="2" class="center bold medium" style="text-align: center; width: 58.48%;">{amount_in_words}</td>
-            <td colspan="2" class="center bold small" style="text-align: center;">Amount Due: ></td>
-            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%;">PHP {amount_due_display}</td>
+            <td colspan="2" class="center bold" style="text-align: center; font-size: 8px;">Amount Due: ></td>
+            <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%; font-size: 10px;">PHP {amount_due_display}</td>
         </tr>
     </table>
     <table style="border-collapse: collapse;">
@@ -1249,7 +1297,7 @@ def dv_report_pdf(request, dv_id):
                 <div style="margin: 0; padding: 0; line-height: 1.2;">
                     <span style="border: 1px solid black; padding: 0 4px; margin: 0;">D.</span>
                     <span style="margin: 0;">Approved Payment:</span>
-                    <span>PHP {amount_due_display}</span>
+                    <span style="font-size: 10px; text-align: right; display: block; margin-top: -12px; margin-right: 25px;">PHP {amount_due_display}</span>
                 </div>
 
                 <!-- Centered bottom -->

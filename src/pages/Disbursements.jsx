@@ -268,12 +268,17 @@ export default function Disbursements() {
             description: particularDescription,
             jev_no: particularJevNo,
             date: particularDate,
-            category_values: particulars.map((item) => ({
-              category: item.category,
-              np: parseFloat(item.np) || 0,
-              ft: parseFloat(item.ft) || 0,
-              tf: parseFloat(item.tf) || 0,
-            })),
+            category_values: particulars.map((item) => {
+              const parsedFt = parseFloat(item.ft) || 0;
+              const parsedTf = parseFloat(item.tf) || 0;
+              
+              return {
+                category: item.category,
+                np: parsedFt + parsedTf,
+                ft: parsedFt,
+                tf: parsedTf,
+              };
+            }),
           },
         ],
         journal_entries: jeRows.map(je => ({
@@ -565,7 +570,6 @@ export default function Disbursements() {
           <div style="max-width:600px;margin:auto;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
             
             <div style="background:#2c5dff;color:#fff;padding:20px;text-align:center;">
-              <img src="MuniLuna.png" alt="MuniLuna Logo" style="height: 50px; width: auto; margin-bottom: 10px;">
               <h2 style="margin:0;">Disbursement Voucher Rejected</h2>
             </div>
 
@@ -684,7 +688,6 @@ export default function Disbursements() {
           <div style="max-width: 600px; margin: auto; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
             
             <div style="background: #2c5dff; color: #ffffff; padding: 20px; text-align: center;">
-              <img src="/MuniLuna.png" alt="MuniLuna Logo" style="height: 50px; width: auto; margin-bottom: 10px;">
               <h2 style="margin: 0;">Disbursement Voucher Rejected</h2>
             </div>
 
@@ -829,16 +832,12 @@ export default function Disbursements() {
                   <input type="date" value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} />
                 </label>
                 <label>
-                  <span>Created Date</span>
+                  <span>Request Date</span>
                   <input type="date" value={createdDate} readOnly disabled onChange={(e) => setCreatedDate(e.target.value)} />
                 </label>
                 <label>
                   <span>Created By</span>
                   <input value={officer} readOnly disabled placeholder="Auto-filled by your account" />
-                </label>
-                <label>
-                  <span>Status</span>
-                  <input value={status} readOnly disabled />
                 </label>
               </div>
 
@@ -859,7 +858,7 @@ export default function Disbursements() {
                     />
                     
                     <label className="general-label">
-                      <span>General Description</span>
+                      <span>Description</span>
                     </label>
                     <textarea
                       className="general-description"
@@ -885,7 +884,16 @@ export default function Disbursements() {
                           <td>
                             <input className="particulars-input" type="text" value={item.category} onChange={(e) => handleParticularChange(idx, 'category', e.target.value)} placeholder="Category name" />
                           </td>
-                          <td><span>{(parseFloat(item.ft || 0) + parseFloat(item.tf || 0)).toFixed(2)}</span></td>
+                          <td>
+                            <input 
+                              className="particulars-input" 
+                              type="number" 
+                              step="0.01" 
+                              value={((parseFloat(item.ft) || 0) + (parseFloat(item.tf) || 0)).toFixed(2)} 
+                              disabled
+                              placeholder="0.00" 
+                            />
+                          </td>
                           <td><input className="particulars-input" type="number" step="0.01" value={item.ft} onChange={(e) => handleParticularChange(idx, 'ft', e.target.value)} placeholder="0.00" /></td>
                           <td><input className="particulars-input" type="number" step="0.01" value={item.tf} onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)} placeholder="0.00" /></td>
                           <td className="table-column-center">
@@ -920,7 +928,7 @@ export default function Disbursements() {
                       {jeRows.map((row, index) => (
                         <tr key={index}>
                           <td>
-                            <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Description" />
+                            <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Category Name" />
                           </td>
                           <td>
                             <input className="particulars-input" type="text" value={row.account_code} onChange={(e) => handleJeRowChange(index, 'account_code', e.target.value)} placeholder="Account Code" />

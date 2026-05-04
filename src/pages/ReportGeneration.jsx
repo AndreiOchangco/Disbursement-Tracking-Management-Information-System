@@ -222,15 +222,17 @@ export default function ReportGeneration() {
                       <td className='table-column-center'>
                         <button className="btn-primary" onClick={async () => {
                           try {
-                            const res = await fetch(`${BASE_URL}/dv/reports/${r.dv}/pdf/`, {
-                              method: 'GET',
-                              credentials: 'include',
-                            })
-                            if (!res.ok) throw new Error('Failed to generate PDF')
-                            const blob = await res.blob()
+                            // 1. Call apiRequest (it will auto-refresh if token is expired)
+                            // Because of our update, this now returns a Blob directly
+                            const blob = await apiRequest(`/dv/reports/${r.dv}/pdf/`, 'GET')
+
+                            // 2. Fallback check just in case
+                            if (!blob) throw new Error('No PDF data received')
+
+                            // 3. Create URL from the Blob
                             const url = URL.createObjectURL(blob)
 
-                            // store URL instead of downloading
+                            // 4. Update state and open modal
                             setPdfUrl(url)
                             setSelectedReport(r)
                             openModal()
