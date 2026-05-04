@@ -340,7 +340,7 @@ export default function Dashboard() {
             {/* 📋 RECENT DISBURSEMENTS TABLE */}
             <section className="panel">
               <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}><ion-icon name="receipt"></ion-icon> Recent Disbursements</h3>
+                <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="receipt"></ion-icon> Recent Disbursements</h3>
               </div>
               <div className="table-wrap">
                 <table>

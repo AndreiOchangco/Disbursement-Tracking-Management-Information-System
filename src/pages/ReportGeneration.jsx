@@ -117,7 +117,7 @@ export default function ReportGeneration() {
       </div>
 
       <section className="panel">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <div className="table-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <div>
             <h3 style={{ color: '#2c5dff' }}><ion-icon style={{fontSize: '1.25rem'}} name="newspaper-sharp"></ion-icon> Generated Reports</h3>
             <p style={{ margin: 0, color: '#4b5563' }}>{totalCount} generated reports</p>
@@ -222,17 +222,15 @@ export default function ReportGeneration() {
                       <td className='table-column-center'>
                         <button className="btn-primary" onClick={async () => {
                           try {
-                            // 1. Call apiRequest (it will auto-refresh if token is expired)
-                            // Because of our update, this now returns a Blob directly
-                            const blob = await apiRequest(`/dv/reports/${r.dv}/pdf/`, 'GET')
-
-                            // 2. Fallback check just in case
-                            if (!blob) throw new Error('No PDF data received')
-
-                            // 3. Create URL from the Blob
+                            const res = await fetch(`${BASE_URL}/dv/reports/${r.dv}/pdf/`, {
+                              method: 'GET',
+                              credentials: 'include',
+                            })
+                            if (!res.ok) throw new Error('Failed to generate PDF')
+                            const blob = await res.blob()
                             const url = URL.createObjectURL(blob)
 
-                            // 4. Update state and open modal
+                            // store URL instead of downloading
                             setPdfUrl(url)
                             setSelectedReport(r)
                             openModal()
