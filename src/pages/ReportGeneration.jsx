@@ -123,9 +123,6 @@ export default function ReportGeneration() {
             <p style={{ margin: 0, color: '#4b5563' }}>{totalCount} generated reports</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button className="btn-archive" onClick={() => fetchReports(1)} disabled={loading}>
-              🔄 Refresh
-            </button>
 
             {/* ===== MODAL ===== */}
             <ReactModal
