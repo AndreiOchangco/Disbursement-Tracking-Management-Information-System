@@ -1,4 +1,5 @@
-from django.db import models
+from django.db import models, transaction
+from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password as django_check_password
 
 
@@ -99,7 +100,7 @@ class DV(models.Model):
     position_office = models.CharField(max_length=255, blank=True, null=True)
     office_unit_project = models.CharField(max_length=255, blank=True, null=True)
     cafoa_no = models.CharField(max_length=100, blank=True, null=True)
-    created_date = models.DateField()
+    created_date = models.DateField(auto_now_add=True, blank=True, null=True)
     advice_no = models.CharField(max_length=100, blank=True, null=True)
     advice_date = models.DateField(blank=True, null=True)
     responsibility_center = models.CharField(max_length=255, blank=True, null=True)
@@ -110,15 +111,54 @@ class DV(models.Model):
     # Default changed to 2 so new DVs start forwarded to Budget
     current_step = models.IntegerField(default=2, blank=True, null=True)
     last_disapproved_step = models.IntegerField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'dv'
         ordering = ['-created_at']
 
+    def save(self, *args, **kwargs):
+        # Auto-generate tracking_no on initial creation
+        if not self.tracking_no:
+            with transaction.atomic():
+                now = timezone.now()
+                year_str = str(now.year)
+                year_month_str = now.strftime('%Y%m')
+                
+                # Lock the matching rows until the end of the transaction
+                last_dv = DV.objects.select_for_update().filter(
+                    tracking_no__startswith=year_str
+                ).order_by('-tracking_no').first()
+                
+                if last_dv and last_dv.tracking_no:
+                    # Extract the last 4 digits
+                    try:
+                        last_series = int(last_dv.tracking_no[-4:])
+                        new_series = last_series + 1
+                    except ValueError:
+                        new_series = 1
+                else:
+                    new_series = 1
+                        
+                # Generate the sequence string
+                generated_no = f"{year_month_str}{new_series:04d}"
+                
+                # Assign it to ALL number fields
+                self.tracking_no = generated_no
+                self.dv_no = generated_no
+                self.transaction_no = generated_no
+                
+                # Assign the creation date to ALL date fields
+                current_date = now.date()
+                self.created_date = current_date
+                self.dv_date = current_date
+                self.transaction_date = current_date
+                
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return self.dv_no
+        return self.tracking_no
     
 class Payee(models.Model):
     dv = models.OneToOneField(DV, on_delete=models.CASCADE, related_name='payee')
