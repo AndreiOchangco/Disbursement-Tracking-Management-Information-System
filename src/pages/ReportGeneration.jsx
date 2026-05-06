@@ -186,7 +186,6 @@ export default function ReportGeneration() {
             <thead>
               <tr>
                 <th className="table-column-center table-column-border">Tracking #</th>
-                <th className="table-column-center table-column-border">DV Number</th>
                 <th className="table-column-center table-column-border">Date Submitted</th>
                 <th className="table-column-center table-column-border">Approved Date</th>
                 <th className="table-column-center table-column-border">Prepared By</th>
@@ -212,7 +211,6 @@ export default function ReportGeneration() {
                 return (
                   <tr key={r.id}>
                     <td style={{ fontWeight: 600 }}>{p.tracking_no ?? '-'}</td>
-                    <td>{r.dv_no ?? (p.dv_no ?? '-')}</td>
                     <td className="table-column-center">{formatDate(p.created_date ?? (r.created_at ?? '-'))}</td>
                     <td className="table-column-center">{getApprovedDate(p, r)}</td>
                       <td>{p.accounting_name ?? '-'}</td>
