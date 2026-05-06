@@ -980,7 +980,6 @@ export default function Disbursements() {
       <thead className="table-head">
         <tr>
           <th className="table-column-center table-column-border table-pin-column"><ion-icon name="pin"></ion-icon> Tracking #</th>
-          <th className="table-column-center table-column-border table-bookmark-column"><ion-icon name="bookmark"></ion-icon> DV Number</th>
           <th className="table-column-center table-column-border"><ion-icon name="bar-chart"></ion-icon> Status</th>
           <th className="table-column-center table-column-border table-calendar-column"><ion-icon name="calendar"></ion-icon> Request Date</th>
           <th className="table-column-center table-column-border"><ion-icon name="person"></ion-icon> Created By</th>
@@ -1030,7 +1029,6 @@ export default function Disbursements() {
             return (
               <tr key={d.id} className="table-row">
                 <td className="table-strong">{d.tracking_no}</td>
-                <td>{d.dv_no ? Number(d.dv_no).toString() : '-'}</td>
                 <td className="table-column-center">
                   <span className={'status-badge status-' + String(d.status || '').toLowerCase().replace(/\s+/g, '-')}>
                     {d.status === 'completed' ? d.status : `${d.status} (${d.current_step})`}
@@ -1213,10 +1211,6 @@ export default function Disbursements() {
                 </label>
                 <label>
                   <span>Transaction Date</span>
-                  <input type="date" value={editTransactionDate} onChange={(e) => setEditTransactionDate(e.target.value)} disabled={!canEditAccounting} />
-                </label>
-                <label>
-                  <span>Date Created</span>
                   <input type="date" value={editCreatedDate} onChange={(e) => setEditCreatedDate(e.target.value)} disabled={!canEditAccounting} />
                 </label>
                 <label>

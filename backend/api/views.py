@@ -23,6 +23,7 @@ import os
 from pathlib import Path
 import base64
 from num2words import num2words
+import random
 
 def amount_to_words(amount):
     try:
@@ -94,6 +95,11 @@ def send_dv_email(dv, type='update', remarks=None):
     )
     msg.attach_alternative(html_content, "text/html")
     msg.send()
+
+def generate_tracking_number():
+    timestamp = datetime.now().strftime("%y%m%d%H%M%S")
+    random_part = random.randint(1000, 9999)
+    return f"{timestamp}{random_part}"
 
 DEPT_STEP = {
     'accounting': 1,
@@ -230,7 +236,7 @@ def refresh_token(request):
         )
         return response
         
-    except:
+    except:  # noqa: E722
         return Response({'error': 'Session expired'}, status=401)
 
 
@@ -263,51 +269,6 @@ def logout(request):
 def me(request):
     return Response(UserSerializer(request.user).data)
 
-
-# @api_view(['POST'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
-# def sso_login(request):
-#     """Create a Django session for the authenticated user so they can access Django admin.
-
-#     Frontend should POST to this endpoint with the current Bearer access token
-#     and use `fetch` with `credentials: 'include'` so the session cookie is accepted.
-#     """
-#     user = request.user
-#     # Only allow system administrators to SSO into Django admin
-#     if getattr(user, 'department', '') != 'admin':
-#         return Response({'error': 'Only system administrators can access Django admin.'}, status=status.HTTP_403_FORBIDDEN)
-
-#     try:
-#         # Find corresponding Django auth user (required for admin session)
-#         try:
-#             dj_user = DjangoUser.objects.get(email__iexact=user.email)
-#         except DjangoUser.DoesNotExist:
-#             return Response({'error': 'No Django admin account found for this user.'}, status=status.HTTP_404_NOT_FOUND)
-
-#         if not dj_user.is_active:
-#             return Response({'error': 'Django admin account is inactive.'}, status=status.HTTP_403_FORBIDDEN)
-
-#         # Establish Django session using the Django auth user
-#         dj_request = request._request
-#         django_login(dj_request, dj_user)
-#         dj_request.session.save()
-
-#         session_key = dj_request.session.session_key
-#         response = Response({'next': '/admin/'})
-
-#         response.set_cookie(
-#             key=settings.SESSION_COOKIE_NAME,
-#             value=session_key,
-#             httponly=True,
-#             secure=not settings.DEBUG,
-#             samesite=getattr(settings, 'CSRF_COOKIE_SAMESITE', 'Lax') or 'Lax'
-#         )
-
-#         return response
-#     except Exception as e:
-#         # Return JSON error instead of 500 to help debugging from frontend
-#         return Response({'error': 'SSO failed', 'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # ─────────────────── USER LISTS REGISTRATION, UPDATE ───────────────────
