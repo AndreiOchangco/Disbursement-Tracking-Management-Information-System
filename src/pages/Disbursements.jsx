@@ -1198,20 +1198,20 @@ export default function Disbursements() {
                   </select>
                 </label>
                 <label>
+                  <span>DV Number</span>
+                  <input type="text" value={editDVNo} onChange={(e) => setEditDVNo(e.target.value)} disabled={!canEditTreasurer} />
+                </label>
+                <label>
+                  <span>DV Date</span>
+                  <input type="date" value={editDVDate} onChange={(e) => setEditDVDate(e.target.value)} disabled={!canEditTreasurer} />
+                </label>
+                <label>
                   <span>Advice No</span>
                   <input type="text" value={editAdviceNo} onChange={(e) => setEditAdviceNo(e.target.value)} disabled={!canEditAccounting} />
                 </label>
                 <label>
                   <span>Advice Date</span>
                   <input type="date" value={editAdviceDate} onChange={(e) => setEditAdviceDate(e.target.value)} disabled={!canEditAccounting} />
-                </label>
-                <label>
-                  <span>Transaction No</span>
-                  <input type="text" value={editTransactionNo} onChange={(e) => setEditTransactionNo(e.target.value)} disabled={!canEditAccounting} />
-                </label>
-                <label>
-                  <span>Transaction Date</span>
-                  <input type="date" value={editCreatedDate} onChange={(e) => setEditCreatedDate(e.target.value)} disabled={!canEditAccounting} />
                 </label>
                 <label>
                   <span>Created By</span>
@@ -1244,12 +1244,12 @@ export default function Disbursements() {
               <h4 className="section-title" style={{ marginTop: '2.5rem' }}><ion-icon name="cash-outline"></ion-icon> Treasurer Information</h4>
               <div className="form-grid form-grid--split noselect">
                 <label>
-                  <span>DV Number</span>
-                  <input type="text" value={editDVNo} onChange={(e) => setEditDVNo(e.target.value)} disabled={!canEditTreasurer} />
+                  <span>Transaction No</span>
+                  <input type="text" value={editTransactionNo} onChange={(e) => setEditTransactionNo(e.target.value)} disabled={!canEditAccounting} />
                 </label>
                 <label>
-                  <span>DV Date</span>
-                  <input type="date" value={editDVDate} onChange={(e) => setEditDVDate(e.target.value)} disabled={!canEditTreasurer} />
+                  <span>Transaction Date</span>
+                  <input type="date" value={editCreatedDate} onChange={(e) => setEditCreatedDate(e.target.value)} disabled={!canEditAccounting} />
                 </label>
                 <label>
                   <span>Mode of Payment</span>
