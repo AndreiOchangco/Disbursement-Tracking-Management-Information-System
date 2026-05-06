@@ -1562,6 +1562,30 @@ button:hover svg,
 /* Charts Grid */
 .charts-grid {
   display: grid;
+
+/* Loading Spinner Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Spinner icon class for loading states */
+.spinner-icon {
+  animation: spin 1s linear infinite !important;
+}
+
+/* Ensure animation continues on all button states */
+button .spinner-icon,
+button:hover .spinner-icon,
+button:active .spinner-icon,
+button:focus .spinner-icon,
+button:disabled .spinner-icon {
+  animation: spin 1s linear infinite !important;
+}
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
   margin-top: 2rem;

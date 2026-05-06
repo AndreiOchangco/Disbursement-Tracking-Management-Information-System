@@ -79,7 +79,6 @@ export default function Disbursements() {
   const searchTimeoutRef = useRef(null)
   
   // CREATE STATES (Accounting Only)
-  const [trackingno, setTrackingNo] = useState('')
   const [payeeData, setPayeeData] = useState({
   name: '',
   address: '',
@@ -88,7 +87,6 @@ export default function Disbursements() {
 });
   const [fundSource, setFundSource] = useState('GF')
   const [tin, setTin] = useState('')
-  const [createdDate, setCreatedDate] = useState(new Date().toISOString().split('T')[0])
   const [status, setStatus] = useState('Pending')
   const [adviceNo, setAdviceNo] = useState('')
   const [adviceDate, setAdviceDate] = useState('')
@@ -158,6 +156,9 @@ export default function Disbursements() {
 
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedDV, setSelectedDV] = useState(null);
+  const [addingDisbursement, setAddingDisbursement] = useState(false);
+  const [updatingDV, setUpdatingDV] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   // Normalize department keys to match backend choices
   const normalizeDept = (d) => {
@@ -268,22 +269,21 @@ export default function Disbursements() {
     return;
     }
 
-    if (!payeeData.name || !trackingno) {
-    toast.error('Please fill in the Payee Name and Tracking Number');
+    if (!payeeData.name) {
+    toast.error('Please fill in the Payee Name');
     return;
   }
 
-    if (!trackingno || !officer || !fundSource || !tin || !createdDate) {
-      toast.error('Please fill required fields: Tracking#, Payee, Fund Source, ID #/TIN, Date')
+    if (!officer || !fundSource || !tin) {
+      toast.error('Please fill required fields: Payee, Fund Source, ID #/TIN')
       return
     }
 
+    setAddingDisbursement(true)
     try {
       const payload = {
-        tracking_no: String(trackingno),
         payee: payeeData,
         office: officer,
-        created_date: createdDate,
         current_step: 2,
         fund_source: fundSource,
         tin,
@@ -291,8 +291,6 @@ export default function Disbursements() {
         office_unit_project: officeUnitProject,
         advice_no: adviceNo || null,
         advice_date: adviceDate || null,
-        transaction_no: transactionNo || null,
-        transaction_date: transactionDate || null,
         payments: [
           {
             mop: "CASH",
@@ -339,7 +337,6 @@ export default function Disbursements() {
       }
 
       // Reset form states
-      setTrackingNo('')
       setStatus('Pending')
       setPayeeData({ name: '', address: '', email: '', phone_no: '' });
       setFundSource('GF')
@@ -350,7 +347,6 @@ export default function Disbursements() {
       setAdviceDate('')
       setTransactionNo('')
       setTransactionDate('')
-      setCreatedDate(new Date().toISOString().split('T')[0])
       
       setParticularDescription('')
       setParticularJevNo('')
@@ -361,6 +357,8 @@ export default function Disbursements() {
     } catch (err) {
       console.error('Create failed', err)
       toast.error(err?.message || 'Failed to create disbursement')
+    } finally {
+      setAddingDisbursement(false)
     }
   }
 
@@ -376,30 +374,39 @@ export default function Disbursements() {
       cancelButtonColor: '#6b7280',
       background: '#F0F4FF',
       color: '#1f2937',
+      preConfirm: async () => {
+        Swal.fire({
+          title: 'Processing...',
+          text: 'Approving disbursement voucher',
+          iconHtml: '<ion-icon name="refresh-circle-outline" class="spinner-icon" style="font-size: 2rem;"></ion-icon>',
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          background: '#F0F4FF',
+          color: '#1f2937',
+        })
+        try {
+          await apiRequest(`/dv/${item.id}/approve/`, 'POST')
+          await Swal.fire({
+            title: 'Success!',
+            text: 'Disbursement approved successfully.',
+            icon: 'success',
+            confirmButtonColor: '#0052CC',
+            background: '#F0F4FF',
+            color: '#1f2937',
+          })
+          await reload()
+        } catch (err) {
+          console.error('Approve failed', err)
+          await Swal.fire({
+            title: 'Error!',
+            text: err?.message || 'Approve failed',
+            icon: 'error',
+            confirmButtonColor: '#e11d48',
+          })
+        }
+      }
     })
-    
-    if (!result.isConfirmed) return
-    
-    try {
-      await apiRequest(`/dv/${item.id}/approve/`, 'POST')
-      await Swal.fire({
-        title: 'Success!',
-        text: 'Disbursement approved successfully.',
-        icon: 'success',
-        confirmButtonColor: '#0052CC',
-        background: '#F0F4FF',
-        color: '#1f2937',
-      })
-      await reload()
-    } catch (err) {
-      console.error('Approve failed', err)
-      await Swal.fire({
-        title: 'Error!',
-        text: err?.message || 'Approve failed',
-        icon: 'error',
-        confirmButtonColor: '#e11d48',
-      })
-    }
   }
 
   const rejectItem = async (item) => {
@@ -416,61 +423,92 @@ export default function Disbursements() {
       cancelButtonColor: '#6b7280',
       background: '#F0F4FF',
       color: '#1f2937',
+      preConfirm: async (remarks) => {
+        if (!remarks?.trim()) {
+          Swal.showValidationMessage('Rejection remarks are required')
+          return false
+        }
+        
+        Swal.fire({
+          title: 'Processing...',
+          text: 'Rejecting disbursement voucher',
+          iconHtml: '<ion-icon name="refresh-circle-outline" class="spinner-icon" style="font-size: 2rem;"></ion-icon>',
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          background: '#F0F4FF',
+          color: '#1f2937',
+        })
+        
+        try {
+          await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: remarks || 'No remarks provided.' })
+          await Swal.fire({
+            title: 'Rejected!',
+            text: 'Disbursement rejected successfully.',
+            icon: 'success',
+            confirmButtonColor: '#0052CC',
+          })
+          if(showViewModal) setShowViewModal(false)
+          await reload()
+        } catch (err) {
+          console.error('Reject failed', err)
+          await Swal.fire({
+            title: 'Error!',
+            text: err?.message || 'Reject failed',
+            icon: 'error',
+            confirmButtonColor: '#e11d48',
+          })
+        }
+      }
     })
-    
-    if (!result.isConfirmed) return
-    if (!result.value?.trim()) {
-      await Swal.fire({
-        title: 'Required!',
-        text: 'Rejection remarks are required',
-        icon: 'warning',
-        confirmButtonColor: '#f97316',
-      })
-      return
-    }
-    
-    try {
-      await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: result.value || 'No remarks provided.' })
-      await Swal.fire({
-        title: 'Rejected!',
-        text: 'Disbursement rejected successfully.',
-        icon: 'success',
-        confirmButtonColor: '#0052CC',
-      })
-      if(showViewModal) setShowViewModal(false)
-      await reload()
-    } catch (err) {
-      console.error('Reject failed', err)
-      await Swal.fire({
-        title: 'Error!',
-        text: err?.message || 'Reject failed',
-        icon: 'error',
-        confirmButtonColor: '#e11d48',
-      })
-    }
   }
 
   const handleArchive = async (d) => {
-  const result = await Swal.fire({
-    title: 'Archive disbursement?',
-    text: 'Please enter a reason for archiving.',
-    input: 'text',
-    inputPlaceholder: 'Enter reason...',
-    showCancelButton: true,
-    confirmButtonText: 'Archive',
-    inputValidator: (value) => !value && 'Reason is required'
-  });
-
-  if (!result.isConfirmed) return;
-
-  try {
-    await apiRequest(`/dv/${d.id}/archive/`, 'POST', { reason: result.value });
-    await Swal.fire({ icon: 'success', title: 'Archived!' });
-    await reload();
-  } catch (e) {
-    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to archive.' });
-  }
-};
+    const result = await Swal.fire({
+      title: 'Archive disbursement?',
+      text: 'Please enter a reason for archiving.',
+      input: 'text',
+      inputPlaceholder: 'Enter reason...',
+      showCancelButton: true,
+      confirmButtonText: 'Archive',
+      background: '#F0F4FF',
+      color: '#1f2937',
+      inputValidator: (value) => !value && 'Reason is required',
+      preConfirm: async (reason) => {
+        if (!reason) return false
+        
+        Swal.fire({
+          title: 'Processing...',
+          text: 'Archiving disbursement voucher',
+          iconHtml: '<ion-icon name="refresh-circle-outline" class="spinner-icon" style="font-size: 2rem;"></ion-icon>',
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          background: '#F0F4FF',
+          color: '#1f2937',
+        })
+        
+        try {
+          await apiRequest(`/dv/${d.id}/archive/`, 'POST', { reason: reason })
+          await Swal.fire({ 
+            icon: 'success', 
+            title: 'Archived!',
+            background: '#F0F4FF',
+            color: '#1f2937',
+          })
+          await reload()
+        } catch (e) {
+          Swal.fire({ 
+            icon: 'error', 
+            title: 'Error', 
+            text: 'Failed to archive.',
+            background: '#F0F4FF',
+            color: '#1f2937',
+          })
+        }
+      }
+    })
+  };
 
   const isActionable = (d) => {
     const statusLower = String(d.status || '').toLowerCase()
@@ -560,6 +598,7 @@ export default function Disbursements() {
       return;
     }
     
+    setSendingEmail(true)
     try {
       const payeeName = selectedDV.payee?.name || 'Payee';
       const trackingNo = selectedDV.tracking_no || 'N/A';
@@ -591,6 +630,8 @@ export default function Disbursements() {
     } catch (error) {
       console.error('Failed to send email:', error);
       toast.error('Failed to send email: ' + (error?.message || 'Unknown error'));
+    } finally {
+      setSendingEmail(false)
     }
   };
 
@@ -642,6 +683,7 @@ export default function Disbursements() {
     e.preventDefault();
     if (!canSave) return;
 
+    setUpdatingDV(true)
     try {
       const payload = {
         tracking_no: editTrackingNo,
@@ -697,6 +739,8 @@ export default function Disbursements() {
     } catch (err) {
       console.error("Submission error:", err);
       toast.error(err?.message || 'Failed to update the Disbursement Voucher');
+    } finally {
+      setUpdatingDV(false)
     }
   };
   
@@ -764,10 +808,6 @@ export default function Disbursements() {
               <h4 className="section-title"><ion-icon name="calculator-outline"></ion-icon> Accounting Information</h4>
               <div className="form-grid form-grid--split noselect">
                 <label>
-                  <span>Tracking Number<span style={{ color: 'red' }}>*</span></span>
-                  <input type="number" value={trackingno} onChange={(e) => setTrackingNo(e.target.value)} placeholder="Enter tracking number" />
-                </label>
-                <label>
                   <span>Fund Source<span style={{ color: 'red' }}>*</span></span>
                   <select value={fundSource} onChange={(e) => setFundSource(e.target.value)}>
                     <option value="GF">GF</option>
@@ -788,18 +828,6 @@ export default function Disbursements() {
                 <label>
                   <span>Advice Date</span>
                   <input type="date" value={adviceDate} onChange={(e) => setAdviceDate(e.target.value)} />
-                </label>
-                <label>
-                  <span>Transaction No</span>
-                  <input type="text" value={transactionNo} onChange={(e) => setTransactionNo(e.target.value)} placeholder="Enter Transaction No" />
-                </label>
-                <label>
-                  <span>Transaction Date</span>
-                  <input type="date" value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} />
-                </label>
-                <label>
-                  <span>Request Date</span>
-                  <input type="date" value={createdDate} readOnly disabled onChange={(e) => setCreatedDate(e.target.value)} />
                 </label>
                 <label>
                   <span>Created By</span>
@@ -920,9 +948,18 @@ export default function Disbursements() {
 
               {/* --- MODAL FOOTER --- */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #eee' }}>
-                <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
-                  <ion-icon name="add-circle-outline"></ion-icon>
-                  Submit DV
+                <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1" disabled={addingDisbursement}>
+                  {addingDisbursement ? (
+                    <>
+                      <ion-icon name="refresh-circle-outline" className="spinner-icon"/>
+                      Creating DV...
+                    </>
+                  ) : (
+                    <>
+                      <ion-icon name="add-circle-outline"></ion-icon>
+                      Submit DV
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -1181,7 +1218,15 @@ export default function Disbursements() {
               <div className="form-grid form-grid--split noselect">
                 <label>
                   <span>Tracking Number</span>
-                  <input type="text" value={editTrackingNo} onChange={(e) => setEditTrackingNo(e.target.value)} disabled={!canEditAccounting} />
+                  <input type="text" value={editTrackingNo} onChange={(e) => setEditTrackingNo(e.target.value)} disabled />
+                </label>
+                <label>
+                  <span>Transaction No</span>
+                  <input type="text" value={editTransactionNo} onChange={(e) => setEditTransactionNo(e.target.value)} disabled />
+                </label>
+                <label>
+                  <span>Transaction Date</span>
+                  <input type="date" value={editCreatedDate} onChange={(e) => setEditCreatedDate(e.target.value)} disabled />
                 </label>
                 <label>
                   <span>Fund Source</span>
@@ -1199,11 +1244,11 @@ export default function Disbursements() {
                 </label>
                 <label>
                   <span>DV Number</span>
-                  <input type="text" value={editDVNo} onChange={(e) => setEditDVNo(e.target.value)} disabled={!canEditTreasurer} />
+                  <input type="text" value={editDVNo} onChange={(e) => setEditDVNo(e.target.value)} disabled />
                 </label>
                 <label>
                   <span>DV Date</span>
-                  <input type="date" value={editDVDate} onChange={(e) => setEditDVDate(e.target.value)} disabled={!canEditTreasurer} />
+                  <input type="date" value={editDVDate} onChange={(e) => setEditDVDate(e.target.value)} disabled />
                 </label>
                 <label>
                   <span>Advice No</span>
@@ -1243,14 +1288,6 @@ export default function Disbursements() {
               {/* --- TREASURER INFORMATION --- */}
               <h4 className="section-title" style={{ marginTop: '2.5rem' }}><ion-icon name="cash-outline"></ion-icon> Treasurer Information</h4>
               <div className="form-grid form-grid--split noselect">
-                <label>
-                  <span>Transaction No</span>
-                  <input type="text" value={editTransactionNo} onChange={(e) => setEditTransactionNo(e.target.value)} disabled={!canEditAccounting} />
-                </label>
-                <label>
-                  <span>Transaction Date</span>
-                  <input type="date" value={editCreatedDate} onChange={(e) => setEditCreatedDate(e.target.value)} disabled={!canEditAccounting} />
-                </label>
                 <label>
                   <span>Mode of Payment</span>
                   <select value={editModeOfPayment} onChange={(e) => setEditModeOfPayment(e.target.value)} disabled={!canEditTreasurer}>
@@ -1466,22 +1503,50 @@ export default function Disbursements() {
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #eee', gap: '10px' }}>
                   {canEditAccounting ? (
                     <>
-                      <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
-                        <ion-icon name="send-outline"></ion-icon> Save & Resubmit DV
+                      <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1" disabled={updatingDV}>
+                        {updatingDV ? (
+                          <>
+                            <ion-icon name="refresh-circle-outline" className="spinner-icon"></ion-icon>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <ion-icon name="send-outline"></ion-icon> Save & Resubmit DV
+                          </>
+                        )}
                       </button>
 
                       <button
                         type="button"
                         onClick={sendRejectedDVEmail}
                         className="btn-danger py-0.5 px-1 flex items-center gap-1"
+                        disabled={sendingEmail}
                       >
-                        <ion-icon name="mail-outline"></ion-icon> Send Rejection Email
+                        {sendingEmail ? (
+                          <>
+                            <ion-icon name="refresh-circle-outline" className="spinner-icon"></ion-icon>
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <ion-icon name="mail-outline"></ion-icon> Send Rejection Email
+                          </>
+                        )}
                       </button>
                     </>
                   ) : (
                     <>
-                      <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1">
-                        <ion-icon name="checkmark-circle"></ion-icon> Submit & Approve
+                      <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1" disabled={updatingDV}>
+                        {updatingDV ? (
+                          <>
+                            <ion-icon name="refresh-circle-outline" className="spinner-icon"/>
+                            Approving...
+                          </>
+                        ) : (
+                          <>
+                            <ion-icon name="checkmark-circle"></ion-icon> Submit & Approve
+                          </>
+                        )}
                       </button>
                     </>
                   )}

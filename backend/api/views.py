@@ -96,10 +96,6 @@ def send_dv_email(dv, type='update', remarks=None):
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
-def generate_tracking_number():
-    timestamp = datetime.now().strftime("%y%m%d%H%M%S")
-    random_part = random.randint(1000, 9999)
-    return f"{timestamp}{random_part}"
 
 DEPT_STEP = {
     'accounting': 1,

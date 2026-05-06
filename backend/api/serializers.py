@@ -132,11 +132,19 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = DV
         fields = [
-            'dv_no', 'dv_date', 'tracking_no', 'transaction_no', 
-            'transaction_date', 'office_unit_project', 'position_office', 'cafoa_no', 
-            'created_date', 'advice_no', 'advice_date',
-            'responsibility_center', 'fund_source', 'tin',
-            'payee','payments', 'particulars', 'journal_entries'
+            'office_unit_project', 
+            'position_office', 
+            'cafoa_no', 
+            'created_date', 
+            'advice_no', 
+            'advice_date',
+            'responsibility_center', 
+            'fund_source', 
+            'tin',
+            'payee',
+            'payments', 
+            'particulars', 
+            'journal_entries'
         ]
 
     def create(self, validated_data):
@@ -151,6 +159,7 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
         for p in payments_data:
             DVPayment.objects.create(dv=dv, **p)
 
+        # Handle Payee
         if payee_data:
             Payee.objects.create(dv=dv, **payee_data)
             
@@ -178,14 +187,17 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         
+        # Handle Payee
         if payee_data is not None:
             Payee.objects.update_or_create(dv=instance, defaults=payee_data)
 
+        # Handle Payments
         if payments_data is not None:
             instance.payments.all().delete()
             for p in payments_data:
                 DVPayment.objects.create(dv=instance, **p)
 
+        # Handle Particulars
         if particulars_data is not None:
             instance.particulars.all().delete()
             for part in particulars_data:
@@ -195,6 +207,7 @@ class DVCreateUpdateSerializer(serializers.ModelSerializer):
                 for val in category_values_data:
                     DVParticularValue.objects.create(particulars=particular_obj, **val)
 
+        # Handle Journal Entries
         if je_data is not None:
             instance.journal_entries.all().delete()
             for je in je_data:
