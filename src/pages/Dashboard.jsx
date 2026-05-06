@@ -135,8 +135,8 @@ export default function Dashboard() {
         label: 'Obligated Amount',
         data: [forecast.total_15th, forecast.total_31st],
         backgroundColor: [
-          '#FFD700', // Yellow
-          '#0052CC', // Blue
+          'rgba(255, 215, 0, 0.7)', // Yellow
+          'rgba(0, 82, 204, 0.7)', // Blue
         ],
         borderWidth: 1,
       },
@@ -226,8 +226,8 @@ export default function Dashboard() {
 
   // 📊 FUND SOURCE DISTRIBUTION (VERTICAL BAR)
   const fundColors = [
-    'rgba(0, 82, 204, 0.8)', 'rgba(5, 150, 105, 0.8)', 'rgba(249, 115, 22, 0.8)',
-    'rgba(242, 63, 56, 0.8)', 'rgba(139, 92, 246, 0.8)', 'rgba(234, 179, 8, 0.8)'
+    'rgba(0, 82, 204, 0.7)', 'rgba(5, 150, 105, 0.7)', 'rgba(249, 115, 22, 0.7)',
+    'rgba(242, 63, 56, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(234, 179, 8, 0.7)'
   ]
   const fundData = {
     labels: fundDistribution.map(f => f.fund_source || 'Unspecified'),

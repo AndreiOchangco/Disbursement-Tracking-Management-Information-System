@@ -20,12 +20,16 @@ def generate_dv_email_template(
     }
 
     show_remarks = type not in ('completed', 'update', 'rejected')
+    image_url = 'https://i.ibb.co/7t0tzVXg/Muni-Luna.png'
 
     html = f"""
     <div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
       <div style="max-width: 600px; margin: auto; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
         
         <div style="background: #2c5dff; color: #ffffff; padding: 20px; text-align: center;">
+          <div style="margin-bottom: 15px;">
+            <img src="{image_url}" alt="Muni Luna" style="max-width: 80px; height: auto;">
+          </div>
           <h2 style="margin: 0;">{title_map.get(type)}</h2>
         </div>
 

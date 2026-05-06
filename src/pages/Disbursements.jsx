@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { apiRequest, getCurrentUser } from '../api'
 import ReactModal from '../components/ReactModal'
+import { generateDVEmailTemplate } from '../components/EmailTemplate'
 import Swal from 'sweetalert2'
 
 const statusOptions = ['Pending', 'Approved', 'Rejected']
@@ -19,6 +20,43 @@ const formatDateMMDDYYYY = (date) => {
       year: 'numeric'
    });
 }
+
+const sendRejectedDVEmailAuto = async (dv, options = {}) => {
+   const { type = 'rejected', remarks = null } = options;
+   
+   try {
+      if (!dv.payee?.email) {
+         console.warn('No email found for payee');
+         return;
+      }
+
+      const payeeName = dv.payee?.name || 'Payee';
+      const trackingNo = dv.tracking_no || 'N/A';
+      const dvNo = dv.dv_no || 'N/A';
+      const createdDate = dv.created_date ? formatDateMMDDYYYY(dv.created_date) : 'N/A';
+      
+      const htmlContent = generateDVEmailTemplate(
+         type,
+         payeeName,
+         trackingNo,
+         dvNo,
+         createdDate,
+         remarks
+      );
+      
+      // Send email via backend using correct parameter names
+      await apiRequest('/send-email/', 'POST', {
+         to: payeeName,
+         subject: `DV ${type.toUpperCase()} (Tracking #${trackingNo})`,
+         html: htmlContent
+      });
+      
+      console.log('Email sent successfully');
+   } catch (error) {
+      console.error('Failed to send email:', error);
+      // Don't throw, just log - this shouldn't block the main workflow
+   }
+};
 
 export default function Disbursements() {
   const navigate = useNavigate()
@@ -511,6 +549,49 @@ export default function Disbursements() {
 
   const handleRemoveEditJeRow = (index) => {
     setEditJeRows(editJeRows.filter((_, i) => i !== index));
+  };
+
+  /**
+   * Send rejection email for selected DV
+   */
+  const sendRejectedDVEmail = async () => {
+    if (!selectedDV || !selectedDV.payee?.email) {
+      toast.error('Payee email not found');
+      return;
+    }
+    
+    try {
+      const payeeName = selectedDV.payee?.name || 'Payee';
+      const trackingNo = selectedDV.tracking_no || 'N/A';
+      const dvNo = selectedDV.dv_no || 'N/A';
+      const createdDate = selectedDV.created_date ? formatDateMMDDYYYY(selectedDV.created_date) : 'N/A';
+      
+      // Get remarks from workflow history if available
+      const lastRemark = selectedDV.workflow_steps?.length > 0 
+         ? selectedDV.workflow_steps[selectedDV.workflow_steps.length - 1]?.remarks 
+         : null;
+      
+      const htmlContent = generateDVEmailTemplate(
+         'rejected',
+         payeeName,
+         trackingNo,
+         dvNo,
+         createdDate,
+         lastRemark
+      );
+      
+      // Send email via backend using correct parameter names
+      await apiRequest('/send-email/', 'POST', {
+         to: selectedDV.payee.email,
+         subject: `DV REJECTED (Tracking #${trackingNo})`,
+         html: htmlContent
+      });
+      
+      toast.success('Rejection email sent successfully');
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      toast.error('Failed to send email: ' + (error?.message || 'Unknown error'));
+    }
   };
 
   const handleView = (dv) => {

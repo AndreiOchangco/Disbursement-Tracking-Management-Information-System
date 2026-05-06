@@ -1669,6 +1669,8 @@ def wkhtmltopdf_health(request):
     }, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def send_email(request):
     subject = request.data.get('subject')
     to_email = request.data.get('to')
@@ -1676,7 +1678,7 @@ def send_email(request):
     
     # Validation
     if not all([subject, to_email, html_content]):
-        return Response({"error": "Missing fields"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Missing fields: subject, to, html"}, status=status.HTTP_400_BAD_REQUEST)
 
     # Create plain text version (good practice for email clients that don't render HTML)
     text_content = strip_tags(html_content) 
@@ -1691,6 +1693,6 @@ def send_email(request):
         msg.attach_alternative(html_content, "text/html")
         msg.send()
         
-        return Response({"message": "Email sent!"}, status=status.HTTP_200_OK)
+        return Response({"message": "Email sent successfully!"}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
