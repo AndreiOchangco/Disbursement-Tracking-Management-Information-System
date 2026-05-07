@@ -23,3 +23,5 @@ django-filter>=23.5
 pdfkit>=1.0.0
 
 python-dotenv
+
+num2words
