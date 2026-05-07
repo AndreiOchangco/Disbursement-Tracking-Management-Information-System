@@ -5,16 +5,13 @@ from django.db.models import Q, Sum
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
-from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from utils.email import generate_dv_email_template
-from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVReport, Payee, DVParticularValue
-from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DVWorkflowSerializer, DVArchivedSerializer
+from .models import User, DV, DVArchived, DVWorkflow, DVReport, DVParticularValue
+from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer
 from .authentication import JWTAuthentication
 from django.contrib.auth import authenticate as django_authenticate
-from django.contrib.auth.models import User as DjangoUser
-from django.contrib.auth import login as django_login
 from django.http import HttpResponse
 from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
@@ -23,7 +20,6 @@ import os
 from pathlib import Path
 import base64
 from num2words import num2words
-import random
 
 def amount_to_words(amount):
     try:
@@ -106,10 +102,10 @@ DEPT_STEP = {
 }
 
 STEP_DEPT_LABEL = {
-    1: 'Accounting',
-    2: 'Budget',
-    3: 'Treasurer',
-    4: 'BAC/GSO',
+    1: 'Accounting Office',
+    2: 'Budget Office',
+    3: 'Treasury Office',
+    4: 'BAC/GSO Office',
     5: "Mayor's Office",
 }
 

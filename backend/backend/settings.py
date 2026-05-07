@@ -28,7 +28,11 @@ SECRET_KEY = 'django-insecure-h!_tsss=8&u#qx&iyk3f56&na)z87mot@bw(66m&x_g1fv5rjo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '192.168.1.3',
+]
 
 
 # Application definition
@@ -56,8 +60,8 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -147,10 +151,23 @@ CORS_ALLOW_HEADERS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
     "http://localhost:5173",  
-    "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
+    'http://192.168.1.3:5173',
+]
+
+# ===== COOKIE / SESSION SETTINGS =====
+
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "None"
+
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://192.168.1.3:5173",
 ]
 
 JWT_REFRESH_EXP_DAYS = 5

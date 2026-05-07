@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { setCurrentUser, apiRequest, getCurrentUser } from '../api'
+import { setCurrentUser, apiRequest, getCurrentUser, BASE_URL } from '../api'
 import logo from '/MuniLuna.png'
 
 export default function Login() {
@@ -18,28 +18,26 @@ export default function Login() {
   const navigate = useNavigate()
 
   const onSubmit = async (e) => {
-  e.preventDefault()
-  setLoading(true)
-  try {
-    const res = await fetch('http://localhost:8000/api/auth/login/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-      credentials: 'include', // ✅ Receives cookies from backend
-    })
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error)
+    try {
+      const data = await apiRequest('/auth/login/', 'POST', {
+        email,
+        password,
+      })
 
-    // Only save profile info for the UI (name, avatar, etc.)
-    setCurrentUser(data.user) 
-    navigate('/dashboard')
-  } catch (err) {
-    setError(err.message)
-  } finally {
-    setLoading(false)
+      if (!data) throw new Error('Login failed')
+
+      setCurrentUser(data.user)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message || 'Login failed')
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   const handleFieldTouched = (field) => {
     setTouched({ ...touched, [field]: true })
@@ -164,10 +162,7 @@ export default function Login() {
                 }}
                 value={password}
                 onChange={handlePasswordChange}
-                onKeyDown={handlePasswordKeyDown}
-                onKeyUp={(e) => setCapsLockOn(e.getModifierState('CapsLock'))}
-                placeholder="Min. 6 characters"
-                aria-label="Password"
+                placeholder="Enter your password"
                 aria-required="true"
               />
               <button

@@ -34,7 +34,7 @@ function Log($tag, $msg, $color) {
 # ================================
 # SAFE RESTART CHECK
 # ================================
-function Can-Restart {
+function CanRestart {
     $now = [DateTimeOffset]::Now.ToUnixTimeMilliseconds()
 
     # Remove old restart timestamps
@@ -54,7 +54,7 @@ function Can-Restart {
 # Recursively kills a process and its children (closes cmd windows).
 # Uses WMI to find child processes by ParentProcessId and kills them depth-first.
 # ================================
-function Kill-ProcessTree {
+function KillProcessTree {
     param([int]$processId)
 
     if (-not $processId) { return }
@@ -66,7 +66,7 @@ function Kill-ProcessTree {
     }
 
     foreach ($child in $children) {
-        Kill-ProcessTree -processId $child.ProcessId
+        KillProcessTree -processId $child.ProcessId
     }
 
     try {
@@ -83,7 +83,7 @@ function Kill-ProcessTree {
 # ================================
 function Start-Django {
     if ($djangoProcess -and !$djangoProcess.HasExited) {
-        Kill-ProcessTree -pid $djangoProcess.Id
+        KillProcessTree -processId $djangoProcess.Id
         Log "DJANGO" "Restarting..." Yellow
     }
 
@@ -102,7 +102,7 @@ function Start-Django {
 # ================================
 function Start-Frontend {
     if ($frontendProcess -and !$frontendProcess.HasExited) {
-        Kill-ProcessTree -pid $frontendProcess.Id
+        KillProcessTree -processId $frontendProcess.Id
         Log "VITE" "Restarting..." Yellow
     }
 
@@ -119,7 +119,7 @@ function Start-Frontend {
 # ================================ 
 # LOG STREAMING
 # ================================
-function Stream-Logs {
+function StreamLogs {
     Start-Job {
         while (!(Test-Path "django.log")) { Start-Sleep 1 }
         Get-Content "django.out.log","django.err.log" -Wait | ForEach-Object {
@@ -178,14 +178,14 @@ function Watch-Debounced($path, $extensions, $callback, [ref]$lastTriggerRef) {
 # ================================
 # CRASH MONITOR
 # ================================
-function Monitor-Processes {
+function MonitorProcesses {
     while ($true) {
 
         # Django crash detection
         if ($djangoProcess -and $djangoProcess.HasExited) {
             Log "DJANGO" "Crashed!" Red
 
-            if (Can-Restart) {
+            if (CanRestart) {
                 Start-Sleep -Seconds 2
                 Start-Django
             }
@@ -209,11 +209,11 @@ Log "SYSTEM" "Starting environment..." White
 
 Start-Django
 Start-Frontend
-Stream-Logs
+StreamLogs
 
 Watch-Debounced $DJANGO_PATH $DJANGO_EXTENSIONS { Start-Django } ([ref]$lastDjangoTrigger)
 
-Start-Job { Monitor-Processes } | Out-Null
+Start-Job { MonitorProcesses } | Out-Null
 
 # ================================
 # WAIT FOR FRONTEND
