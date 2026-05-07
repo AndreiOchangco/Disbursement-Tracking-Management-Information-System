@@ -9,6 +9,7 @@ const API_FALLBACKS = [
   import.meta.env.VITE_LOCAL_API_URL,
   import.meta.env.VITE_NETWORK_API_URL,
   'http://localhost:8000/api',
+  'http://10.0.0.39:5173/api',
   'http://192.168.1.3:8000/api',
 ].filter(Boolean)
 

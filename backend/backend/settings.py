@@ -31,6 +31,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
+    '10.0.0.39',
     '192.168.1.3',
 ]
 
@@ -153,6 +154,7 @@ CORS_ALLOW_HEADERS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  
     "http://127.0.0.1:5173",
+    'http://10.0.0.39:5173',
     'http://192.168.1.3:5173',
 ]
 
@@ -167,6 +169,7 @@ CSRF_COOKIE_SECURE = False
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    'http://10.0.0.39:5173',
     "http://192.168.1.3:5173",
 ]
 
