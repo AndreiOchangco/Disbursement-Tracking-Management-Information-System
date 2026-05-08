@@ -633,7 +633,6 @@ button {
   border: 1px solid var(--border-color);
   outline: none;
   border-color: var(--accent-color);
-  background: #fffbeb;
 }
 
 .text-center {
@@ -676,8 +675,6 @@ button {
 .form-grid select:focus {
   outline: none;
   border-color: #2c5dff;
-  background: #fffbeb;
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
 }
 
 .form-grid input::placeholder {
@@ -879,8 +876,6 @@ button {
 .search:focus {
   outline: none;
   border-color: var(--accent-color);
-  background: #fffbeb;
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
 }
 
 .search::placeholder {
@@ -1750,9 +1745,6 @@ th {
 .search:focus {
   outline: none;
   border-color: var(--accent-color);
-  background: #fffbeb;
-  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
-  transform: translateY(-2px);
 }
 
 /* Smooth transitions for interactive elements */
