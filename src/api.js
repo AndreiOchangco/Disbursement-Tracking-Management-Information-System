@@ -4,7 +4,7 @@
 export const BASE_URL = 'http://localhost:8000/api'
 export const API_ORIGIN = new URL(BASE_URL).origin
 
-// ===== API URLS =====
+// ===== API URLS for Remote =====
 const API_FALLBACKS = [
   import.meta.env.VITE_LOCAL_API_URL,
   import.meta.env.VITE_NETWORK_API_URL,
