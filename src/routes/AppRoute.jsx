@@ -21,18 +21,6 @@ function AppLayout() {
     logout()
   }
 
-  /*const openDjangoAdmin = async () => {
-    try {
-      const res = await ssoLogin()
-      const base = API_ORIGIN
-      const next = res?.next || '/admin/'
-      window.open(base + next, '_blank')
-    } catch (err) {
-      console.error('SSO failed', err)
-      alert('Failed to open Django admin. Check console for details.')
-    }
-  }*/
-
   const isActive = (path) => location.pathname === path
   const isAdmin = currentUser?.department === 'admin'
   const isAccountant = currentUser?.department === 'accounting'
