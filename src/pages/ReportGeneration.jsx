@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiRequest, BASE_URL, getCurrentUser } from '../api'
 import ReactModal from '../components/ReactModal'
+import PdfViewer from '../components/PdfViewer'
 import {toast} from 'react-toastify'
 
 export default function ReportGeneration() {
@@ -125,7 +126,7 @@ export default function ReportGeneration() {
           <div style={{ display: 'flex', gap: '0.75rem' }}>
 
             {/* ===== MODAL ===== */}
-            <ReactModal
+            <PdfViewer
               isOpen={isOpen}
               onClose={closeModal}
               title="PDF Preview"
@@ -171,7 +172,7 @@ export default function ReportGeneration() {
                   }}
                 />
               </div>
-            </ReactModal>
+            </PdfViewer>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginLeft: '1rem' }}>
               <input placeholder="Filter DV#" value={filterDvNo} className="search search--wide" onChange={e => setFilterDvNo(e.target.value)} />
               <input type="date" value={filterFrom} className="search search--wide" onChange={e => setFilterFrom(e.target.value)} />

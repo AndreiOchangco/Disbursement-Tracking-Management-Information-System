@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVParticularValue, DVReport, Payee
+from .models import DeptHead, User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVParticularValue, DVReport, Payee
 
 
 STEP_LABELS = {
@@ -16,6 +16,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'full_name', 'email', 'department', 'status']
+
+class DeptHeadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeptHead
+        fields = ['id', 'fullname', 'department']
+    
 
 class UserCreateUpdateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)

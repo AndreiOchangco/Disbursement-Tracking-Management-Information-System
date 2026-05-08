@@ -2,10 +2,22 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react'
 import { apiRequest, getCurrentUser } from '../api'
-import {toast} from 'react-toastify'
+import { toast } from 'react-toastify'
+
+// Map database choices to readable labels
+const deptLabels = {
+  admin: 'System Administrator',
+  accounting: 'Accounting',
+  budget: 'Budget',
+  treasurer: 'Treasurer',
+  bac_gso: 'BAC/GSO',
+  municipal_admin: 'Municipal Administrator',
+  mayors_office: "Mayor's Office",
+}
 
 export default function UserManagement() {
   const [users, setUsers] = useState([])
+  const [deptHeads, setDeptHeads] = useState([]) // State for department heads
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
@@ -34,12 +46,13 @@ export default function UserManagement() {
     { value: 'budget', label: 'Budget Officer', icon: 'cash' },
     { value: 'treasurer', label: 'Treasurer', icon: 'business' },
     { value: 'bac_gso', label: 'BAC/GSO Officer', icon: 'clipboard' },
-    { value: 'mayors_office', label: 'Mayor\'s Secretary', icon: 'business' },
+    { value: 'mayors_office', label: "Mayor's Secretary", icon: 'business' },
   ]
 
-  // Load users
+  // Load users and department heads
   useEffect(() => {
     loadUsers()
+    loadDeptHeads()
   }, [])
 
   const loadUsers = async () => {
@@ -49,14 +62,30 @@ export default function UserManagement() {
       if (data) {
         setUsers(data)
         calculateStats(data)
-      // Update stats labels based on admin department
-      const adminCount = data.filter(u => u.department === 'admin').length
-      setStats(prev => ({...prev, adminUsers: adminCount}))
+        // Update stats labels based on admin department
+        const adminCount = data.filter(u => u.department === 'admin').length
+        setStats(prev => ({ ...prev, adminUsers: adminCount }))
       }
     } catch (err) {
       console.error('Failed to load users:', err.message, err)
       const errorMsg = err.message?.includes('403') ? 'You do not have permission to view users. Only System Administrators can access this.' : 'Error loading users. Please try again.'
       toast.error(errorMsg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fetch Department Heads
+  const loadDeptHeads = async () => {
+    try {
+      setLoading(true)
+      const data = await apiRequest('/dept-heads/')
+      if (data) {
+        setDeptHeads(data)
+      }
+    } catch (err) {
+      console.error('Failed to load department heads:', err)
+      toast.error('Error loading department heads')
     } finally {
       setLoading(false)
     }
@@ -76,7 +105,7 @@ export default function UserManagement() {
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase()
     let results = showArchived ? users.filter(u => u.status === 'archived') : users.filter(u => u.status !== 'archived')
-    
+
     if (!query) return results
 
     return results.filter((u) =>
@@ -104,7 +133,7 @@ export default function UserManagement() {
       setLoading(true)
       let result
       const submitData = { ...formData }
-      
+
       if (editingUser) {
         // Update user - only include password if it was changed
         if (!submitData.password) {
@@ -200,47 +229,43 @@ export default function UserManagement() {
     }
   }
 
+  // Handle inline change for Department Head Fullname
+  const handleDeptHeadNameChange = (id, newName) => {
+    setDeptHeads(prev =>
+      prev.map(dh => (dh.id === id ? { ...dh, fullname: newName } : dh))
+    )
+  }
+
+  // Update Department Head to DB on click
+  const handleUpdateDeptHead = async (id, fullname) => {
+    if (!fullname.trim()) {
+      toast.error('Full name cannot be empty')
+      return
+    }
+
+    try {
+      setLoading(true)
+      const updatedData = await apiRequest(`/dept-heads/${id}/`, 'PATCH', { fullname })
+      if (updatedData) {
+        setDeptHeads(prev =>
+          prev.map(dh => (dh.id === id ? updatedData : dh))
+        )
+        toast.success('Department Head updated successfully!')
+      }
+    } catch (err) {
+      console.error('Failed to update Department Head:', err)
+      toast.error('Error updating Department Head')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div>
       <div className="page-header">
         <div>
           <h2><ion-icon name="people"></ion-icon> User Management</h2>
           <p>Create, edit, archive and manage system users</p>
-        </div>
-      </div>
-
-      {/* 📊 STATS CARDS */}
-      <div className="stats-grid">
-        <div className="stat-card" style={{ borderColor: '#2c5dff', background: '#f0f7ff' }}>
-          <div className="stat-icon"><ion-icon name="people"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">Total Users</p>
-            <h3 className="stat-value" style={{ color: '#2c5dff' }}>{stats.totalUsers}</h3>
-          </div>
-        </div>
-
-        <div className="stat-card" style={{ borderColor: '#059669', background: '#f0fdf4' }}>
-          <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">Active Users</p>
-            <h3 className="stat-value" style={{ color: '#059669' }}>{stats.activeUsers}</h3>
-          </div>
-        </div>
-
-        <div className="stat-card" style={{ borderColor: '#fbbf24', background: '#fffbeb' }}>
-          <div className="stat-icon"><ion-icon name="crown"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">System Administrators</p>
-            <h3 className="stat-value" style={{ color: '#d97706' }}>{stats.adminUsers}</h3>
-          </div>
-        </div>
-
-        <div className="stat-card" style={{ borderColor: '#2563eb', background: '#eff6ff' }}>
-          <div className="stat-icon"><ion-icon name="clipboard"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">Staff Members</p>
-            <h3 className="stat-value" style={{ color: '#2563eb' }}>{stats.staffUsers}</h3>
-          </div>
         </div>
       </div>
 
@@ -320,11 +345,11 @@ export default function UserManagement() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: '500' }}>
                   <input
-                  readOnly
-                  disabled
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                />
+                    readOnly
+                    disabled
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  />
                 </label>
               </div>
             </label>
@@ -340,17 +365,17 @@ export default function UserManagement() {
         </section>
       )}
 
-      {/* 📋 USERS TABLE */}
+      {/* 📋 STAFF USERS TABLE */}
       <section className="panel">
         <div className="table-toolbar">
           <div>
-            <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> User Accounts</h3>
+            <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> Staff Accounts</h3>
             <p style={{ color: '#4b5563', marginTop: '0.3rem' }}>{filtered.length} users found</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             {!showForm && (
-              <button 
-                className="btn-primary" 
+              <button
+                className="btn-primary"
                 onClick={() => setShowForm(true)}
                 style={{ fontSize: '0.9rem', padding: '0.65rem 1rem' }}
               >
@@ -373,7 +398,7 @@ export default function UserManagement() {
           <table>
             <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
               <tr>
-                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}> Full Name</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="id-card"></ion-icon>Full Name</th>
                 <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
                 <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department/Role</th>
                 <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
@@ -381,97 +406,97 @@ export default function UserManagement() {
               </tr>
             </thead>
             <tbody>
-             {filtered
+              {filtered
                 .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                 .map((user) => (
-                <tr 
-                  key={user.id} 
-                  style={{ 
-                    borderBottom: '1px solid #fef3c7', 
-                    transition: 'all 0.3s ease',
-                    opacity: user.status === 'active' ? 1 : 0.7,
-                    background: user.status === 'active' ? 'white' : 'rgba(220, 38, 38, 0.03)',
-                    filter: user.status === 'active' ? 'none' : 'grayscale(20%)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = user.status === 'active' 
-                      ? 'linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%)' 
-                      : 'linear-gradient(90deg, rgba(220, 38, 38, 0.08), rgba(220, 38, 38, 0.05))'
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(251, 191, 36, 0.15)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = user.status === 'active' ? 'white' : 'rgba(220, 38, 38, 0.03)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  <td style={{ fontWeight: '500' }}>{user.full_name}</td>
-                  <td>{user.email}</td>
-                  <td className='table-column-center'>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '0.4rem 0.8rem',
-                      borderRadius: '6px',
-                      fontSize: '0.85rem',
-                      fontWeight: '600',
-                      textTransform: 'capitalize',
-                      background: user.department === 'admin' ? 'rgba(251, 191, 36, 0.2)' : 'rgba(44, 93, 255, 0.1)',
-                      color: user.department === 'admin' ? '#d97706' : '#2c5dff'
-                    }}>
-                      {user.department === 'admin' && <ion-icon name="crown"></ion-icon>}
-                      {departmentChoices.find(d => d.value === user.department)?.label || user.department}
-                    </span>
-                  </td>
-                  <td className='table-column-center'>
-                    <span 
-                      className={`status-badge ${user.status === 'active' ? 'status-approved' : user.status === 'archived' ? 'status-archived' : 'status-rejected'}`}
-                      style={{
-                        display: 'inline-flex',
-                        marginBottom: '-3px',
-                        alignItems: 'center',
-                        background: user.status === 'active' ? 'transparent' : user.status === 'archived' ? 'transparent' : 'transparent',
-                        boxShadow: 'none',
-                        cursor: 'default'
-                      }}
-                    >
-                      <span style={{ fontSize: '1.3rem' }}>{user.status === 'active' ? <ion-icon name="ellipse" style={{color: 'green', fontSize: '1.1rem', border: '2px solid darkgreen', borderRadius: '100%', margin: '0', padding: '0', background: 'green'}}></ion-icon> : user.status === 'archived' ? <ion-icon name="archive"></ion-icon> : <ion-icon name="ellipse" style={{color: 'red', fontSize: '1.1rem', border: '2px solid darkred', borderRadius: '100%', margin: '0', padding: '0', background: 'red'}}></ion-icon>}</span>
-                      {user.status === 'active' ? '' : user.status === 'archived' ? 'Archived' : ''}
-                    </span>
-                  </td>
-                  <td className='table-column-center'>
-                    {!showArchived && (
-                      <>
-                        <button
-                          style={{
-                            fontSize: '0.8rem',
-                            padding: '0.5rem 0.85rem',
-                            marginRight: '0.4rem',
-                            background: user.status === 'active' ? '#fee2e2' : '#d1fae5',
-                            color: user.status === 'active' ? '#991b1b' : '#065f46',
-                            border: `2px solid ${user.status === 'active' ? '#dc2626' : '#10b981'}`,
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            borderRadius: '6px',
-                            transition: 'all 0.3s ease'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-2px)'
-                            e.currentTarget.style.boxShadow = user.status === 'active' 
-                              ? '0 4px 12px rgba(220, 38, 38, 0.3)' 
-                              : '0 4px 12px rgba(16, 185, 129, 0.3)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)'
-                            e.currentTarget.style.boxShadow = 'none'
-                          }}
-                          onClick={() => toggleUserStatus(user)}
-                        >
-                          {user.status === 'active' ? <><ion-icon name="lock-closed"></ion-icon> Deactive</> : <><ion-icon name="lock-open"></ion-icon> Active</>}
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                  <tr
+                    key={user.id}
+                    style={{
+                      borderBottom: '1px solid #fef3c7',
+                      transition: 'all 0.3s ease',
+                      opacity: user.status === 'active' ? 1 : 0.7,
+                      background: user.status === 'active' ? 'white' : 'rgba(220, 38, 38, 0.03)',
+                      filter: user.status === 'active' ? 'none' : 'grayscale(20%)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = user.status === 'active'
+                        ? 'linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%)'
+                        : 'linear-gradient(90deg, rgba(220, 38, 38, 0.08), rgba(220, 38, 38, 0.05))'
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(251, 191, 36, 0.15)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = user.status === 'active' ? 'white' : 'rgba(220, 38, 38, 0.03)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }}
+                  >
+                    <td style={{ fontWeight: '500' }}>{user.full_name}</td>
+                    <td>{user.email}</td>
+                    <td className='table-column-center'>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '0.4rem 0.8rem',
+                        borderRadius: '6px',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        textTransform: 'capitalize',
+                        background: user.department === 'admin' ? 'rgba(251, 191, 36, 0.2)' : 'rgba(44, 93, 255, 0.1)',
+                        color: user.department === 'admin' ? '#d97706' : '#2c5dff'
+                      }}>
+                        {user.department === 'admin' && <ion-icon name="crown"></ion-icon>}
+                        {departmentChoices.find(d => d.value === user.department)?.label || user.department}
+                      </span>
+                    </td>
+                    <td className='table-column-center'>
+                      <span
+                        className={`status-badge ${user.status === 'active' ? 'status-approved' : user.status === 'archived' ? 'status-archived' : 'status-rejected'}`}
+                        style={{
+                          display: 'inline-flex',
+                          marginBottom: '-3px',
+                          alignItems: 'center',
+                          background: user.status === 'active' ? 'transparent' : user.status === 'archived' ? 'transparent' : 'transparent',
+                          boxShadow: 'none',
+                          cursor: 'default'
+                        }}
+                      >
+                        <span style={{ fontSize: '1.3rem' }}>{user.status === 'active' ? <ion-icon name="ellipse" style={{ color: 'green', fontSize: '1.1rem', border: '2px solid darkgreen', borderRadius: '100%', margin: '0', padding: '0', background: 'green' }}></ion-icon> : user.status === 'archived' ? <ion-icon name="archive"></ion-icon> : <ion-icon name="ellipse" style={{ color: 'red', fontSize: '1.1rem', border: '2px solid darkred', borderRadius: '100%', margin: '0', padding: '0', background: 'red' }}></ion-icon>}</span>
+                        {user.status === 'active' ? '' : user.status === 'archived' ? 'Archived' : ''}
+                      </span>
+                    </td>
+                    <td className='table-column-center'>
+                      {!showArchived && (
+                        <>
+                          <button
+                            style={{
+                              fontSize: '0.8rem',
+                              padding: '0.5rem 0.85rem',
+                              marginRight: '0.4rem',
+                              background: user.status === 'active' ? '#fee2e2' : '#d1fae5',
+                              color: user.status === 'active' ? '#991b1b' : '#065f46',
+                              border: `2px solid ${user.status === 'active' ? '#dc2626' : '#10b981'}`,
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              borderRadius: '6px',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-2px)'
+                              e.currentTarget.style.boxShadow = user.status === 'active'
+                                ? '0 4px 12px rgba(220, 38, 38, 0.3)'
+                                : '0 4px 12px rgba(16, 185, 129, 0.3)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)'
+                              e.currentTarget.style.boxShadow = 'none'
+                            }}
+                            onClick={() => toggleUserStatus(user)}
+                          >
+                            {user.status === 'active' ? <><ion-icon name="lock-closed"></ion-icon> Deactive</> : <><ion-icon name="lock-open"></ion-icon> Active</>}
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
           {filtered.length === 0 && (
@@ -529,6 +554,111 @@ export default function UserManagement() {
             </div>
           </div>
         )}
+      </section>
+
+      {/* 📋 DEPARTMENT HEAD ACCOUNTS TABLE */}
+      <section className="panel">
+        <div className="flex py-2" style={{ marginBottom: '1rem' }}>
+          <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> Department Heads</h3>
+        </div>
+
+        <div className="table-wrap">
+          <table>
+            <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
+              <tr>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="id-card"></ion-icon> Full Name</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department/Role</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="settings"></ion-icon> Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {deptHeads.map((dh) => (
+                <tr
+                  key={dh.id}
+                  style={{
+                    borderBottom: '1px solid #fef3c7',
+                    transition: 'all 0.3s ease',
+                    background: 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%)'
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(251, 191, 36, 0.15)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'white'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  <td style={{ padding: '0.75rem 1rem' }}>
+                    <input
+                      type="text"
+                      className="search"
+                      value={dh.fullname}
+                      onChange={(e) => handleDeptHeadNameChange(dh.id, e.target.value)}
+                      style={{
+                        padding: '0.45rem 0.75rem',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        width: '100%',
+                        maxWidth: '280px',
+                        fontSize: '0.9rem',
+                        fontWeight: '500'
+                      }}
+                      placeholder="Enter Department Head Name"
+                    />
+                  </td>
+                  <td className='table-column-center'>
+                    <p style={{
+                      margin: 0,
+                      fontWeight: '600',
+                      color: '#4b5563',
+                      fontSize: '0.9rem'
+                    }}>
+                      {deptLabels[dh.department] || dh.department}
+                    </p>
+                  </td>
+                  <td className='table-column-center'>
+                    <button
+                      onClick={() => handleUpdateDeptHead(dh.id, dh.fullname)}
+                      style={{
+                        fontSize: '0.8rem',
+                        padding: '0.5rem 0.85rem',
+                        background: '#d1fae5',
+                        color: '#065f46',
+                        border: '2px solid #10b981',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        borderRadius: '6px',
+                        transition: 'all 0.3s ease',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
+                    >
+                      <ion-icon name="create-outline"></ion-icon> Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {deptHeads.length === 0 && (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#4b5563' }}>
+                    <p style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}><ion-icon name="person"></ion-icon></p>
+                    <p style={{ margin: 0, fontStyle: 'italic' }}>No department heads found.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   )

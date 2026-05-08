@@ -1,27 +1,48 @@
+// EmailTemplate.jsx
 export const generateDVEmailTemplate = (
   type = 'update',
   name = 'Payee',
   tracking_no = null,
   dv_no = null,
   created_date = null,
-  remarks = null
+  remarks = null,
+  department = ''
 ) => {
   const titleMap = {
-    update: 'Disbursement Voucher Updates',
-    approved: 'Disbursement Voucher Updated',
-    rejected: 'Disbursement Voucher Rejected',
-    completed: 'Disbursement Voucher Approved',
+    update: 'Disbursement Voucher Entry Updates',
+    approved: 'Disbursement Voucher Entry Submitted',
+    rejected: 'Disbursement Voucher Entry Rejected',
+    completed: 'Disbursement Voucher Entry Approved',
   };
+
+  // Humanize raw department names (e.g. 'mayors_office' -> "Mayor's Office", 'accounting' -> "Accounting Department")
+  const formatDepartment = (dept) => {
+    if (!dept) return 'the designated department';
+    const formatted = dept
+      .replace(/[_-]/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    if (formatted.toLowerCase().includes('office') || formatted.toLowerCase().includes('gso')) {
+      return formatted;
+    }
+    return `${formatted} Department`;
+  };
+
+  const deptName = formatDepartment(department);
 
   const messageMap = {
     update: 'Your disbursement voucher has been reviewed and <strong style="color:#2c5dff;">updated</strong>.',
-    rejected: 'Your disbursement voucher has been <strong style="color:#e11d48;">rejected</strong>.',
-    completed: 'Your disbursement voucher has been <strong style="color:#059669;">approved</strong>.',
+    approved: `Your disbursement voucher has been <strong style="color:#2c5dff;">submitted</strong> and is currently under review.`,
+    rejected: `Your disbursement voucher has been <strong style="color:#e11d48;">rejected</strong> by ${deptName}.`,
+    completed: `Your disbursement voucher has been <strong style="color:#059669;">approved</strong> by ${deptName}.`,
   };
 
-  const showRemarks = type !== 'completed' && type !== 'update' && type !== 'rejected';
+  // Show remarks block only for updates or rejections
+  const showRemarks = type === 'rejected' || type === 'update';
 
-  const imageUrl = 'https://i.ibb.co/7t0tzVXg/Muni-Luna.png';
+  const imageUrl = 'https://plain-apac-prod-public.komododecks.com/202605/08/Dz5pUM6CMXopOfEP5aOC/image.png';
 
   const html = `
     <div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
@@ -46,14 +67,14 @@ export const generateDVEmailTemplate = (
           </div>
 
           ${remarks && showRemarks ? `
-          <p><strong>Remarks:</strong></p>
-          <div style="background:#fee2e2; padding:12px; border-radius:8px; color:#991b1b;">
+          <p style="margin-top: 16px; margin-bottom: 4px;"><strong>Remarks:</strong></p>
+          <div style="background:#fee2e2; padding:12px; border-radius:8px; color:#991b1b; border-left: 4px solid #e11d48;">
             ${remarks || 'No remarks provided.'}
           </div>
           ` : ''}
 
           <p style="margin-top:16px;">
-            ${type === 'completed' ? 'No further action is required.' : 'Please review the remarks and take the necessary action.'}
+            ${type === 'completed' ? 'No further action is required.' : 'Please review the status details and take any necessary action.'}
           </p>
 
           <p style="margin-top:20px;">Thank you.</p>
@@ -77,6 +98,7 @@ const EmailTemplate = ({
   dvNo = null,
   createdDate = null,
   remarks = null,
+  department = '',
 }) => {
   const htmlContent = generateDVEmailTemplate(
     type,
@@ -84,7 +106,8 @@ const EmailTemplate = ({
     trackingNo,
     dvNo,
     createdDate,
-    remarks
+    remarks,
+    department
   );
 
   return (
