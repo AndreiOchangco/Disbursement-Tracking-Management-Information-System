@@ -18,20 +18,9 @@ function AppLayout() {
   const currentUser = getCurrentUser()
 
   const handleLogout = () => {
+    clearCurrentUser()
     logout()
   }
-
-  /*const openDjangoAdmin = async () => {
-    try {
-      const res = await ssoLogin()
-      const base = API_ORIGIN
-      const next = res?.next || '/admin/'
-      window.open(base + next, '_blank')
-    } catch (err) {
-      console.error('SSO failed', err)
-      alert('Failed to open Django admin. Check console for details.')
-    }
-  }*/
 
   const isActive = (path) => location.pathname === path
   const isAdmin = currentUser?.department === 'admin'
@@ -54,11 +43,6 @@ function AppLayout() {
         </div>
         <div className="header-actions">
           <span>{currentUser?.full_name || 'Guest'}</span>
-          {/* {isAdmin && (
-            <button type="button" onClick={openDjangoAdmin} className="btn-primary" style={{ marginRight: '0.5rem', marginTop: '-0.05rem' }}>
-              🔐 Open Django Admin
-            </button>
-          )} */}
           <button type="button" onClick={handleLogout} className="btn-logout">
             <ion-icon name="log-out" style={{ fontSize: '18px' }}></ion-icon> Logout
           </button>
