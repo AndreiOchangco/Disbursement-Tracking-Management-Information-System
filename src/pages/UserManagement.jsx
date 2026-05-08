@@ -271,10 +271,11 @@ export default function UserManagement() {
 
       {/* ➕ ADD USER FORM */}
       {showForm && (
-        <section className="panel" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', borderLeft: '4px solid #fbbf24' }}>
+        <section className="panel">
           <div style={{ marginBottom: '1.5rem' }}>
             <h3 style={{ color: '#2c5dff', marginBottom: '0.5rem' }}>
               {editingUser ? <><ion-icon name="pencil"></ion-icon> Edit User</> : <><ion-icon name="add"></ion-icon> Add New User</>}
+          <div className="table-toolbar"></div>
             </h3>
             <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>
               {editingUser ? 'Update user information' : 'Create a new user account'}
@@ -285,7 +286,7 @@ export default function UserManagement() {
             <input type="text" name="fake-username" autoComplete="username" style={{ display: 'none' }} />
             <input type="password" name="fake-password" autoComplete="new-password" style={{ display: 'none' }} />
             <label>
-              <span style={{ color: '#2c5dff', fontWeight: '600' }}>Full Name *</span>
+              <span style={{ color: '#2c5dff', fontWeight: '600' }}>Full Name <span style={{ color: 'red' }}>*</span></span>
               <input
                 type="text"
                 value={formData.full_name}
@@ -294,7 +295,7 @@ export default function UserManagement() {
               />
             </label>
             <label>
-              <span style={{ color: '#2c5dff', fontWeight: '600' }}>Email *</span>
+              <span style={{ color: '#2c5dff', fontWeight: '600' }}>Email <span style={{ color: 'red' }}>*</span></span>
               <input
                 type="email"
                 autoComplete="off"
@@ -306,7 +307,7 @@ export default function UserManagement() {
             </label>
             {!editingUser && (
               <label>
-                <span style={{ color: '#2c5dff', fontWeight: '600' }}>Password * (New users only)</span>
+                <span style={{ color: '#2c5dff', fontWeight: '600' }}>Password <span style={{ color: 'red' }}>*</span> (New users only)</span>
                 <input
                   type="password"
                   autoComplete="new-password"
@@ -331,7 +332,7 @@ export default function UserManagement() {
               </label>
             )}
             <label>
-              <span style={{ color: '#2c5dff', fontWeight: '600' }}>Department/Role *</span>
+              <span style={{ color: '#2c5dff', fontWeight: '600' }}>Department/Role <span style={{ color: 'red' }}>*</span></span>
               <select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })}>
                 {departmentChoices.map(dept => (
                   <option key={dept.value} value={dept.value}>
@@ -345,11 +346,11 @@ export default function UserManagement() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: '500' }}>
                   <input
-                    readOnly
-                    disabled
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  />
+                  readOnly
+                  disabled
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                />
                 </label>
               </div>
             </label>
@@ -374,10 +375,13 @@ export default function UserManagement() {
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             {!showForm && (
+<<<<<<< HEAD
               <button
                 className="btn-primary"
+=======
+              <button className="btn-primary" style={{ fontSize: '0.9rem', padding: '0.65rem 1rem' }}
+>>>>>>> 6da5759fdb8df19f8b1e75ac3f59307fa83541c5
                 onClick={() => setShowForm(true)}
-                style={{ fontSize: '0.9rem', padding: '0.65rem 1rem' }}
               >
                 <ion-icon name="add"></ion-icon> Add New User
               </button>
