@@ -120,7 +120,7 @@ export default function ReportGeneration() {
       <section className="panel">
         <div className="table-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <div>
-            <h3 style={{ color: '#2c5dff' }}><ion-icon style={{fontSize: '1.25rem'}} name="newspaper-sharp"></ion-icon> Generated Reports</h3>
+            <h3 className='panel-title'><ion-icon style={{fontSize: '1.25rem'}} name="newspaper-sharp"></ion-icon> Generated Reports</h3>
             <p style={{ margin: 0, color: '#4b5563' }}>{totalCount} generated reports</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -186,11 +186,11 @@ export default function ReportGeneration() {
           <table>
             <thead>
               <tr>
-                <th className="table-column-center table-column-border">Tracking #</th>
-                <th className="table-column-center table-column-border">Date Submitted</th>
-                <th className="table-column-center table-column-border">Approved Date</th>
-                <th className="table-column-center table-column-border">Prepared By</th>
-                  <th className="table-column-center table-column-border">Actions</th>
+                <th className="table-column-center table-column-border" style={{ color: '#2c5dff' }}>Tracking #</th>
+                <th className="table-column-center table-column-border" style={{ color: '#2c5dff' }}>Date Submitted</th>
+                <th className="table-column-center table-column-border" style={{ color: '#2c5dff' }}>Approved Date</th>
+                <th className="table-column-center table-column-border" style={{ color: '#2c5dff' }}>Prepared By</th>
+                  <th className="table-column-center table-column-border" style={{ color: '#2c5dff' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -211,7 +211,7 @@ export default function ReportGeneration() {
 
                 return (
                   <tr key={r.id}>
-                    <td style={{ fontWeight: 600 }}>{p.tracking_no ?? '-'}</td>
+                    <td className='table-strong' style={{ fontWeight: 600 }}>{p.tracking_no ?? '-'}</td>
                     <td className="table-column-center">{formatDate(p.created_date ?? (r.created_at ?? '-'))}</td>
                     <td className="table-column-center">{getApprovedDate(p, r)}</td>
                       <td>{p.accounting_name ?? '-'}</td>

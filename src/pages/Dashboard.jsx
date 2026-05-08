@@ -449,7 +449,7 @@ export default function Dashboard() {
           <div className="charts-grid" style={{ marginBottom: '2rem' }}>
             {/* FORECAST BAR */}
             <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>
+              <h3 style={{borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }} className='panel-title'>
                 <ion-icon name="cash"></ion-icon> Financial Forecast for the month of {currentMonth}
               </h3>
               <Bar data={forecastChartData} options={forecastOptions} />
@@ -457,7 +457,7 @@ export default function Dashboard() {
 
             {/* FUND DISTRIBUTION PIE */}
             <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>
+              <h3 style={{borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }} className='panel-title'>
                 <ion-icon name="pie-chart"></ion-icon> Fund Utilization for the month of {currentMonth}
               </h3>
               <div style={{ position: 'relative', height: '300px', width: '100%' }}>
@@ -470,7 +470,7 @@ export default function Dashboard() {
           <div className="charts-grid">
             {/* 📊 STATUS BAR */}
             <div className="panel" style={{ boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>
+              <h3 style={{borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }} className='panel-title'>
                 <ion-icon name="trending-up"></ion-icon> Status Overview
               </h3>
               {/* Added the new statusOptions here */}
@@ -479,7 +479,7 @@ export default function Dashboard() {
 
             {/* 📊 LINE */}
             <div className="panel" style={{ gridColumn: 'span 1', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)' }}>
-              <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="calendar"></ion-icon> Monthly Trend</h3>
+              <h3 style={{borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }} className='panel-title'><ion-icon name="calendar"></ion-icon> Monthly Trend</h3>
               <Line data={monthlyData} />
             </div>
           </div>
@@ -488,7 +488,7 @@ export default function Dashboard() {
             {/* 📋 RECENT DISBURSEMENTS TABLE */}
             <section className="panel">
               <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ color: '#2c5dff', borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}><ion-icon name="receipt"></ion-icon> Recent Disbursements</h3>
+                <h3 style={{borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }} className='panel-title'><ion-icon name="receipt"></ion-icon> Recent Disbursements</h3>
               </div>
               <div className="table-wrap">
                 <table>
@@ -502,7 +502,7 @@ export default function Dashboard() {
                   <tbody>
                     {data.slice((dvCurrentPage - 1) * dvPerPage, dvCurrentPage * dvPerPage).map((dv) => (
                       <tr key={dv.id} style={{ borderBottom: '1px solid #fef3c7' }}>
-                        <td style={{ fontWeight: '500' }}>{dv.tracking_no}</td>
+                        <td className='table-strong' style={{ fontWeight: '500' }}>{dv.tracking_no}</td>
                         <td>{dv.payee?.name || '-'}</td>
                         <td className='table-column-center'>
                           <span style={{
