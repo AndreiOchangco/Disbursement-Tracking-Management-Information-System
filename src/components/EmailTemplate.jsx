@@ -8,10 +8,10 @@ export const generateDVEmailTemplate = (
   department = ""
 ) => {
   const titleMap = {
-    update: 'Disbursement Voucher Updates',
-    approved: 'Disbursement Voucher Updated',
-    rejected: 'Disbursement Voucher Rejected',
-    completed: 'Disbursement Voucher Approved',
+    update: 'Disbursement Voucher Entry Updates',
+    approved: 'Disbursement Voucher Entry Submitted',
+    rejected: 'Disbursement Voucher Entry Rejected',
+    completed: 'Disbursement Voucher Entry Approved',
   };
 
   const messageMap = {
@@ -78,6 +78,7 @@ const EmailTemplate = ({
   dvNo = null,
   createdDate = null,
   remarks = null,
+  department = '',
 }) => {
   const htmlContent = generateDVEmailTemplate(
     type,
@@ -85,7 +86,8 @@ const EmailTemplate = ({
     trackingNo,
     dvNo,
     createdDate,
-    remarks
+    remarks,
+    department
   );
 
   return (
