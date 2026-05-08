@@ -209,41 +209,6 @@ export default function UserManagement() {
         </div>
       </div>
 
-      {/* 📊 STATS CARDS */}
-      <div className="stats-grid">
-        <div className="stat-card" style={{ borderColor: '#2c5dff', background: '#f0f7ff' }}>
-          <div className="stat-icon"><ion-icon name="people"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">Total Users</p>
-            <h3 className="stat-value" style={{ color: '#2c5dff' }}>{stats.totalUsers}</h3>
-          </div>
-        </div>
-
-        <div className="stat-card" style={{ borderColor: '#059669', background: '#f0fdf4' }}>
-          <div className="stat-icon"><ion-icon name="checkmark-circle"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">Active Users</p>
-            <h3 className="stat-value" style={{ color: '#059669' }}>{stats.activeUsers}</h3>
-          </div>
-        </div>
-
-        <div className="stat-card" style={{ borderColor: '#fbbf24', background: '#fffbeb' }}>
-          <div className="stat-icon"><ion-icon name="crown"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">System Administrators</p>
-            <h3 className="stat-value" style={{ color: '#d97706' }}>{stats.adminUsers}</h3>
-          </div>
-        </div>
-
-        <div className="stat-card" style={{ borderColor: '#2563eb', background: '#eff6ff' }}>
-          <div className="stat-icon"><ion-icon name="clipboard"></ion-icon></div>
-          <div className="stat-content">
-            <p className="stat-label">Staff Members</p>
-            <h3 className="stat-value" style={{ color: '#2563eb' }}>{stats.staffUsers}</h3>
-          </div>
-        </div>
-      </div>
-
       {/* ➕ ADD USER FORM */}
       {showForm && (
         <section className="panel" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', borderLeft: '4px solid #fbbf24' }}>
@@ -344,7 +309,7 @@ export default function UserManagement() {
       <section className="panel">
         <div className="table-toolbar">
           <div>
-            <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> User Accounts</h3>
+            <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> Staff Accounts</h3>
             <p style={{ color: '#4b5563', marginTop: '0.3rem' }}>{filtered.length} users found</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -529,6 +494,27 @@ export default function UserManagement() {
             </div>
           </div>
         )}
+      </section>
+
+       {/* 📋 USERS TABLE */}
+      <section className="panel">
+        <div className="flex py-2">
+            <h3 style={{ color: '#2c5dff' }}><ion-icon name="clipboard"></ion-icon> Department Head Accounts</h3>
+        </div>
+
+        <div className="table-wrap">
+          <table>
+            <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
+              <tr>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}> Full Name</th>
+                <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department/Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   )

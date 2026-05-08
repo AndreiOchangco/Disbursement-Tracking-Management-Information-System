@@ -8,11 +8,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from utils.email import generate_dv_email_template
-from .models import User, DV, DVArchived, DVWorkflow, DVReport, DVParticularValue
-from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer
+from .models import DeptHead, User, DV, DVArchived, DVWorkflow, DVReport, DVParticularValue
+from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DeptHeadSerializer
 from .authentication import JWTAuthentication
 from django.contrib.auth import authenticate as django_authenticate
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
 from django.utils.html import strip_tags
@@ -264,6 +265,44 @@ def me(request):
 
 
 # ─────────────────── USER LISTS REGISTRATION, UPDATE ───────────────────
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def dept_head_list_create(request):
+    """List all department heads or create a new one."""
+    if request.method == 'GET':
+        dept_heads = DeptHead.objects.all()
+        serializer = DeptHeadSerializer(dept_heads, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = DeptHeadSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET', 'PUT', 'PATCH'])
+@permission_classes([AllowAny])
+def dept_head_detail_update(request, pk):
+    """Retrieve, update, or delete a specific department head."""
+    dept_head = get_object_or_404(DeptHead, pk=pk)
+
+    if request.method == 'GET':
+        serializer = DeptHeadSerializer(dept_head)
+        return Response(serializer.data)
+
+    elif request.method in ['PUT', 'PATCH']:
+        # 'partial=True' allows PATCH requests to update only some fields
+        partial = (request.method == 'PATCH')
+        serializer = DeptHeadSerializer(dept_head, data=request.data, partial=partial)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):

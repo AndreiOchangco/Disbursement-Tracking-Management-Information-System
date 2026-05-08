@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVReport, Payee
+from .models import DeptHead, User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVReport, Payee
 
 class PayeeInline(admin.StackedInline):
     model = Payee
@@ -13,6 +13,17 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ['department', 'status']
     search_fields = ['full_name', 'email']
     list_editable = ['status']
+
+@admin.register(DeptHead)
+class DeptHeadAdmin(admin.ModelAdmin):
+    # Columns to show in the list view
+    list_display = ('fullname', 'department')
+    
+    # Enable a sidebar filter for departments
+    list_filter = ('department',)
+    
+    # Add a search bar for names
+    search_fields = ('fullname',)
 
 
 @admin.register(DV)

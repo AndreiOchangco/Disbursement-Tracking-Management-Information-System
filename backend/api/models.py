@@ -9,6 +9,7 @@ DEPARTMENT_CHOICES = [
     ('budget', 'Budget'),
     ('treasurer', 'Treasurer'),
     ('bac_gso', 'BAC/GSO'),
+    ('municipal_admin', "Municipal Administrator"),
     ('mayors_office', "Mayor's Office"),
 ]
 
@@ -86,6 +87,17 @@ class User(models.Model):
 
     def __str__(self):
         return f"{self.full_name} ({self.department})"
+    
+
+class DeptHead(models.Model):
+    fullname = models.CharField(max_length=255)
+    department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES)
+
+    class Meta:
+        db_table = 'dept_head'
+    
+    def __str__(self):
+        return f"{self.fullname} - {self.department}"
 
 
 class DV(models.Model):

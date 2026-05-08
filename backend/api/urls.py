@@ -12,6 +12,8 @@ urlpatterns = [
     path('users/signup/', views.register, name='register'),
     path('users/', views.user_list, name='user-list'),
     path('users/<int:pk>/', views.user_detail, name='user-detail'),
+    path('dept-heads/', views.dept_head_list_create, name='dept-head-list'),
+    path('dept-heads/<int:pk>/', views.dept_head_detail_update, name='dept-head-detail'),
 
     # DV CRUD
     path('dv/', views.dv_list, name='dv-list'),
