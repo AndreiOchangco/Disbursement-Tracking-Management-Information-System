@@ -4,7 +4,8 @@ export const generateDVEmailTemplate = (
   tracking_no = null,
   dv_no = null,
   created_date = null,
-  remarks = null
+  remarks = null,
+  department = ""
 ) => {
   const titleMap = {
     update: 'Disbursement Voucher Updates',
