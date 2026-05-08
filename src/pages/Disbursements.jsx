@@ -62,6 +62,20 @@ const sendRejectedDVEmailAuto = async (dv, options = {}) => {
    }
 };
 
+const governmentAccountCodes = [
+  '101 - Cash',
+  '102 - Cash in Bank',
+  '103 - Petty Cash',
+  '201 - Accounts Payable',
+  '301 - Government Equity',
+  '401 - Income Revenue',
+  '501 - Salaries and Wages Expense',
+  '502 - Traveling Expense',
+  '503 - Office Supplies Expense',
+  '504 - Utility Expense',
+  '505 - Repairs and Maintenance Expense',
+]
+
 export default function Disbursements() {
   const navigate = useNavigate()
   const currentUser = getCurrentUser()
@@ -109,7 +123,7 @@ export default function Disbursements() {
     { category: 'Adjustment', np: '', ft: '', tf: '' },
   ])
   const [jeRows, setJeRows] = useState([
-    { account_code: '', particulars: '', debit: '', credit: '' }
+    { account_code: '', particulars: 'Select Category', debit: '', credit: '' }
   ]);
   
   // EDIT STATES (Separated by Department)
@@ -918,7 +932,7 @@ export default function Disbursements() {
                       {particulars.map((item, idx) => (
                         <tr key={idx}>
                           <td>
-                            <input className="particulars-input" type="text" value={item.category} onChange={(e) => handleParticularChange(idx, 'category', e.target.value)} placeholder="Category name" />
+                            <input className="particulars-input" type="text" value={item.category} onChange={(e) => handleParticularChange(idx, 'category', e.target.value)} placeholder="Category name" disabled />
                           </td>
                           <td>
                             <input 
@@ -953,10 +967,10 @@ export default function Disbursements() {
                   <table className="particulars-table">
                     <thead>
                       <tr>
-                        <th>Particulars</th>
-                        <th>Account</th>
-                        <th>Debit</th>
-                        <th>Credit</th>
+                        <th style={{ width: '150px' }}>Particulars</th>
+                        <th style={{ width: '250px' }}>Account</th>
+                        <th style={{ width: '150px' }}>Debit</th>
+                        <th style={{ width: '150px' }}>Credit</th>
                         <th style={{ width: '50px' }}></th>
                       </tr>
                     </thead>
@@ -964,10 +978,36 @@ export default function Disbursements() {
                       {jeRows.map((row, index) => (
                         <tr key={index}>
                           <td>
-                            <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Category Name" />
+                            <select
+                              className="particulars-input"
+                              value={row.particulars}
+                              onChange={(e) =>
+                                handleJeRowChange(index, 'particulars', e.target.value)
+                              }
+                            >
+                              <option value="">Select Category</option>
+                              <option value="ORGANIC">ORGANIC</option>
+                              <option value="DEVOLVED">DEVOLVED</option>
+                              <option value="VB & SB">VB & SB</option>
+                              <option value="Adjustment">Adjustment</option>
+                            </select>
                           </td>
                           <td>
-                            <input className="particulars-input" type="text" value={row.account_code} onChange={(e) => handleJeRowChange(index, 'account_code', e.target.value)} placeholder="Account Code" />
+                            <select
+                              className="particulars-input"
+                              value={row.account_code}
+                              onChange={(e) =>
+                                handleJeRowChange(index, 'account_code', e.target.value)
+                              }
+                            >
+                              <option value="">Select Account Code</option>
+
+                              {governmentAccountCodes.map((code) => (
+                                <option key={code} value={code}>
+                                  {code}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                           <td><input className="particulars-input" type="number" step="0.01" value={row.debit} onChange={(e) => handleJeRowChange(index, 'debit', e.target.value)} placeholder="0.00" /></td>
                           <td><input className="particulars-input" type="number" step="0.01" value={row.credit} onChange={(e) => handleJeRowChange(index, 'credit', e.target.value)} placeholder="0.00" /></td>

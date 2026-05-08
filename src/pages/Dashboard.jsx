@@ -291,6 +291,22 @@ export default function Dashboard() {
     ],
   }
 
+  const recentSubmitted = data
+    .filter((dv) =>
+      ['pending'].includes(
+        dv.status?.toLowerCase()
+      )
+    )
+    .slice((dvCurrentPage - 1) * dvPerPage, dvCurrentPage * dvPerPage);
+
+  const recentApproved = data
+    .filter((dv) =>
+      ['completed'].includes(
+        dv.status?.toLowerCase()
+      )
+    )
+    .slice((dvCurrentPage - 1) * dvPerPage, dvCurrentPage * dvPerPage);
+
   return (
     <div>
       {/* 👑 ADMIN DASHBOARD */}
@@ -485,10 +501,10 @@ export default function Dashboard() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-            {/* 📋 RECENT DISBURSEMENTS TABLE */}
+            {/* 📋 RECENT SUBMITTED DISBURSEMENTS TABLE */}
             <section className="panel">
               <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }} className='panel-title'><ion-icon name="receipt"></ion-icon> Recent Disbursements</h3>
+                <h3 style={{borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }} className='panel-title'><ion-icon name="receipt"></ion-icon> Recent Submitted Disbursements</h3>
               </div>
               <div className="table-wrap">
                 <table>
@@ -500,17 +516,73 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.slice((dvCurrentPage - 1) * dvPerPage, dvCurrentPage * dvPerPage).map((dv) => (
+                    {recentSubmitted.map((dv) => (
                       <tr key={dv.id} style={{ borderBottom: '1px solid #fef3c7' }}>
-                        <td className='table-strong' style={{ fontWeight: '500' }}>{dv.tracking_no}</td>
+                        <td className='table-strong' style={{ fontWeight: '500' }}>
+                          {dv.tracking_no}
+                        </td>
+
                         <td>{dv.payee?.name || '-'}</td>
+
                         <td className='table-column-center'>
-                          <span style={{
-                            display: 'inline-block', padding: '0.3rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600', textTransform: 'capitalize',
-                            background: dv.status === 'completed' ? 'rgba(5, 150, 105, 0.2)' : dv.status === 'pending' ? 'rgba(0, 82, 204, 0.2)' : dv.status === 'disapproved' ? 'rgba(242, 63, 56, 0.2)' : 'rgba(107, 114, 128, 0.2)',
-                            color: dv.status === 'completed' ? '#059669' : dv.status === 'pending' ? '#0052CC' : dv.status === 'disapproved' ? '#f23f38' : '#6b7280'
-                          }}>
-                            {dv.status}
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '0.3rem 0.6rem',
+                              borderRadius: '4px',
+                              fontSize: '0.8rem',
+                              fontWeight: '600',
+                              textTransform: 'capitalize',
+                              background: 'rgba(0, 82, 204, 0.2)',
+                              color: '#0052CC',
+                            }}
+                          >
+                            pending
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            {/* 📋 RECENT APPROVED DISBURSEMENTS TABLE */}
+            <section className="panel">
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h3 style={{borderBottom: '2px solid #fbbf24', paddingBottom: '0.75rem', marginBottom: '1.25rem' }} className='panel-title'><ion-icon name="receipt"></ion-icon> Recent Approved Disbursements</h3>
+              </div>
+              <div className="table-wrap">
+                <table>
+                  <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
+                    <tr>
+                      <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="pin"></ion-icon> Tracking #</th>
+                      <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="person"></ion-icon> Payee</th>
+                      <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="bar-chart"></ion-icon> Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentApproved.map((dv) => (
+                      <tr key={dv.id} style={{ borderBottom: '1px solid #fef3c7' }}>
+                        <td className='table-strong' style={{ fontWeight: '500' }}>
+                          {dv.tracking_no}
+                        </td>
+
+                        <td>{dv.payee?.name || '-'}</td>
+
+                        <td className='table-column-center'>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '0.3rem 0.6rem',
+                              borderRadius: '4px',
+                              fontSize: '0.8rem',
+                              fontWeight: '600',
+                              textTransform: 'capitalize',
+                              background: 'rgba(5, 150, 105, 0.2)',
+                              color: '#059669',
+                            }}
+                          >
+                            completed
                           </span>
                         </td>
                       </tr>
