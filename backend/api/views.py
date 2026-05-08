@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from utils.email import generate_dv_email_template
-from .models import DeptHead, User, DV, DVArchived, DVWorkflow, DVReport, DVParticularValue
+from .models import DeptHead, User, DV, DVArchived, DVWorkflow, DVReport, DVParticularValue, DeptHead
 from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DeptHeadSerializer
 from .authentication import JWTAuthentication
 from django.contrib.auth import authenticate as django_authenticate
@@ -553,7 +553,27 @@ def dv_approve(request, pk):
     
     # Create DVReport snapshot when DV is completed
     if dv.status == 'completed' and not hasattr(dv, 'report'):
-        DVReport.objects.create(dv=dv, payload=DVSerializer(dv).data)
+        # 1. Get the base DV serialized data
+        dv_data = DVSerializer(dv).data
+        
+        # 2. Fetch all current Department Heads
+        current_dept_heads = DeptHead.objects.all()
+        
+        # 3. Create a snapshot dictionary mapped by department key 
+        # (This 1:1 mapping makes it extremely easy to access on the frontend like: payload.department_heads.accounting.fullname)
+        dept_heads_snapshot = {
+            head.department: {
+                "id": head.id,
+                "fullname": head.fullname,
+                "department": head.department
+            } for head in current_dept_heads
+        }
+        
+        # 4. Inject the snapshot into the payload
+        dv_data['department_heads'] = dept_heads_snapshot
+        
+        # 5. Save the report
+        DVReport.objects.create(dv=dv, payload=dv_data)
     
     return Response(DVSerializer(dv).data)
 
@@ -834,6 +854,13 @@ def dv_report_pdf(request, dv_id):
 
     # Build an HTML representation from the stored payload
     payload = report.payload or {}
+
+    dept_heads = payload.get('department_heads', {})
+    
+    mun_admin_name = dept_heads.get('municipal_admin', {}).get('fullname', '').upper()
+    accounting_head_name = dept_heads.get('accounting', {}).get('fullname', '').upper()
+    treasurer_head_name = dept_heads.get('treasurer', {}).get('fullname', '').upper()
+    mayors_office_head_name = dept_heads.get('mayors_office', {}).get('fullname', '').upper()
 
     # Extract payee name from payee object
     payee_data = payload.get('payee', {})
@@ -1249,6 +1276,7 @@ def dv_report_pdf(request, dv_id):
 
                 <!-- Centered bottom -->
                 <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 2px;">{mun_admin_name}</span>
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Signature Over Printed Name/Position
                     </span><br>
@@ -1276,6 +1304,7 @@ def dv_report_pdf(request, dv_id):
 
                 <!-- Centered bottom -->
                 <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 2px;">{accounting_head_name}</span>
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Signature Over Printed Name/Position
                     </span><br>
@@ -1302,6 +1331,7 @@ def dv_report_pdf(request, dv_id):
 
                 <!-- Centered bottom -->
                 <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 2px;">{treasurer_head_name}</span>
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Signature Over Printed Name/Position
                     </span><br>
@@ -1327,6 +1357,7 @@ def dv_report_pdf(request, dv_id):
 
                 <!-- Centered bottom -->
                 <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
+                    <span style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 2px;">{mayors_office_head_name}</span>
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Signature Over Printed Name/Position
                     </span><br>

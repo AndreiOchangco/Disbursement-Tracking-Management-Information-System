@@ -18,6 +18,7 @@ function AppLayout() {
   const currentUser = getCurrentUser()
 
   const handleLogout = () => {
+    clearCurrentUser()
     logout()
   }
 
@@ -42,7 +43,6 @@ function AppLayout() {
         </div>
         <div className="header-actions">
           <span>{currentUser?.full_name || 'Guest'}</span>
-          
           <button type="button" onClick={handleLogout} className="btn-logout">
             <ion-icon name="log-out" style={{ fontSize: '18px' }}></ion-icon> Logout
           </button>
