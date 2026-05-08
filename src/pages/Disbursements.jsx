@@ -35,18 +35,23 @@ const sendRejectedDVEmailAuto = async (dv, options = {}) => {
       const dvNo = dv.dv_no || 'N/A';
       const createdDate = dv.created_date ? formatDateMMDDYYYY(dv.created_date) : 'N/A';
       
+      // Fetch the interacting user's department context
+      const user = getCurrentUser();
+      const userDept = user?.department || 'System';
+      
       const htmlContent = generateDVEmailTemplate(
          type,
          payeeName,
          trackingNo,
          dvNo,
          createdDate,
-         remarks
+         remarks,
+         userDept // Pass department dynamically
       );
       
-      // Send email via backend using correct parameter names
+      // FIX: Changed "to: payeeName" to "to: dv.payee.email"
       await apiRequest('/send-email/', 'POST', {
-         to: payeeName,
+         to: dv.payee.email, 
          subject: `DV ${type.toUpperCase()} (Tracking #${trackingNo})`,
          html: htmlContent
       });
@@ -54,7 +59,6 @@ const sendRejectedDVEmailAuto = async (dv, options = {}) => {
       console.log('Email sent successfully');
    } catch (error) {
       console.error('Failed to send email:', error);
-      // Don't throw, just log - this shouldn't block the main workflow
    }
 };
 
@@ -384,30 +388,38 @@ export default function Disbursements() {
           allowEscapeKey: false,
           background: '#F0F4FF',
           color: '#1f2937',
-        })
+        });
         try {
-          await apiRequest(`/dv/${item.id}/approve/`, 'POST')
+          await apiRequest(`/dv/${item.id}/approve/`, 'POST');
+
+          // Automatic email notify: Step 3 (Treasurer) completes the flow, otherwise it is 'approved' (forwarded)
+          const isFinalStep = item.current_step === 3;
+          await sendRejectedDVEmailAuto(item, {
+             type: isFinalStep ? 'completed' : 'approved',
+             remarks: isFinalStep ? 'Approved and released.' : 'Voucher approved and forwarded to next step.'
+          });
+
           await Swal.fire({
             title: 'Success!',
-            text: 'Disbursement approved successfully.',
+            text: 'Disbursement approved and payee notified.',
             icon: 'success',
             confirmButtonColor: '#0052CC',
             background: '#F0F4FF',
             color: '#1f2937',
-          })
-          await reload()
+          });
+          await reload();
         } catch (err) {
-          console.error('Approve failed', err)
+          console.error('Approve failed', err);
           await Swal.fire({
             title: 'Error!',
             text: err?.message || 'Approve failed',
             icon: 'error',
             confirmButtonColor: '#e11d48',
-          })
+          });
         }
       }
-    })
-  }
+    });
+  };
 
   const rejectItem = async (item) => {
     const result = await Swal.fire({
@@ -425,8 +437,8 @@ export default function Disbursements() {
       color: '#1f2937',
       preConfirm: async (remarks) => {
         if (!remarks?.trim()) {
-          Swal.showValidationMessage('Rejection remarks are required')
-          return false
+          Swal.showValidationMessage('Rejection remarks are required');
+          return false;
         }
         
         Swal.fire({
@@ -438,30 +450,37 @@ export default function Disbursements() {
           allowEscapeKey: false,
           background: '#F0F4FF',
           color: '#1f2937',
-        })
+        });
         
         try {
-          await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: remarks || 'No remarks provided.' })
+          await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: remarks || 'No remarks provided.' });
+          
+          // Automatic email trigger on disapproval
+          await sendRejectedDVEmailAuto(item, {
+            type: 'rejected',
+            remarks: remarks
+          });
+
           await Swal.fire({
             title: 'Rejected!',
-            text: 'Disbursement rejected successfully.',
+            text: 'Disbursement rejected successfully, and notification email sent.',
             icon: 'success',
             confirmButtonColor: '#0052CC',
-          })
-          if(showViewModal) setShowViewModal(false)
-          await reload()
+          });
+          if(showViewModal) setShowViewModal(false);
+          await reload();
         } catch (err) {
-          console.error('Reject failed', err)
+          console.error('Reject failed', err);
           await Swal.fire({
             title: 'Error!',
             text: err?.message || 'Reject failed',
             icon: 'error',
             confirmButtonColor: '#e11d48',
-          })
+          });
         }
       }
-    })
-  }
+    });
+  };
 
   const handleArchive = async (d) => {
     const result = await Swal.fire({
@@ -593,47 +612,61 @@ export default function Disbursements() {
    * Send rejection email for selected DV
    */
   const sendRejectedDVEmail = async () => {
-    if (!selectedDV || !selectedDV.payee?.email) {
-      toast.error('Payee email not found');
-      return;
-    }
+  if (!selectedDV || !selectedDV.payee?.email) {
+    toast.error('Payee email not found');
+    return;
+  }
+  
+  setSendingEmail(true);
+  try {
+    const payeeName = selectedDV.payee?.name || 'Payee';
+    const trackingNo = selectedDV.tracking_no || 'N/A';
+    const dvNo = selectedDV.dv_no || 'N/A';
+    const createdDate = selectedDV.created_date ? formatDateMMDDYYYY(selectedDV.created_date) : 'N/A';
     
-    setSendingEmail(true)
-    try {
-      const payeeName = selectedDV.payee?.name || 'Payee';
-      const trackingNo = selectedDV.tracking_no || 'N/A';
-      const dvNo = selectedDV.dv_no || 'N/A';
-      const createdDate = selectedDV.created_date ? formatDateMMDDYYYY(selectedDV.created_date) : 'N/A';
-      
-      // Get remarks from workflow history if available
-      const lastRemark = selectedDV.workflow_steps?.length > 0 
-         ? selectedDV.workflow_steps[selectedDV.workflow_steps.length - 1]?.remarks 
-         : null;
-      
-      const htmlContent = generateDVEmailTemplate(
-         'rejected',
-         payeeName,
-         trackingNo,
-         dvNo,
-         createdDate,
-         lastRemark
-      );
-      
-      // Send email via backend using correct parameter names
-      await apiRequest('/send-email/', 'POST', {
-         to: selectedDV.payee.email,
-         subject: `DV REJECTED (Tracking #${trackingNo})`,
-         html: htmlContent
-      });
-      
-      toast.success('Rejection email sent successfully');
-    } catch (error) {
-      console.error('Failed to send email:', error);
-      toast.error('Failed to send email: ' + (error?.message || 'Unknown error'));
-    } finally {
-      setSendingEmail(false)
-    }
-  };
+    const steps = selectedDV.workflow_steps || [];
+    
+    // Option 2: Get the last step directly from the end of the array
+    const lastStep = steps.length > 0 
+      ? steps[steps.length - 1]
+      : null;
+
+    const lastRemark = lastStep?.remarks || 'No remarks provided';
+    
+    // Fix property name to action_by_department & format it nicely
+    const rawDept = lastStep?.action_by_department;
+    const rejectingDept = rawDept
+      ? rawDept
+          .replace(/_/g, ' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      : 'System';
+    
+    const htmlContent = generateDVEmailTemplate(
+      'rejected',
+      payeeName,
+      trackingNo,
+      dvNo,
+      createdDate,
+      lastRemark,
+      rejectingDept
+    );
+    
+    await apiRequest('/send-email/', 'POST', {
+      to: selectedDV.payee.email,
+      subject: `DV REJECTED (Tracking #${trackingNo})`,
+      html: htmlContent
+    });
+    
+    toast.success('Rejection email sent successfully');
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    toast.error('Failed to send email: ' + (error?.message || 'Unknown error'));
+  } finally {
+    setSendingEmail(false);
+  }
+};
 
   const handleView = (dv) => {
     setSelectedDV(dv);
@@ -683,7 +716,7 @@ export default function Disbursements() {
     e.preventDefault();
     if (!canSave) return;
 
-    setUpdatingDV(true)
+    setUpdatingDV(true);
     try {
       const payload = {
         tracking_no: editTrackingNo,
@@ -697,13 +730,10 @@ export default function Disbursements() {
         advice_date: editAdviceDate || null,
         transaction_no: editTransactionNo || null,
         transaction_date: editTransactionDate || null,
-        
         cafoa_no: editCafoaNo || null,
         responsibility_center: editResponsibilityCenter || null,
-        
         dv_no: editDVNo || null,
         dv_date: editDVDate || null,
-
         particulars: editParticulars,
         journal_entries: editJeRows,
         payments: [
@@ -724,12 +754,24 @@ export default function Disbursements() {
           await apiRequest(`/dv/${selectedDV.id}/resubmit/`, 'POST', {
             remarks: 'Corrected and resubmitted by Accounting.'
           });
+          
+          // FIX: Explicitly pass type 'update' to override 'rejected' default
           await sendRejectedDVEmailAuto(selectedDV, {
+            type: 'update',
             remarks: 'Corrected and resubmitted by Accounting.'
           });
+          
           toast.success('Disbursement Voucher updated and resubmitted successfully!');
         } else if (canEditBudget || canEditTreasurer) {
           await apiRequest(`/dv/${selectedDV.id}/approve/`, 'POST');
+          
+          // Notify payee of step approval
+          const isFinalStep = selectedDV.current_step === 3;
+          await sendRejectedDVEmailAuto(selectedDV, {
+            type: isFinalStep ? 'completed' : 'approved',
+            remarks: `Approved and processed by ${currentUser?.department || 'authorized step'}.`
+          });
+          
           toast.success('Disbursement Voucher updated and approved successfully!');
         }
 
@@ -740,7 +782,7 @@ export default function Disbursements() {
       console.error("Submission error:", err);
       toast.error(err?.message || 'Failed to update the Disbursement Voucher');
     } finally {
-      setUpdatingDV(false)
+      setUpdatingDV(false);
     }
   };
   
@@ -1506,7 +1548,7 @@ export default function Disbursements() {
                       <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1" disabled={updatingDV}>
                         {updatingDV ? (
                           <>
-                            <ion-icon name="refresh-circle-outline" className="spinner-icon"></ion-icon>
+                            <ion-icon name="refresh-circle-outline" className="spinner-icon"/>
                             Saving...
                           </>
                         ) : (
@@ -1524,12 +1566,11 @@ export default function Disbursements() {
                       >
                         {sendingEmail ? (
                           <>
-                            <ion-icon name="refresh-circle-outline" className="spinner-icon"></ion-icon>
-                            Sending...
+                            <ion-icon name="refresh-circle-outline" className="spinner-icon"/>Sending...
                           </>
                         ) : (
                           <>
-                            <ion-icon name="mail-outline"></ion-icon> Send Rejection Email
+                            <ion-icon name="mail-outline"/> Send Rejection Email
                           </>
                         )}
                       </button>
