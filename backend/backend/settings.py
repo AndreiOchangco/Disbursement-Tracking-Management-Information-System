@@ -31,8 +31,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '192.168.1.3', # Andrei's local IP
-    '192.168.100.14', # JM's local IP
+    '192.168.1.3', # Server's local IP
 ]
 
 
@@ -154,8 +153,7 @@ CORS_ALLOW_HEADERS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  
     "http://127.0.0.1:5173",
-    'http://192.168.1.3:5173', # Andrei's local IP
-    'http://192.168.100.14:5173', # JM's local IP
+    'http://192.168.1.3:5173', # Server's local IP
 ]
 
 # ===== COOKIE / SESSION SETTINGS =====
@@ -169,8 +167,7 @@ CSRF_COOKIE_SECURE = False
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://192.168.1.3:5173", # Andrei's local IP
-    "http://192.168.100.14:5173", # JM's local IP
+    "http://192.168.1.3:5173", # Server's local IP
 ]
 
 JWT_REFRESH_EXP_DAYS = 5

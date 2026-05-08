@@ -10,7 +10,6 @@ const API_FALLBACKS = [
   import.meta.env.VITE_NETWORK_API_URL,
   'http://localhost:8000/api',
   'http://192.168.1.3:8000/api',
-  'http://192.168.100.14:8000/api',
 ].filter(Boolean)
 
 // Always keep full base URL (NEVER use origin)
