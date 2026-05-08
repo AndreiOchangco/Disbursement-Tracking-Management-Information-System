@@ -314,10 +314,8 @@ export default function UserManagement() {
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             {!showForm && (
-              <button 
-                className="btn-primary" 
+              <button className="btn-primary" style={{ fontSize: '0.9rem', padding: '0.65rem 1rem' }}
                 onClick={() => setShowForm(true)}
-                style={{ fontSize: '0.9rem', padding: '0.65rem 1rem' }}
               >
                 <ion-icon name="add"></ion-icon> Add New User
               </button>
