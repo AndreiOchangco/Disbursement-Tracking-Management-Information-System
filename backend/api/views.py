@@ -480,7 +480,7 @@ def dv_detail(request, pk):
         serializer = DVCreateUpdateSerializer(dv, data=request.data, partial=True)
         if serializer.is_valid():
             dv = serializer.save()
-            return Response(DVSerializer(dv).data)
+            return Response("Disbursement Voucher Number " + dv.dv_no + " has been updated successfully.")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -509,7 +509,7 @@ def dv_submit(request, pk):
         remarks='Disbursement voucher is submitted for processing.'
     )
 
-    return Response(DVSerializer(dv).data)
+    return Response("Disbursement Voucher has been submitted successfully and is now pending review by the Budget Office.")
 
 
 @api_view(['POST'])
@@ -575,7 +575,7 @@ def dv_approve(request, pk):
         # 5. Save the report
         DVReport.objects.create(dv=dv, payload=dv_data)
     
-    return Response(DVSerializer(dv).data)
+    return Response("Disbursement Voucher has been approved successfully.")
 
 
 @api_view(['POST'])
@@ -613,7 +613,7 @@ def dv_disapprove(request, pk):
 
     send_dv_email(dv, type='rejected', remarks=remarks)
 
-    return Response(DVSerializer(dv).data)
+    return Response("Disbursement Voucher has been disapproved and sent back to Accounting.")
 
 
 @api_view(['POST'])
@@ -649,7 +649,7 @@ def dv_resubmit(request, pk):
 
     send_dv_email(dv, type='update', remarks='Your disbursement voucher has been corrected and resubmitted for review.')
 
-    return Response(DVSerializer(dv).data)
+    return Response("Disbursement Voucher has been resubmitted for review.")
 
 
 @api_view(['POST'])
@@ -684,7 +684,7 @@ def dv_archive(request, pk):
     dv.status = 'archived'
     dv.save()
 
-    return Response(DVSerializer(dv).data)
+    return Response("Disbursement Voucher has been archived successfully.")
 
 
 # ─────────────────── DASHBOARD ───────────────────
