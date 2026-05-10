@@ -276,7 +276,17 @@ export default function Disbursements() {
   }
 
   const removeParticularRow = (index) => {
-    setParticulars((prev) => prev.filter((_, i) => i !== index))
+    setParticulars((prev) =>
+      prev.map((row, i) =>
+        i === index
+          ? {
+              ...row,
+              ft: '',
+              tf: '',
+            }
+          : row
+      )
+    )
   }
 
   const addDisbursement = async (e) => {
@@ -925,7 +935,7 @@ export default function Disbursements() {
                         <th className='table-column-center'>Net Pay</th>
                         <th className='table-column-center'>15th</th>
                         <th className='table-column-center'>31st</th>
-                        <th style={{ width: '50px' }}></th>
+                        <th className='table-column-center' style={{ width: '50px' }}>Clear</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -947,11 +957,9 @@ export default function Disbursements() {
                           <td><input className="particulars-input" type="number" step="0.01" value={item.ft} onChange={(e) => handleParticularChange(idx, 'ft', e.target.value)} placeholder="0.00" /></td>
                           <td><input className="particulars-input" type="number" step="0.01" value={item.tf} onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)} placeholder="0.00" /></td>
                           <td className="table-column-center">
-                            {idx > 0 && (
-                              <button type="button" className="btn-danger" onClick={() => removeParticularRow(idx)}>
-                                <ion-icon name="close"></ion-icon>
-                              </button>
-                            )}
+                            <button type="button" className="btn-danger" onClick={() => removeParticularRow(idx)}>
+                              <ion-icon name="close"></ion-icon>
+                            </button>
                           </td>
                         </tr>
                       ))}
