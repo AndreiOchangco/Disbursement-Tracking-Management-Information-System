@@ -24,8 +24,7 @@ const formatDateMMDDYYYY = (date) => {
 const sendRejectedDVEmailAuto = async (dv, options = {}) => {
    const { type = 'rejected', remarks = null } = options;
    
-   try {
-      if (!dv.payee?.email) {
+    if (!dv.payee?.email) {
          console.warn('No email found for payee');
          return;
       }
@@ -57,9 +56,6 @@ const sendRejectedDVEmailAuto = async (dv, options = {}) => {
       });
       
       console.log('Email sent successfully');
-   } catch (error) {
-      console.error('Failed to send email:', error);
-   }
 };
 
 const governmentAccountCodes = [
@@ -413,15 +409,18 @@ export default function Disbursements() {
           background: '#F0F4FF',
           color: '#1f2937',
         });
+
+        let emailConfig = null;
+
         try {
           await apiRequest(`/dv/${item.id}/approve/`, 'POST');
 
           // Automatic email notify: Step 3 (Treasurer) completes the flow, otherwise it is 'approved' (forwarded)
           const isFinalStep = item.current_step === 3;
-          await sendRejectedDVEmailAuto(item, {
-             type: isFinalStep ? 'completed' : 'approved',
-             remarks: isFinalStep ? 'Approved and released.' : 'Voucher approved and forwarded to next step.'
-          });
+          emailConfig = {
+            type: isFinalStep ? 'completed' : 'approved',
+            remarks: isFinalStep ? 'Approved and released.' : 'Voucher approved and forwarded to next step.'
+          };
 
           await Swal.fire({
             title: 'Success!',
@@ -440,6 +439,11 @@ export default function Disbursements() {
             icon: 'error',
             confirmButtonColor: '#e11d48',
           });
+          return;
+        }
+
+        if (emailConfig) {
+          sendRejectedDVEmailAuto(item, emailConfig)
         }
       }
     });
@@ -475,15 +479,16 @@ export default function Disbursements() {
           background: '#F0F4FF',
           color: '#1f2937',
         });
+
+        let emailConfig = null;
         
         try {
           await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: remarks || 'No remarks provided.' });
           
-          // Automatic email trigger on disapproval
-          await sendRejectedDVEmailAuto(item, {
+          emailConfig = {
             type: 'rejected',
             remarks: remarks
-          });
+          };
 
           await Swal.fire({
             title: 'Rejected!',
@@ -501,6 +506,11 @@ export default function Disbursements() {
             icon: 'error',
             confirmButtonColor: '#e11d48',
           });
+          return;
+        }
+
+        if (emailConfig) {
+          sendRejectedDVEmailAuto(item, emailConfig);
         }
       }
     });
@@ -741,6 +751,9 @@ export default function Disbursements() {
     if (!canSave) return;
 
     setUpdatingDV(true);
+
+    let emailConfig = null;
+
     try {
       const payload = {
         tracking_no: editTrackingNo,
@@ -779,11 +792,10 @@ export default function Disbursements() {
             remarks: 'Corrected and resubmitted by Accounting.'
           });
           
-          // FIX: Explicitly pass type 'update' to override 'rejected' default
-          await sendRejectedDVEmailAuto(selectedDV, {
+          emailConfig = {
             type: 'update',
             remarks: 'Corrected and resubmitted by Accounting.'
-          });
+          };
           
           toast.success('Disbursement Voucher updated and resubmitted successfully!');
         } else if (canEditBudget || canEditTreasurer) {
@@ -791,10 +803,10 @@ export default function Disbursements() {
           
           // Notify payee of step approval
           const isFinalStep = selectedDV.current_step === 3;
-          await sendRejectedDVEmailAuto(selectedDV, {
+          emailConfig = {
             type: isFinalStep ? 'completed' : 'approved',
             remarks: `Approved and processed by ${currentUser?.department || 'authorized step'}.`
-          });
+          };
           
           toast.success('Disbursement Voucher updated and approved successfully!');
         }
@@ -805,8 +817,13 @@ export default function Disbursements() {
     } catch (err) {
       console.error("Submission error:", err);
       toast.error(err?.message || 'Failed to update the Disbursement Voucher');
+      return;
     } finally {
       setUpdatingDV(false);
+    }
+
+    if (emailConfig) {
+      sendRejectedDVEmailAuto(selectedDV, emailConfig);
     }
   };
   
