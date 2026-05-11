@@ -73,7 +73,7 @@ function PdfViewer({ isOpen, onClose, title, children, footer }) {
     >
       {title && (
         <div
-          className="modal-header"
+          className="modal-header noselect"
           style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -91,7 +91,7 @@ function PdfViewer({ isOpen, onClose, title, children, footer }) {
             {/* FULLSCREEN BUTTON */}
             <button
               onClick={() => setIsFullscreen(prev => !prev)}
-              className="modal-fullscreen-btn"
+              className="modal-fullscreen-btn noselect"
             >
               {isFullscreen ? '🗗' : '🗖'}
             </button>
@@ -99,7 +99,7 @@ function PdfViewer({ isOpen, onClose, title, children, footer }) {
             {/* CLOSE BUTTON */}
             <button
               onClick={onClose}
-              className="modal-close-btn"
+              className="modal-close-btn noselect"
             >
               ✕
             </button>
@@ -108,7 +108,7 @@ function PdfViewer({ isOpen, onClose, title, children, footer }) {
       )}
 
       <div
-        className="modal-body"
+        className="modal-body noselect"
         style={{
           flex: 1,
           overflow: 'auto',
@@ -125,7 +125,7 @@ function PdfViewer({ isOpen, onClose, title, children, footer }) {
 
       {footer && (
         <div
-          className="modal-footer"
+          className="modal-footer noselect"
           style={{
             marginTop: '8px',
             paddingTop: '8px',

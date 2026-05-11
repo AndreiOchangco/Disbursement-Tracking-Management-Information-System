@@ -1,3 +1,10 @@
+.noselect {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -78,6 +85,9 @@
   border-radius: 8px;
   font-size: 1rem;
   transition: 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-close-btn:hover {
@@ -115,6 +125,9 @@
   border-radius: 8px;
   font-size: 1rem;
   transition: 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-fullscreen-btn:hover {

@@ -152,14 +152,14 @@ export default function ReportGeneration() {
                   style={{
                     width: '100%',
                     height: isFullscreen ? 'calc(100vh - 120px)' : '63vh',
-                    minHeight: isFullscreen ? 'calc(100vh - 120px)' : '63vh',
+                    minHeight: isFullscreen ? 'auto' : '63vh',
                     maxHeight: isFullscreen ? 'calc(100vh - 120px)' : '63vh',
                     display: 'flex',
                     flexDirection: 'column',
                     borderRadius: isFullscreen ? '0' : '8px',
                     overflow: 'hidden',
                     transition: 'all 0.25s ease',
-                    flexShrink: 0,
+                    flex: 1,
                   }}
                 >
                   {pdfUrl && (
