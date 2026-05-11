@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import React, { useEffect, useMemo, useState } from 'react';
 import Modal from 'react-modal';
 import './Modal.css';
 
@@ -35,6 +36,12 @@ const baseStyles = {
 
 function PdfViewer({ isOpen, onClose, title, children, footer }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsFullscreen(false)
+    }
+  }, [isOpen]);
 
   const modalStyles = useMemo(() => {
     if (isFullscreen) {

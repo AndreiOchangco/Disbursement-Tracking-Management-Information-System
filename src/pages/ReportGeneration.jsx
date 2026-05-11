@@ -44,6 +44,14 @@ export default function ReportGeneration() {
   const [pdfUrl, setPdfUrl] = useState(null)
   const [selectedReport, setSelectedReport] = useState(null)
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsFullscreen(false)
+    }
+  }, [isOpen])
+
   // Redirect admin to dashboard
   useEffect(() => {
     if (currentUser?.department === 'admin') {
@@ -141,7 +149,7 @@ export default function ReportGeneration() {
                       href={pdfUrl}
                       download={`dv_report_${selectedReport?.id}.pdf`}
                     >
-                      <button>Download</button>
+                      <button className="btn-primary">Download</button>
                     </a>
                   )}
                 </>
