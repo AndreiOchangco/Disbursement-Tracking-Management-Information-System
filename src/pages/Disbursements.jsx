@@ -119,7 +119,7 @@ export default function Disbursements() {
     { category: 'Adjustment', np: '', ft: '', tf: '' },
   ])
   const [jeRows, setJeRows] = useState([
-    { account_code: '', particulars: 'Select Category', debit: '', credit: '' }
+    { account_code: '', particulars: '', debit: '', credit: '' }
   ]);
   
   // EDIT STATES (Separated by Department)
@@ -1003,19 +1003,7 @@ export default function Disbursements() {
                       {jeRows.map((row, index) => (
                         <tr key={index}>
                           <td>
-                            <select
-                              className="particulars-input"
-                              value={row.particulars}
-                              onChange={(e) =>
-                                handleJeRowChange(index, 'particulars', e.target.value)
-                              }
-                            >
-                              <option value="">Select Category</option>
-                              <option value="ORGANIC">ORGANIC</option>
-                              <option value="DEVOLVED">DEVOLVED</option>
-                              <option value="VB & SB">VB & SB</option>
-                              <option value="Adjustment">Adjustment</option>
-                            </select>
+                            <input className="particulars-input" type="text" value={row.particulars} onChange={(e) => handleJeRowChange(index, 'particulars', e.target.value)} placeholder="Particulars" />
                           </td>
                           <td>
                             <select
