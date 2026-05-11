@@ -15,7 +15,17 @@ export default function ReportGeneration() {
   const openModal = () => setIsOpen(true);
 
   // Close modal
-  const closeModal = () => setIsOpen(false);
+  const closeModal = () => {
+    // cleanup blob URL
+    if (pdfUrl) {
+      URL.revokeObjectURL(pdfUrl)
+    }
+
+    // reset states
+    setPdfUrl(null)
+    setSelectedReport(null)
+    setIsOpen(false)
+  }
 
 
 
@@ -44,12 +54,6 @@ export default function ReportGeneration() {
   useEffect(() => {
     fetchReports()
   }, [])
-
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl)
-    }
-  }, [pdfUrl])
 
   const fetchReports = async (p = 1) => {
     setLoading(true)
@@ -130,48 +134,48 @@ export default function ReportGeneration() {
               isOpen={isOpen}
               onClose={closeModal}
               title="PDF Preview"
-              contentStyle={{
-                width: '98vw',
-                height: '95vh',
-                maxWidth: 'none',
-                margin: '0 auto',
-                padding: '1rem',
-                borderRadius: '8px'
-              }}
-              overlayStyle={{
-                backgroundColor: 'rgba(0,0,0,0.7)'
-              }}
               footer={
                 <>
                   {pdfUrl && (
-                    <a href={pdfUrl} download={`dv_report_${selectedReport?.id}.pdf`}>
+                    <a
+                      href={pdfUrl}
+                      download={`dv_report_${selectedReport?.id}.pdf`}
+                    >
                       <button>Download</button>
                     </a>
                   )}
                 </>
               }
             >
-              {/* BODY CONTENT */}
-              <div style={{
-                width: '88vw',
-                height: '63vh',
-                display: 'flex',
-                flexDirection: 'column',
-                borderRadius: '8px',
-                overflow: 'hidden',
-              }}>
-
-                {/* PDF */}
-                <iframe
-                  src={pdfUrl}
-                  title="PDF Preview"
+              {({ isFullscreen }) => (
+                <div
                   style={{
-                    flex: 1,
                     width: '100%',
-                    border: 'none'
+                    height: isFullscreen ? 'calc(100vh - 120px)' : '63vh',
+                    minHeight: isFullscreen ? 'calc(100vh - 120px)' : '63vh',
+                    maxHeight: isFullscreen ? 'calc(100vh - 120px)' : '63vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: isFullscreen ? '0' : '8px',
+                    overflow: 'hidden',
+                    transition: 'all 0.25s ease',
+                    flexShrink: 0,
                   }}
-                />
-              </div>
+                >
+                  {pdfUrl && (
+                    <iframe
+                      src={pdfUrl}
+                      title="PDF Preview"
+                      style={{
+                        flex: 1,
+                        width: '100%',
+                        height: '100%',
+                        border: 'none',
+                      }}
+                    />
+                  )}
+                </div>
+              )}
             </PdfViewer>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginLeft: '1rem' }}>
               <input placeholder="Filter DV#" value={filterDvNo} className="search search--wide" onChange={e => setFilterDvNo(e.target.value)} />
