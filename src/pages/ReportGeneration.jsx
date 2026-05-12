@@ -63,6 +63,12 @@ export default function ReportGeneration() {
     fetchReports()
   }, [])
 
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl)
+    }
+  }, [pdfUrl])
+
   const fetchReports = async (p = 1) => {
     setLoading(true)
     try {
