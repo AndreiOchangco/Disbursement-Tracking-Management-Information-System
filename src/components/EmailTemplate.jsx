@@ -34,7 +34,7 @@ export const generateDVEmailTemplate = (
 
   const messageMap = {
     update: 'Your disbursement voucher has been reviewed and <strong style="color:#2c5dff;">updated</strong>.',
-    approved: `Your disbursement voucher has been <strong style="color:#2c5dff;">submitted</strong> and is currently under review.`,
+    approved: `Your disbursement voucher has been <strong style="color:#2c5dff;">approved</strong> by ${deptName} and is currently under review by next department.`,
     rejected: `Your disbursement voucher has been <strong style="color:#e11d48;">rejected</strong> by ${deptName}.`,
     completed: `Your disbursement voucher has been <strong style="color:#059669;">approved</strong> by ${deptName}.`,
   };
@@ -44,6 +44,15 @@ export const generateDVEmailTemplate = (
 
   const imageUrl = 'https://plain-apac-prod-public.komododecks.com/202605/08/Dz5pUM6CMXopOfEP5aOC/image.png';
 
+  const getRemarkTheme = () => {
+    if (type === 'rejected') {
+      return { bg: '#fee2e2', text: '#991b1b', border: '#e11d48' }; // High-contrast Alert Red
+    }
+    return { bg: '#eff6ff', text: '#1e40af', border: '#2c5dff' };   // High-contrast Info Blue (matches update theme)
+  };
+
+  const theme = getRemarkTheme();
+  
   const html = `
     <div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
       <div style="max-width: 600px; margin: auto; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
@@ -68,7 +77,7 @@ export const generateDVEmailTemplate = (
 
           ${remarks && showRemarks ? `
           <p style="margin-top: 16px; margin-bottom: 4px;"><strong>Remarks:</strong></p>
-          <div style="background:#fee2e2; padding:12px; border-radius:8px; color:#991b1b; border-left: 4px solid #e11d48;">
+          <div style="background: ${theme.bg}; color: ${theme.text}; border-left: 4px solid ${theme.border}; padding: 12px; border-radius: 8px;">
             ${remarks || 'No remarks provided.'}
           </div>
           ` : ''}

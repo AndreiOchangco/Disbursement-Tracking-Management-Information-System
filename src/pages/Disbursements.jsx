@@ -402,49 +402,49 @@ export default function Disbursements() {
         Swal.fire({
           title: 'Processing...',
           text: 'Approving disbursement voucher',
-          iconHtml: '<ion-icon name="refresh-circle-outline" class="spinner-icon" style="font-size: 2rem;"></ion-icon>',
-          showConfirmButton: false,
           allowOutsideClick: false,
           allowEscapeKey: false,
           background: '#F0F4FF',
           color: '#1f2937',
+          showConfirmButton: false,
+          didOpen: async () => {
+            Swal.showLoading();
+            let emailConfig = null;
+
+            try {
+              await apiRequest(`/dv/${item.id}/approve/`, 'POST');
+
+              const isFinalStep = item.current_step === 5;
+              emailConfig = {
+                type: isFinalStep ? 'completed' : 'approved',
+                remarks: isFinalStep ? 'Approved and released.' : 'Voucher approved and forwarded to next step.'
+              };
+
+              await Swal.fire({
+                title: 'Success!',
+                text: 'Disbursement approved and payee notified.',
+                icon: 'success',
+                confirmButtonColor: '#0052CC',
+                background: '#F0F4FF',
+                color: '#1f2937',
+              });
+              await reload();
+            } catch (err) {
+              console.error('Approve failed', err);
+              await Swal.fire({
+                title: 'Error!',
+                text: err?.message || 'Approve failed',
+                icon: 'error',
+                confirmButtonColor: '#e11d48',
+              });
+              return;
+            }
+
+            if (emailConfig) {
+              sendRejectedDVEmailAuto(item, emailConfig);
+            }
+          }
         });
-
-        let emailConfig = null;
-
-        try {
-          await apiRequest(`/dv/${item.id}/approve/`, 'POST');
-
-          // Automatic email notify: Step 3 (Treasurer) completes the flow, otherwise it is 'approved' (forwarded)
-          const isFinalStep = item.current_step === 3;
-          emailConfig = {
-            type: isFinalStep ? 'completed' : 'approved',
-            remarks: isFinalStep ? 'Approved and released.' : 'Voucher approved and forwarded to next step.'
-          };
-
-          await Swal.fire({
-            title: 'Success!',
-            text: 'Disbursement approved and payee notified.',
-            icon: 'success',
-            confirmButtonColor: '#0052CC',
-            background: '#F0F4FF',
-            color: '#1f2937',
-          });
-          await reload();
-        } catch (err) {
-          console.error('Approve failed', err);
-          await Swal.fire({
-            title: 'Error!',
-            text: err?.message || 'Approve failed',
-            icon: 'error',
-            confirmButtonColor: '#e11d48',
-          });
-          return;
-        }
-
-        if (emailConfig) {
-          sendRejectedDVEmailAuto(item, emailConfig)
-        }
       }
     });
   };
@@ -472,46 +472,47 @@ export default function Disbursements() {
         Swal.fire({
           title: 'Processing...',
           text: 'Rejecting disbursement voucher',
-          iconHtml: '<ion-icon name="refresh-circle-outline" class="spinner-icon" style="font-size: 2rem;"></ion-icon>',
-          showConfirmButton: false,
           allowOutsideClick: false,
           allowEscapeKey: false,
           background: '#F0F4FF',
           color: '#1f2937',
-        });
-
-        let emailConfig = null;
+          showConfirmButton: false,
+          didOpen: async () => {
+            Swal.showLoading();
+            let emailConfig = null;
         
-        try {
-          await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: remarks || 'No remarks provided.' });
-          
-          emailConfig = {
-            type: 'rejected',
-            remarks: remarks
-          };
+            try {
+              await apiRequest(`/dv/${item.id}/disapprove/`, 'POST', { remarks: remarks || 'No remarks provided.' });
+              
+              emailConfig = {
+                type: 'rejected',
+                remarks: remarks
+              };
 
-          await Swal.fire({
-            title: 'Rejected!',
-            text: 'Disbursement rejected successfully, and notification email sent.',
-            icon: 'success',
-            confirmButtonColor: '#0052CC',
-          });
-          if(showViewModal) setShowViewModal(false);
-          await reload();
-        } catch (err) {
-          console.error('Reject failed', err);
-          await Swal.fire({
-            title: 'Error!',
-            text: err?.message || 'Reject failed',
-            icon: 'error',
-            confirmButtonColor: '#e11d48',
-          });
-          return;
-        }
+              await Swal.fire({
+                title: 'Rejected!',
+                text: 'Disbursement rejected successfully, and notification email sent.',
+                icon: 'success',
+                confirmButtonColor: '#0052CC',
+              });
+              if(showViewModal) setShowViewModal(false);
+              await reload();
+            } catch (err) {
+              console.error('Reject failed', err);
+              await Swal.fire({
+                title: 'Error!',
+                text: err?.message || 'Reject failed',
+                icon: 'error',
+                confirmButtonColor: '#e11d48',
+              });
+              return;
+            }
 
-        if (emailConfig) {
-          sendRejectedDVEmailAuto(item, emailConfig);
-        }
+            if (emailConfig) {
+              sendRejectedDVEmailAuto(item, emailConfig);
+            }
+          }
+        });
       }
     });
   };
@@ -533,32 +534,34 @@ export default function Disbursements() {
         Swal.fire({
           title: 'Processing...',
           text: 'Archiving disbursement voucher',
-          iconHtml: '<ion-icon name="refresh-circle-outline" class="spinner-icon" style="font-size: 2rem;"></ion-icon>',
-          showConfirmButton: false,
           allowOutsideClick: false,
           allowEscapeKey: false,
           background: '#F0F4FF',
           color: '#1f2937',
-        })
+          showConfirmButton: false,
+          didOpen: async () => {
+            Swal.showLoading();
         
-        try {
-          await apiRequest(`/dv/${d.id}/archive/`, 'POST', { reason: reason })
-          await Swal.fire({ 
-            icon: 'success', 
-            title: 'Archived!',
-            background: '#F0F4FF',
-            color: '#1f2937',
-          })
-          await reload()
-        } catch (e) {
-          Swal.fire({ 
-            icon: 'error', 
-            title: 'Error', 
-            text: 'Failed to archive.',
-            background: '#F0F4FF',
-            color: '#1f2937',
-          })
-        }
+            try {
+              await apiRequest(`/dv/${d.id}/archive/`, 'POST', { reason: reason })
+              await Swal.fire({ 
+                icon: 'success', 
+                title: 'Archived!',
+                background: '#F0F4FF',
+                color: '#1f2937',
+              })
+              await reload()
+            } catch (e) {
+              Swal.fire({ 
+                icon: 'error', 
+                title: 'Error', 
+                text: 'Failed to archive.',
+                background: '#F0F4FF',
+                color: '#1f2937',
+              })
+            }
+          }
+        })
       }
     })
   };
@@ -1271,19 +1274,19 @@ export default function Disbursements() {
               <div className="form-grid form-grid--split noselect">
                 <label>
                   <span>Payee Name<span style={{ color: 'red' }}>*</span></span>
-                  <input type="text" value={editPayeeData.name} onChange={(e) => setEditPayeeData({...payeeData, name: e.target.value})}  disabled={!canEditAccounting}/>
+                  <input type="text" value={editPayeeData.name} onChange={(e) => setEditPayeeData({...editPayeeData, name: e.target.value})}  disabled={!canEditAccounting}/>
                 </label>
                 <label>
                   <span>Payee Email<span style={{ color: 'red' }}>*</span></span>
-                  <input type="text" value={editPayeeData.email} onChange={(e) => setPayeeData({...payeeData, email: e.target.value})}  disabled={!canEditAccounting}/>
+                  <input type="text" value={editPayeeData.email} onChange={(e) => setEditPayeeData({...editPayeeData, email: e.target.value})}  disabled={!canEditAccounting}/>
                 </label>
                 <label>
                   <span>Payee Phone Number<span style={{ color: 'red' }}>*</span></span>
-                  <input type="text" value={editPayeeData.phone_no} onChange={(e) => setEditPayeeData({...payeeData, phone_no: e.target.value})}  disabled={!canEditAccounting}/>
+                  <input type="text" value={editPayeeData.phone_no} onChange={(e) => setEditPayeeData({...editPayeeData, phone_no: e.target.value})}  disabled={!canEditAccounting}/>
                 </label>
                 <label>
                   <span>Payee Address<span style={{ color: 'red' }}>*</span></span>
-                  <input type="text" value={editPayeeData.address} onChange={(e) => setEditPayeeData({...payeeData, address: e.target.value})}  disabled={!canEditAccounting}/>
+                  <input type="text" value={editPayeeData.address} onChange={(e) => setEditPayeeData({...editPayeeData, address: e.target.value})}  disabled={!canEditAccounting}/>
                 </label>
                 <label>
                   <span>ID # / TIN<span style={{ color: 'red' }}>*</span></span>

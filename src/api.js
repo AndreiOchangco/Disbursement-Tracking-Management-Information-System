@@ -93,7 +93,9 @@ export async function apiRequest(endpoint, method = 'GET', body = null, _retry =
     const res = await fetchWithFailover(endpoint, config)
 
     // ===== REFRESH =====
-    if (res.status === 401 && !_retry) {
+    const isAuthEndpoint = endpoint.includes('/auth/login/') || endpoint.includes('/auth/refresh/')
+
+    if (res.status === 401 && !_retry && !isAuthEndpoint) {
       const refreshRes = await fetchWithFailover('/auth/refresh/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,21 +112,14 @@ export async function apiRequest(endpoint, method = 'GET', body = null, _retry =
 
     if (!res.ok) {
       let msg = `HTTP Error ${res.status}`
-
       try {
         const data = await res.json()
-        msg =
-          data?.error ||
-          data?.detail ||
-          JSON.stringify(data) ||
-          msg
+        msg = data?.error || data?.detail || JSON.stringify(data) || msg
       } catch {}
-
       throw new Error(msg)
     }
 
     const type = res.headers.get('content-type')
-
     if (type?.includes('application/pdf')) {
       return res.blob()
     }

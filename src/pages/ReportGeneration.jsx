@@ -6,6 +6,7 @@ import { apiRequest, BASE_URL, getCurrentUser } from '../api'
 import ReactModal from '../components/ReactModal'
 import PdfViewer from '../components/PdfViewer'
 import {toast} from 'react-toastify'
+import Swal from 'sweetalert2'
 
 export default function ReportGeneration() {
   // 🔥 State controls modal visibility
@@ -235,24 +236,43 @@ export default function ReportGeneration() {
                       <td>{p.accounting_name ?? '-'}</td>
                       <td className='table-column-center'>
                         <button className="btn-primary" onClick={async () => {
-                          try {
-                            const res = await fetch(`${BASE_URL}/dv/reports/${r.dv}/pdf/`, {
-                              method: 'GET',
-                              credentials: 'include',
-                            })
-                            if (!res.ok) throw new Error('Failed to generate PDF')
-                            const blob = await res.blob()
-                            const url = URL.createObjectURL(blob)
+                            try {
+                              Swal.fire({
+                                title: 'Loading',
+                                html: 'Generating PDF...',
+                                allowOutsideClick: false,
+                                didOpen: async () => {
+                                  Swal.showLoading()
+                                  try {
+                                    const blob = await apiRequest(`/dv/reports/${r.dv}/pdf/`)
+                                    if (!blob) throw new Error('Failed to generate PDF')
+                                    const url = URL.createObjectURL(blob)
 
-                            // store URL instead of downloading
-                            setPdfUrl(url)
-                            setSelectedReport(r)
-                            openModal()
-                          } catch (err) {
-                            console.error(err)
-                            toast.error('Failed to download report PDF')
-                          }
-                        }}>👁 Preview PDF</button>
+                                    setPdfUrl(url)
+                                    setSelectedReport(r)
+                                    Swal.close()
+                                    openModal()
+                                  } catch (err) {
+                                    console.error(err)
+                                    Swal.fire({
+                                      title: 'Error',
+                                      text: 'Failed to generate PDF',
+                                      icon: 'error',
+                                      confirmButtonColor: '#2c5dff'
+                                    })
+                                  }
+                                }
+                              })
+                            } catch (err) {
+                              console.error(err)
+                              Swal.fire({
+                                title: 'Error',
+                                text: 'Failed to download report PDF',
+                                icon: 'error',
+                                confirmButtonColor: '#2c5dff'
+                              })
+                            }
+                          }}>👁 Preview PDF</button>
                       </td>
                   </tr>
                 )
