@@ -48,10 +48,6 @@ export default function Login() {
     setCapsLockOn(capsLockEnabled)
   }
 
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value)
-  }
-
   // Check if user is already logged in on mount
   useEffect(() => {
     const currentUser = getCurrentUser()
@@ -161,7 +157,7 @@ export default function Login() {
                   setCapsLockOn(false)
                 }}
                 value={password}
-                onChange={handlePasswordChange}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 aria-required="true"
               />

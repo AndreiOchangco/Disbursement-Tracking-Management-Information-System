@@ -192,7 +192,7 @@ export default function ReportGeneration() {
                 </div>
               )}
             </PdfViewer>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginLeft: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'right', marginLeft: '1rem' }}>
               <input placeholder="Filter DV#" value={filterDvNo} className="search search--wide" onChange={e => setFilterDvNo(e.target.value)} />
               <input type="date" value={filterFrom} className="search search--wide" onChange={e => setFilterFrom(e.target.value)} />
               <input type="date" value={filterTo} className="search search--wide" onChange={e => setFilterTo(e.target.value)} />
@@ -209,7 +209,7 @@ export default function ReportGeneration() {
                 <th className="table-column-center table-column-border" style={{ color: '#2c5dff' }}>Date Submitted</th>
                 <th className="table-column-center table-column-border" style={{ color: '#2c5dff' }}>Approved Date</th>
                 <th className="table-column-center table-column-border" style={{ color: '#2c5dff' }}>Prepared By</th>
-                  <th className="table-column-center table-column-border" style={{ color: '#2c5dff' }}>Actions</th>
+                <th className="table-column-center table-column-border" style={{ color: '#2c5dff' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
