@@ -106,7 +106,7 @@ export default function Login() {
             <input
               ref={emailRef}
               type="email"
-              autoComplete="email"
+              autoComplete="off"
               className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium"
               style={{ 
                 backgroundColor: '#F9FAFB'
