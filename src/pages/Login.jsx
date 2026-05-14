@@ -163,9 +163,11 @@ export default function Login() {
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xl cursor-pointer transition-colors hover:scale-110"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xl cursor-pointer transition-colors hover:scale-110"
                 onClick={() => setShowPassword(!showPassword)}
-                style={{ color: '#0052CC', background: 'none', border: 'none', padding: '4px' }}
+                style={{color: '#0052CC', background: 'none', border: 'none', padding: '4px', outline: 'none', boxShadow: 'none', WebkitAppearance: 'none'
+                }}
+                onFocus={(e) => e.target.blur()}
                 title={showPassword ? 'Hide password' : 'Show password'}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
