@@ -106,7 +106,7 @@ export default function Login() {
             <input
               ref={emailRef}
               type="email"
-              autoComplete="email"
+              autoComplete="off"
               className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium"
               style={{ 
                 backgroundColor: '#F9FAFB'
@@ -139,7 +139,7 @@ export default function Login() {
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
-                autoComplete="new-password"
+                autoComplete="off"
                 name="no-password"
                 className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium pr-10"
                 style={{ 
