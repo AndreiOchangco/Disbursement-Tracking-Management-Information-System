@@ -71,7 +71,7 @@ export default function Login() {
 
         {/* Header */}
         <div className="flex justify-center mb-6">
-          <img src={logo} alt="DTMIS Logo" className="w-30 h-30" />
+          <img src={logo} alt="DTMIS Logo" className="w-35 h-35" />
         </div>
 
         <h1 className="text-3xl font-bold text-center mb-1" style={{ color: '#0052CC' }}>
