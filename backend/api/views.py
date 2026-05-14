@@ -1008,7 +1008,7 @@ def dv_report_pdf(request, dv_id):
         je_rows += f"""
         <tr>
             <td style="border: 1px solid black; width: 48%;">{particular}</td>
-            <td style="border: 1px solid black; text-align:center; width: 22%;">{code}</td>
+            <td style="border: 1px solid black; width: 22%;">{code}</td>
             <td style="border: 1px solid black; text-align:right; width: 15%;">{debit_display}</td>
             <td style="border: 1px solid black; text-align:right; width: 15%;">{credit_display}</td>
         </tr>
