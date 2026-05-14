@@ -24,6 +24,14 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'New York', sans-serif;
 }
 
+/* Mobile-first - Base responsive typography */
+@media (min-width: 768px) {
+  body { font-size: 15px; }
+}
+@media (min-width: 1024px) {
+  body { font-size: 16px; }
+}
+
 * {
   box-sizing: border-box;
 }
