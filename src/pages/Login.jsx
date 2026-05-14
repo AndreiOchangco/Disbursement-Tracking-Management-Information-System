@@ -101,7 +101,7 @@ export default function Login() {
           {/* Email Field */}
           <div>
             <label className="block font-semibold mb-2 flex items-center gap-2 text-sm" style={{ color: '#0052CC' }}>
-              <span>📧</span> Email Address
+              <span ><ion-icon name="mail-sharp" ></ion-icon></span> Email Address
             </label>
             <input
               ref={emailRef}
@@ -133,13 +133,13 @@ export default function Login() {
           <div>
             <label className="block font-semibold mb-2 flex items-center justify-between text-sm" style={{ color: '#0052CC' }}>
               <span className="flex items-center gap-2">
-                <span>🔐</span> Password
+                <span><ion-icon name="lock-closed-sharp"></ion-icon></span> Password
               </span>
             </label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
-                autoComplete="new-password"
+                autoComplete="off"
                 name="no-password"
                 className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium pr-10"
                 style={{ 
