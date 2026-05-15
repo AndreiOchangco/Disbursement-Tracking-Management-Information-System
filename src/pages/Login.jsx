@@ -170,8 +170,8 @@ export default function Login() {
                 className="absolute inset-y-0 right-3 top-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer"
                 style={{
                   background: 'transparent',
-                  border: 'none',
                   color: '#0052CC',
+                  border: 'none',
                   outline: 'none',
                   boxShadow: 'none',
                   padding: 0,
