@@ -1364,6 +1364,10 @@ button:hover svg,
 }
 
 /* Loading animation */
+.loading {
+  animation: spin 1s linear infinite;
+}
+
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -1373,9 +1377,6 @@ button:hover svg,
   }
 }
 
-.loading {
-  animation: spin 1s linear infinite;
-}
 
 /* Fade in animation */
 @keyframes fadeIn {
@@ -1567,6 +1568,10 @@ button:hover svg,
 /* Charts Grid */
 .charts-grid {
   display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
 
 /* Loading Spinner Animation */
 @keyframes spin {
@@ -1590,10 +1595,6 @@ button:active .spinner-icon,
 button:focus .spinner-icon,
 button:disabled .spinner-icon {
   animation: spin 1s linear infinite !important;
-}
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-top: 2rem;
 }
 
 @media (max-width: 1024px) {
