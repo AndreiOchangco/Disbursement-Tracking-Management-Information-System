@@ -9,5 +9,15 @@
     "not ios_saf <= 18.3",
     "not safari <= 18.3",
     "not samsung <= 27"
-  ]
+  ],
+  "hints": {
+    "compat-api/css": [
+      "default",
+      {
+        "ignore": [
+          "-webkit-text-size-adjust"
+        ]
+      }
+    ]
+  }
 }
