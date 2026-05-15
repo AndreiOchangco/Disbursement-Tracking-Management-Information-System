@@ -66,8 +66,8 @@ export default function Login() {
   return (
     <>
       {isChecking ? null : (
-      <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'linear-gradient(135deg, #0052CC 0%, #003A96 100%)' }}>
-      <div className="bg-white p-8 w-full max-w-md border-4 border-yellow-400 rounded-lg shadow-2xl" style={{ boxShadow: '0 8px 32px rgba(0, 82, 204, 0.3)' }}>
+      <div className="min-h-screen flex items-center justify-center px-4 py-8 noselect" style={{ background: 'linear-gradient(135deg, #0052CC 0%, #003A96 100%)' }}>
+      <div className="bg-white py-10 px-15 w-full max-w-fit border-4 border-yellow-400 rounded-lg shadow-2xl" style={{ boxShadow: '0 8px 32px rgba(0, 82, 204, 0.3)' }}>
 
         {/* Header */}
         <div className="flex justify-center mb-6">
@@ -77,7 +77,7 @@ export default function Login() {
         <h1 className="text-3xl font-bold text-center mb-1" style={{ color: '#0052CC' }}>
           DTMIS
         </h1>
-        <p className="text-center mb-6 font-semibold text-sm" style={{ color: '#666' }}>
+        <p className="text-center mb-6 font-semibold text-sm whitespace-nowrap" style={{ color: '#666' }}>
           Disbursement Tracking Management Information System
         </p>
 
@@ -138,10 +138,10 @@ export default function Login() {
             </label>
             <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type="password"
                 autoComplete="off"
                 name="no-password"
-                className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium pr-10"
+                className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium"
                 style={{ 
                   backgroundColor: '#F9FAFB'
                 }}
@@ -161,16 +161,6 @@ export default function Login() {
                 placeholder="Enter your password"
                 aria-required="true"
               />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xl cursor-pointer transition-colors hover:scale-110"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{ color: '#0052CC', background: 'none', border: 'none', padding: '4px' }}
-                title={showPassword ? 'Hide password' : 'Show password'}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <ion-icon name="eye-off"></ion-icon> : <ion-icon name="eye"></ion-icon>}
-              </button>
             </div>
 
             {/* Caps Lock Warning */}
