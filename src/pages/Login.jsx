@@ -138,10 +138,10 @@ export default function Login() {
             </label>
             <div className="relative">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 autoComplete="off"
                 name="no-password"
-                className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium"
+                className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none text-sm font-medium pr-8"
                 style={{ 
                   backgroundColor: '#F9FAFB'
                 }}
@@ -161,6 +161,28 @@ export default function Login() {
                 placeholder="Enter your password"
                 aria-required="true"
               />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute inset-y-0 right-3 top-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#0052CC',
+                  outline: 'none',
+                  boxShadow: 'none',
+                  padding: 0,
+                  margin: 0,
+                }}
+              >
+                <ion-icon
+                  name={showPassword ? 'eye-off-sharp' : 'eye-sharp'}
+                  style={{ fontSize: '18px', display: 'block' }}
+                ></ion-icon>
+              </button>
             </div>
 
             {/* Caps Lock Warning */}
@@ -230,6 +252,11 @@ export default function Login() {
               opacity: 1;
               transform: scale(1);
             }
+          }
+
+          input[type="password"]::-ms-reveal,
+          input[type="password"]::-ms-clear {
+            display: none;
           }
         `}</style>
       )}
