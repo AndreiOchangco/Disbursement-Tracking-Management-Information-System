@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react'
 import { apiRequest, getCurrentUser } from '../api'
-import { toast } from 'react-toastify'
+import { notify } from '../components/DTMISToast'
 
 // Map database choices to readable labels
 const deptLabels = {
@@ -69,7 +69,7 @@ export default function UserManagement() {
     } catch (err) {
       console.error('Failed to load users:', err.message, err)
       const errorMsg = err.message?.includes('403') ? 'You do not have permission to view users. Only System Administrators can access this.' : 'Error loading users. Please try again.'
-      toast.error(errorMsg)
+      notify.error(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -85,7 +85,7 @@ export default function UserManagement() {
       }
     } catch (err) {
       console.error('Failed to load department heads:', err)
-      toast.error('Error loading department heads')
+      notify.error('Error loading department heads')
     } finally {
       setLoading(false)
     }
@@ -120,12 +120,12 @@ export default function UserManagement() {
     e.preventDefault()
 
     if (!formData.full_name || !formData.email) {
-      toast.error('Please fill in all required fields')
+      notify.error('Please fill in all required fields')
       return
     }
 
     if (!editingUser && !formData.password) {
-      toast.error('Password is required for new users')
+      notify.error('Password is required for new users')
       return
     }
 
@@ -141,19 +141,19 @@ export default function UserManagement() {
         }
         result = await apiRequest(`/users/signup/${editingUser.id}/`, 'PUT', submitData)
         setUsers(users.map(u => u.id === editingUser.id ? result : u))
-        toast.success('User updated successfully')
+        notify.success('User updated successfully')
       } else {
         // Create user
         result = await apiRequest('/users/signup/', 'POST', submitData)
         setUsers([result, ...users])
-        toast.success('User created successfully')
+        notify.success('User created successfully')
       }
 
       calculateStats([...users.filter(u => u.id !== editingUser?.id), result])
       resetForm()
     } catch (err) {
       console.error('Failed to save user:', err)
-      toast.error('Error saving user')
+      notify.error('Error saving user')
     } finally {
       setLoading(false)
     }
@@ -190,10 +190,10 @@ export default function UserManagement() {
       setLoading(true)
       await apiRequest(`/users/${id}/`, 'DELETE')
       setUsers(users.map(u => u.id === id ? { ...u, status: 'archived' } : u))
-      toast.success('User archived successfully')
+      notify.success('User archived successfully')
     } catch (err) {
       console.error('Failed to archive user:', err.message, err)
-      toast.error(err.message || 'Error archiving user')
+      notify.error(err.message || 'Error archiving user')
     } finally {
       setLoading(false)
     }
@@ -206,10 +206,10 @@ export default function UserManagement() {
         status: 'inactive'
       })
       setUsers(users.map(u => u.id === id ? updated : u))
-      toast.success('User restored successfully')
+      notify.success('User restored successfully')
     } catch (err) {
       console.error('Failed to restore user:', err.message, err)
-      toast.error(err.message || 'Error restoring user')
+      notify.error(err.message || 'Error restoring user')
     } finally {
       setLoading(false)
     }
@@ -225,7 +225,7 @@ export default function UserManagement() {
       setUsers(users.map(u => u.id === user.id ? updated : u))
     } catch (err) {
       console.error('Failed to update user status:', err)
-      toast.error(err.message || 'Error updating user status')
+      notify.error(err.message || 'Error updating user status')
     }
   }
 
@@ -239,7 +239,7 @@ export default function UserManagement() {
   // Update Department Head to DB on click
   const handleUpdateDeptHead = async (id, fullname) => {
     if (!fullname.trim()) {
-      toast.error('Full name cannot be empty')
+      notify.error('Full name cannot be empty')
       return
     }
 
@@ -250,11 +250,11 @@ export default function UserManagement() {
         setDeptHeads(prev =>
           prev.map(dh => (dh.id === id ? updatedData : dh))
         )
-        toast.success('Department Head updated successfully!')
+        notify.success('Department Head updated successfully!')
       }
     } catch (err) {
       console.error('Failed to update Department Head:', err)
-      toast.error('Error updating Department Head')
+      notify.error('Error updating Department Head')
     } finally {
       setLoading(false)
     }

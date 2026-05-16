@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { apiRequest, getCurrentUser } from '../api'
 import '../chart.js'
 import { Bar, Line, Pie } from 'react-chartjs-2'
+import { notify } from '../components/DTMISToast'
 
 // Helper for currency formatting
 const formatCurrency = (amount) => {
