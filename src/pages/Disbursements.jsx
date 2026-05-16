@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from utils.email import generate_dv_email_template
-from .models import DeptHead, User, DV, DVArchived, DVWorkflow, DVReport, DVParticularValue, DeptHead
+from .models import DeptHead, User, DV, DVArchived, DVWorkflow, DVReport, DVParticularValue
 from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DeptHeadSerializer
 from .authentication import JWTAuthentication
 from django.contrib.auth import authenticate as django_authenticate
@@ -68,6 +68,30 @@ def is_checked(value, expected):
 
     return ""
 
+def send_dv_email(dv, type='update', remarks=None):
+    if not dv.payee or not dv.payee.email:
+        return
+
+    subject = f'DV {type.upper()} (Tracking #{dv.tracking_no})'
+
+    html_content = generate_dv_email_template(
+        type=type,
+        name=dv.payee.name,
+        tracking_no=dv.tracking_no,
+        dv_no=dv.dv_no,
+        created_date=dv.created_date.strftime('%m/%d/%Y'),
+        remarks=remarks,
+    )
+
+    text_content = strip_tags(html_content)
+
+    msg = EmailMultiAlternatives(
+        subject,
+        text_content,
+        to=[dv.payee.email],
+    )
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
 
 DEPT_STEP = {
     'accounting': 1,
@@ -524,6 +548,8 @@ def dv_approve(request, pk):
 
     dv.save()
 
+    send_dv_email(dv, type='approved')
+
 
     # Create DVReport snapshot when DV is completed
     if dv.status == 'completed' and not hasattr(dv, 'report'):
@@ -585,6 +611,8 @@ def dv_disapprove(request, pk):
     dv.last_disapproved_step = user_step
     dv.save()
 
+    send_dv_email(dv, type='rejected', remarks=remarks)
+
     return Response("Disbursement Voucher has been disapproved and sent back to Accounting.")
 
 
@@ -618,6 +646,8 @@ def dv_resubmit(request, pk):
     dv.status = 'pending'
     dv.current_step = resubmit_step
     dv.save()
+
+    send_dv_email(dv, type='update', remarks='Your disbursement voucher has been corrected and resubmitted for review.')
 
     return Response("Disbursement Voucher has been resubmitted for review.")
 
@@ -877,8 +907,7 @@ def dv_report_pdf(request, dv_id):
         total_np = 0
         total_ft = 0
         total_tf = 0
-        total_sum = 0
-        has_np = has_ft = has_tf = has_sum = False
+        has_np = has_ft = has_tf = False
 
         def _to_num(v):
             if isinstance(v, (int, float)):
@@ -1479,6 +1508,53 @@ def dv_report_pdf(request, dv_id):
 
         </tr>
 
+    </table>
+
+    <table style="border-collapse: collapse; width: 100%;">
+        <!-- ROW 1 -->
+        <tr>
+            <td rowspan="2" style="border: 1px solid #000; padding: 4px; width: 15%;">
+            Column 1 - Row 1
+            </td>
+
+            <!-- Column 2 spans ALL 4 rows -->
+            <td rowspan="4" style="border: 1px solid #000; padding: 4px; width: 55%; vertical-align: top;">
+            Only one row here (center column)
+            </td>
+
+            <td style="border: 1px solid #000; padding: 4px; width: 20%;">
+            Column 3 - Row 1
+            </td>
+        </tr>
+
+        <!-- ROW 2 -->
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px;">
+            Column 3 - Row 2
+            </td>
+        </tr>
+
+        <!-- ROW 3 -->
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px;">
+            Column 1 - Row 2
+            </td>
+
+            <td style="border: 1px solid #000; padding: 4px;">
+            Column 3 - Row 3
+            </td>
+        </tr>
+
+        <!-- ROW 4 -->
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px;">
+            Column 1 - Row 3
+            </td>
+
+            <td style="border: 1px solid #000; padding: 4px;">
+            Column 3 - Row 4
+            </td>
+        </tr>
     </table>
 
     </body>
