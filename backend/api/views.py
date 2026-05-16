@@ -1444,7 +1444,7 @@ def dv_report_pdf(request, dv_id):
             <td style="height: 25px; width: 48%; padding: 0; margin: 0;">
 
                 <!-- Top-left (forced tight) -->
-                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                <div style="margin-top: -10px; padding: 0; line-height: 1.2;">
                     <span style="margin: 0;">Prepared by:</span><br>
                 </div>
 
@@ -1467,6 +1467,7 @@ def dv_report_pdf(request, dv_id):
 
                 <!-- Centered bottom -->
                 <div style="text-align: center; margin-top: 30px; margin-bottom: 10px;">
+                    <span>{accounting_head_name}</span><br>
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Head, Accounting Division/Unit
                     </span><br>
@@ -1481,14 +1482,18 @@ def dv_report_pdf(request, dv_id):
     <table style="border-collapse: collapse; width: 100%;">
         <!-- ROW 1 -->
         <tr>
-            <td rowspan="2" style="border: 1px solid #000; padding: 4px; width: 15%; position:relative; display:flex; align-items:center; justify-content:center;">
-                <span class="bold small" style="position:absolute; margin-top: -20px;">MTA</span>
-                <div class="medium" style="text-align:center;">{payload.get('cafoa_no','')}</div>
+            <td rowspan="2" style="border: 1px solid #000; padding: 4px; width: 12%; position:relative; display:flex; align-items:center; justify-content:center;">
+                <span class="bold small" style="position:absolute; margin-top: -20px; margin-left: 55px;">MTO</span>
+                <div class="small" style="text-align:center;">RECEIVED</div>
             </td>
 
             <!-- Column 2 spans ALL 4 rows -->
-            <td rowspan="4" style="border: 1px solid #000; padding: 4px; width: 55%; vertical-align: top;">
-            Only one row here (center column)
+            <td rowspan="4" style="border: 1px solid #000; padding: 4px; width: 58%; vertical-align: top; position:relative; display:flex; align-items:center; justify-content:center;">
+                <span class="bold small" style="position:absolute; color: red;">DOCUMENTARY REQUIREMENTS</span>
+                <div class="small" style="text-align: left; margin-top: 20px;">
+                    1. Purchase Request<br>
+                    2. BAC Resolution<br>
+                </div>
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; width: 20%;">
