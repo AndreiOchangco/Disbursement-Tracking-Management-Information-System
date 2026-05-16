@@ -21,7 +21,6 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    notify.clear()
 
     try {
       const data = await apiRequest('/auth/login/', 'POST', {
