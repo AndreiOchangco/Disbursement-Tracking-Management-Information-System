@@ -96,8 +96,8 @@
   width: 100%;
   box-sizing: border-box;
 
-  padding: 1rem 1.5rem;
-  margin: 0;
+  padding: 2px 2.5px;
+  margin-bottom: 10px;
 
   background: white;
   border-bottom: 1px solid #e5e7eb;
@@ -117,13 +117,13 @@
 }
 
 .modal-title {
-  margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
   color: #1f2937;
   word-break: break-word;
   flex: 1 1 auto;
   min-width: 200px;
+  margin-bottom: 100px;
 }
 
 @media (max-width: 480px) {
@@ -182,6 +182,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  padding: 0.1rem 0.25rem;
 }
 
 @media (max-width: 480px) {

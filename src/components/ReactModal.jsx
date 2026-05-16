@@ -42,7 +42,7 @@ function ReactModal({ isOpen, onClose, title, children, footer }) {
       shouldCloseOnEsc={true}
     >
       {title && (
-        <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', height: '40px' }}>
+        <div className="modal-header">
           <h2 style={{ margin: 0, fontSize: '1.25rem' }}>{title}</h2>
           <button onClick={onClose} className="modal-close-btn">
             ✕
