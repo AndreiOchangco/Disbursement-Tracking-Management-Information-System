@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { apiRequest, BASE_URL, getCurrentUser } from '../api'
 import ReactModal from '../components/ReactModal'
 import PdfViewer from '../components/PdfViewer'
-import {toast} from 'react-toastify'
+import { notify } from '../components/DTMISToast'
 import Swal from 'sweetalert2'
 
 export default function ReportGeneration() {

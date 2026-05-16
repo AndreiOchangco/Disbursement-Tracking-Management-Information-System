@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest } from '../api'
 import ReactModal from '../components/ReactModal'
-import { toast } from 'react-toastify'
+import { notify } from '../components/DTMISToast'
 
 const formatDateMMDDYYYY = (date) => {
   if (!date) return '-'
@@ -54,7 +54,7 @@ export default function ArchivedDisbursements() {
         }
       } catch (e) {
         console.error('Failed to load archived disbursements', e)
-        toast.error('Failed to load archived disbursements')
+        notify.error('Failed to load archived disbursements')
       } finally {
         setLoading(false)
       }

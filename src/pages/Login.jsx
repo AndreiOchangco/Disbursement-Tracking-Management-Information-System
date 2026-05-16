@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { notify } from '../components/DTMISToast'
 import { setCurrentUser, apiRequest, getCurrentUser, BASE_URL } from '../api'
 import logo from '/MuniLuna.png'
 
@@ -20,6 +21,7 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    notify.clear()
 
     try {
       const data = await apiRequest('/auth/login/', 'POST', {
@@ -32,6 +34,7 @@ export default function Login() {
       setCurrentUser(data.user)
       navigate('/dashboard')
     } catch (err) {
+      notify.error(err.message || 'Login failed')
       setError(err.message || 'Login failed')
     } finally {
       setLoading(false)
@@ -256,6 +259,19 @@ export default function Login() {
           input[type="password"]::-ms-reveal,
           input[type="password"]::-ms-clear {
             display: none;
+          }
+          @keyframes progress {
+            from {
+              width: 100%;
+            }
+
+            to {
+              width: 0%;
+            }
+          }
+
+          .animate-progress {
+            animation: progress 4s linear forwards;
           }
         `}</style>
       )}

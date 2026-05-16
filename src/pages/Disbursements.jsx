@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify'
+import { notify } from '../components/DTMISToast'
 import { apiRequest, getCurrentUser } from '../api'
 import ReactModal from '../components/ReactModal'
 import { generateDVEmailTemplate } from '../components/EmailTemplate'
@@ -227,7 +227,7 @@ export default function Disbursements() {
         }
       } catch (e) {
         console.error('Failed to load disbursements', e)
-        toast.error('Failed to load disbursements')
+        notify.error('Failed to load disbursements')
       } finally {
         setLoading(false)
       }
@@ -254,7 +254,7 @@ export default function Disbursements() {
       }
     } catch (e) {
       console.error('Failed to reload disbursements', e)
-      toast.error('Failed to reload disbursements')
+      notify.error('Failed to reload disbursements')
     } finally {
       setLoading(false)
     }
@@ -288,17 +288,17 @@ export default function Disbursements() {
     e.preventDefault()
 
     if (!payeeData.email && !payeeData.phone_no) {
-    toast.error('Please fill in the Payee Email or Phone Number');
+    notify.error('Please fill in the Payee Email or Phone Number');
     return;
     }
 
     if (!payeeData.name) {
-    toast.error('Please fill in the Payee Name');
+    notify.error('Please fill in the Payee Name');
     return;
   }
 
     if (!officer || !fundSource || !tin) {
-      toast.error('Please fill required fields: Payee, Fund Source, ID #/TIN')
+      notify.error('Please fill required fields: Payee, Fund Source, ID #/TIN')
       return
     }
 
@@ -352,11 +352,11 @@ export default function Disbursements() {
       const newItem = await apiRequest('/dv/', 'POST', payload)
 
       if (newItem) {
-        toast.success('Disbursement voucher entry added successfully!')
+        notify.success('Disbursement voucher entry added successfully!')
         setDisbursements((prev) => [newItem, ...prev])
         setShowCreateModal(false)
       } else {
-        toast.error('Failed to add entry. Please check your inputs.');
+        notify.error('Failed to add entry. Please check your inputs.');
       }
 
       // Reset form states
@@ -379,7 +379,7 @@ export default function Disbursements() {
       setOfficer(initialOfficer)
     } catch (err) {
       console.error('Create failed', err)
-      toast.error(err?.message || 'Failed to create disbursement')
+      notify.error(err?.message || 'Failed to create disbursement')
     } finally {
       setAddingDisbursement(false)
     }
@@ -649,7 +649,7 @@ export default function Disbursements() {
    */
   const sendRejectedDVEmail = async () => {
   if (!selectedDV || !selectedDV.payee?.email) {
-    toast.error('Payee email not found');
+    notify.error('Payee email not found');
     return;
   }
   
@@ -695,10 +695,10 @@ export default function Disbursements() {
       html: htmlContent
     });
     
-    toast.success('Rejection email sent successfully');
+    notify.success('Rejection email sent successfully');
   } catch (error) {
     console.error('Failed to send email:', error);
-    toast.error('Failed to send email: ' + (error?.message || 'Unknown error'));
+    notify.error('Failed to send email: ' + (error?.message || 'Unknown error'));
   } finally {
     setSendingEmail(false);
   }
@@ -799,7 +799,7 @@ export default function Disbursements() {
             remarks: 'Corrected and resubmitted by Accounting.'
           };
           
-          toast.success('Disbursement Voucher updated and resubmitted successfully!');
+          notify.success('Disbursement Voucher updated and resubmitted successfully!');
         } else if (canEditBudget || canEditTreasurer) {
           await apiRequest(`/dv/${selectedDV.id}/approve/`, 'POST');
           
@@ -810,7 +810,7 @@ export default function Disbursements() {
             remarks: `Approved and processed by ${currentUser?.department || 'authorized step'}.`
           };
           
-          toast.success('Disbursement Voucher updated and approved successfully!');
+          notify.success('Disbursement Voucher updated and approved successfully!');
         }
 
         setShowViewModal(false);
@@ -818,7 +818,7 @@ export default function Disbursements() {
       }
     } catch (err) {
       console.error("Submission error:", err);
-      toast.error(err?.message || 'Failed to update the Disbursement Voucher');
+      notify.error(err?.message || 'Failed to update the Disbursement Voucher');
       return;
     } finally {
       setUpdatingDV(false);
