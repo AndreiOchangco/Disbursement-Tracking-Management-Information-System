@@ -1513,8 +1513,9 @@ def dv_report_pdf(request, dv_id):
     <table style="border-collapse: collapse; width: 100%;">
         <!-- ROW 1 -->
         <tr>
-            <td rowspan="2" style="border: 1px solid #000; padding: 4px; width: 15%;">
-            Column 1 - Row 1
+            <td rowspan="2" style="border: 1px solid #000; padding: 4px; width: 15%; position:relative; display:flex; align-items:center; justify-content:center;">
+                <span class="bold small" style="position:absolute; margin-top: -20px;">MTA</span>
+                <div class="medium" style="text-align:center;">{payload.get('cafoa_no','')}</div>
             </td>
 
             <!-- Column 2 spans ALL 4 rows -->
