@@ -976,7 +976,7 @@ export default function Disbursements() {
                           <td><input className="particulars-input" type="number" step="0.01" value={item.ft} onChange={(e) => handleParticularChange(idx, 'ft', e.target.value)} placeholder="0.00" /></td>
                           <td><input className="particulars-input" type="number" step="0.01" value={item.tf} onChange={(e) => handleParticularChange(idx, 'tf', e.target.value)} placeholder="0.00" /></td>
                           <td className="table-column-center">
-                            <button type="button" className="btn-danger" onClick={() => removeParticularRow(idx)}>
+                            <button type="button" className="btn-danger btn-clear" onClick={() => removeParticularRow(idx)}>
                               <ion-icon name="close"></ion-icon>
                             </button>
                           </td>
@@ -1028,7 +1028,7 @@ export default function Disbursements() {
                           <td><input className="particulars-input" type="number" step="0.01" value={row.credit} onChange={(e) => handleJeRowChange(index, 'credit', e.target.value)} placeholder="0.00" /></td>
                           <td className="table-column-center">
                             {index > 0 && (
-                              <button type="button" className="btn-danger" onClick={() => removeJeRow(index)}>
+                              <button type="button" className="btn-danger"  onClick={() => removeJeRow(index)}>
                                 <ion-icon name="close"></ion-icon>
                               </button>
                             )}
