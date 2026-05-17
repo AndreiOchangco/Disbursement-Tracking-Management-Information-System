@@ -1287,24 +1287,30 @@ button:hover svg,
   font-size: 1rem;
 }
 
-/* Toastify close button sizing */
+/* Toastify styling - responsive and clean */
+.Toastify__toast-container {
+  width: auto;
+  padding: 1rem;
+  max-width: 90vw;
+}
+
+.Toastify__toast {
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-height: auto;
+  font-size: 0.95rem;
+}
+
 .Toastify__close-button {
-  width: 1.7rem;
-  height: 1.7rem;
-  padding: 0.35rem;
-  color: #000000;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  color: #dc2626;
+  opacity: 1;
+  padding: 0.25rem;
+  align-self: flex-start;
 }
 
 .Toastify__close-button:hover {
-  background-color: rgba(255, 0, 0, 0.592);
-  color: #0000009f;
-}
-
-.Toastify__close-button svg,
-.Toastify__close-button > svg {
-  width: 1.1rem;
-  height: 1.1rem;
+  opacity: 0.7;
 }
 
 .auth-wrapper .page-header {
