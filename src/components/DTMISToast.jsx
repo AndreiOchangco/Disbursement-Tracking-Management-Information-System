@@ -13,7 +13,7 @@ import {
   X
 } from 'lucide-react'
 
-import 'react-toastify/dist/ReactToastify.css'
+import './DTMISToast.css'
 
 const toastStyles = {
   success: {
@@ -54,7 +54,8 @@ function CustomToast({
   title,
   message,
   closeToast,
-  isPaused
+  isPaused,
+  autoClose = 4000
 }) {
   const style = toastStyles[type]
 
@@ -63,14 +64,16 @@ function CustomToast({
       className={`
         relative overflow-hidden
         w-full
-        rounded-2xl
+        rounded-lg
         border-l-4
-        shadow-lg
+        shadow-md
         backdrop-blur-sm
         ${style.border}
         ${style.bg}
         ${style.text}
       `}
+      role="status"
+      aria-live="polite"
     >
       {/* CONTENT */}
       <div className="flex gap-3 p-4 pr-10">
@@ -109,9 +112,8 @@ function CustomToast({
             animate-progress
           `}
           style={{
-            animationPlayState: isPaused
-              ? 'paused'
-              : 'running'
+            animationPlayState: isPaused ? 'paused' : 'running',
+            animationDuration: `${autoClose}ms`
           }}
         />
       </div>
@@ -140,6 +142,7 @@ export const notify = {
           message={message}
           closeToast={closeToast}
           isPaused={isPaused}
+          autoClose={baseConfig.autoClose}
         />
       ),
       {
@@ -158,6 +161,7 @@ export const notify = {
           message={message}
           closeToast={closeToast}
           isPaused={isPaused}
+          autoClose={5000}
         />
       ),
       {
@@ -177,6 +181,7 @@ export const notify = {
           message={message}
           closeToast={closeToast}
           isPaused={isPaused}
+          autoClose={baseConfig.autoClose}
         />
       ),
       {
@@ -195,6 +200,7 @@ export const notify = {
           message={message}
           closeToast={closeToast}
           isPaused={isPaused}
+          autoClose={baseConfig.autoClose}
         />
       ),
       {

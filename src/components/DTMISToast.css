@@ -1,0 +1,21 @@
+/* Small stylesheet to style the custom toast progress animation and keep toasts visually minimal */
+.animate-progress{
+  animation-name: dtmi-progress;
+  animation-timing-function: linear;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  width: 100%;
+}
+
+@keyframes dtmi-progress{
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* keep toast container spacing predictable */
+.Toastify__toast-container--top-right {
+  pointer-events: none;
+}
+.Toastify__toast {
+  pointer-events: auto;
+}
