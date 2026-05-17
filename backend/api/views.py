@@ -7,7 +7,6 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from utils.email import generate_dv_email_template
 from .models import DeptHead, User, DV, DVArchived, DVWorkflow, DVReport, DVParticularValue
 from .serializers import UserSerializer, UserCreateUpdateSerializer,DVSerializer, DVCreateUpdateSerializer, DeptHeadSerializer
 from .authentication import JWTAuthentication
