@@ -68,31 +68,6 @@ def is_checked(value, expected):
 
     return ""
 
-def send_dv_email(dv, type='update', remarks=None):
-    if not dv.payee or not dv.payee.email:
-        return
-
-    subject = f'DV {type.upper()} (Tracking #{dv.tracking_no})'
-
-    html_content = generate_dv_email_template(
-        type=type,
-        name=dv.payee.name,
-        tracking_no=dv.tracking_no,
-        dv_no=dv.dv_no,
-        created_date=dv.created_date.strftime('%m/%d/%Y'),
-        remarks=remarks,
-    )
-
-    text_content = strip_tags(html_content)
-
-    msg = EmailMultiAlternatives(
-        subject,
-        text_content,
-        to=[dv.payee.email],
-    )
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
-
 DEPT_STEP = {
     'accounting': 1,
     'budget': 2,
@@ -548,9 +523,6 @@ def dv_approve(request, pk):
 
     dv.save()
 
-    send_dv_email(dv, type='approved')
-
-
     # Create DVReport snapshot when DV is completed
     if dv.status == 'completed' and not hasattr(dv, 'report'):
         # 1. Get the base DV serialized data
@@ -611,8 +583,6 @@ def dv_disapprove(request, pk):
     dv.last_disapproved_step = user_step
     dv.save()
 
-    send_dv_email(dv, type='rejected', remarks=remarks)
-
     return Response("Disbursement Voucher has been disapproved and sent back to Accounting.")
 
 
@@ -646,8 +616,6 @@ def dv_resubmit(request, pk):
     dv.status = 'pending'
     dv.current_step = resubmit_step
     dv.save()
-
-    send_dv_email(dv, type='update', remarks='Your disbursement voucher has been corrected and resubmitted for review.')
 
     return Response("Disbursement Voucher has been resubmitted for review.")
 
@@ -1476,7 +1444,7 @@ def dv_report_pdf(request, dv_id):
             <td style="height: 25px; width: 48%; padding: 0; margin: 0;">
 
                 <!-- Top-left (forced tight) -->
-                <div style="margin: 0; padding: 0; line-height: 1.2;">
+                <div style="margin-top: -10px; padding: 0; line-height: 1.2;">
                     <span style="margin: 0;">Prepared by:</span><br>
                 </div>
 
@@ -1499,6 +1467,7 @@ def dv_report_pdf(request, dv_id):
 
                 <!-- Centered bottom -->
                 <div style="text-align: center; margin-top: 30px; margin-bottom: 10px;">
+                    <span>{accounting_head_name}</span><br>
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Head, Accounting Division/Unit
                     </span><br>
@@ -1513,13 +1482,18 @@ def dv_report_pdf(request, dv_id):
     <table style="border-collapse: collapse; width: 100%;">
         <!-- ROW 1 -->
         <tr>
-            <td rowspan="2" style="border: 1px solid #000; padding: 4px; width: 15%;">
-            Column 1 - Row 1
+            <td rowspan="2" style="border: 1px solid #000; padding: 4px; width: 12%; position:relative; display:flex; align-items:center; justify-content:center;">
+                <span class="bold small" style="position:absolute; margin-top: -20px; margin-left: 55px;">MTO</span>
+                <div class="small" style="text-align:center;">RECEIVED</div>
             </td>
 
             <!-- Column 2 spans ALL 4 rows -->
-            <td rowspan="4" style="border: 1px solid #000; padding: 4px; width: 55%; vertical-align: top;">
-            Only one row here (center column)
+            <td rowspan="4" style="border: 1px solid #000; padding: 4px; width: 58%; vertical-align: top; position:relative; display:flex; align-items:center; justify-content:center;">
+                <span class="bold small" style="position:absolute; color: red;">DOCUMENTARY REQUIREMENTS</span>
+                <div class="small" style="text-align: left; margin-top: 20px;">
+                    1. Purchase Request<br>
+                    2. BAC Resolution<br>
+                </div>
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; width: 20%;">
