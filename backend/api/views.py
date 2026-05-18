@@ -1103,6 +1103,12 @@ def dv_report_pdf(request, dv_id):
         parts = treasurer_step.action_by.full_name.split()
         treasurer_initials = ''.join(p[0].upper() for p in parts if p)
 
+    sign = ""
+
+    if report.dv.accounting and report.dv.accounting.full_name:
+        parts = report.dv.accounting.full_name.split()
+        sign = "".join(p[0].upper() for p in parts if p)
+
     transaction_no = payload.get("dv_no", "")
 
     transaction_date = (
@@ -1110,8 +1116,6 @@ def dv_report_pdf(request, dv_id):
         if getattr(report.dv, "transaction_date_date", None)
         else payload.get("dv_date", "")
     )
-
-    sign = treasurer_initials or ""
 
     # --- MAIN HTML ---
     html = f"""
