@@ -1135,11 +1135,24 @@ def dv_report_pdf(request, dv_id):
     transaction_no = payload.get("dv_no", "")
 
     transaction_date = (
+<<<<<<< HEAD
         format_date(report.dv.transaction_date)
         if getattr(report.dv, "transaction_date_date", None)
         else format_date(payload.get("dv_date"))
     )
 
+=======
+        localtime(report.dv.transaction_date).strftime("%Y-%m-%d")
+        if getattr(report.dv, "transaction_date_date", None)
+        else payload.get("dv_date", "")
+    )
+
+    advice_no = payload.get("advice_no", "")
+    advice_date = payload.get("advice_date", "")
+    tracking_no = payload.get("dv_no", "")
+    tracking_date = payload.get("dv_date", "")
+
+>>>>>>> 0b1c1d3f80fe81ebb7fa09ca8bc2f39a2067b26e
     # --- MAIN HTML ---
     html = f"""
     <html>
@@ -1575,7 +1588,8 @@ def dv_report_pdf(request, dv_id):
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
-                Column 3 - Row 3
+                <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 49px;">Advice No. / Date</span>
+                <div class="small" style="text-align:center;">{advice_no} / {advice_date}</div>
             </td>
         </tr>
 
@@ -1587,7 +1601,8 @@ def dv_report_pdf(request, dv_id):
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
-                Column 3 - Row 4
+                <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 46px;">Tracking No. / Date</span>
+                <div class="small" style="text-align:center;">{tracking_no} / {tracking_date}</div>
             </td>
         </tr>
     </table>
