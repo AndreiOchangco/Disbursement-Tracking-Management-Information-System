@@ -1581,7 +1581,7 @@ def dv_report_pdf(request, dv_id):
 
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 49px;">Advice No. / Date</span>
-                <div class="small" style="text-align:center;">{advice_no} / {advice_date}</div>
+                <div class="small" style="text-align:center;">{advice_no} / {format_date(advice_date)}</div>
             </td>
         </tr>
 
@@ -1594,7 +1594,7 @@ def dv_report_pdf(request, dv_id):
 
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 46px;">Tracking No. / Date</span>
-                <div class="small" style="text-align:center;">{tracking_no} / {tracking_date}</div>
+                <div class="small" style="text-align:center;">{tracking_no} / {format_date(tracking_date)}</div>
             </td>
         </tr>
     </table>
