@@ -1119,6 +1119,8 @@ def dv_report_pdf(request, dv_id):
 
     advice_no = payload.get("advice_no", "")
     advice_date = payload.get("advice_date", "")
+    tracking_no = payload.get("dv_no", "")
+    tracking_date = payload.get("dv_date", "")
 
     # --- MAIN HTML ---
     html = f"""
@@ -1568,7 +1570,8 @@ def dv_report_pdf(request, dv_id):
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
-                Column 3 - Row 4
+                <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 46px;">Tracking No. / Date</span>
+                <div class="small" style="text-align:center;">{tracking_no} / {tracking_date}</div>
             </td>
         </tr>
     </table>
