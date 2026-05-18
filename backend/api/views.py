@@ -1117,6 +1117,9 @@ def dv_report_pdf(request, dv_id):
         else payload.get("dv_date", "")
     )
 
+    advice_no = payload.get("advice_no", "")
+    advice_date = payload.get("advice_date", "")
+
     # --- MAIN HTML ---
     html = f"""
     <html>
@@ -1552,7 +1555,8 @@ def dv_report_pdf(request, dv_id):
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
-                Column 3 - Row 3
+                <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 49px;">Advice No. / Date</span>
+                <div class="small" style="text-align:center;">{advice_no} / {advice_date}</div>
             </td>
         </tr>
 
