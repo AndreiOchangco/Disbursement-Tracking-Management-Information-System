@@ -1103,6 +1103,9 @@ def dv_report_pdf(request, dv_id):
     amount_in_words = amount_to_words(amount_due)
 
     fund_source = (payload.get('fund_source') or "").strip().lower()
+
+    accounting_ref = report.dv.generate_accounting_reference()
+    accounting_date = (format_date(payload.get('dv_date')) if getattr(report.dv, 'dv_date', None) else '')
     
     treasurer_step = (
         report.dv.workflow_steps
@@ -1560,7 +1563,8 @@ def dv_report_pdf(request, dv_id):
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; width: 20%; height: 45px;">
-                Column 3 - Row 1
+                <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 60px;">ACCOUNTING</span>
+                <div class="small" style="text-align:center;">{accounting_ref} / {accounting_date}</div>
             </td>
         </tr>
 

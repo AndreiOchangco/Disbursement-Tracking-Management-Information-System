@@ -172,6 +172,22 @@ class DV(models.Model):
     def __str__(self):
         return self.tracking_no
     
+    def generate_accounting_reference(self):
+        if not self.transaction_no or not self.created_date:
+            return ""
+
+        mm = f"{self.created_date.month:02d}"
+
+        # last 4 digits = YYYYMMSSSS, we only need series
+        raw_series = str(self.transaction_no)[-4:]
+
+        if raw_series.isdigit():
+            series = int(raw_series)
+        else:
+            series = 0
+
+        return f"{mm}-{series:03d}"
+    
 class Payee(models.Model):
     dv = models.OneToOneField(DV, on_delete=models.CASCADE, related_name='payee')
     name = models.CharField(max_length=255)
