@@ -1103,6 +1103,16 @@ def dv_report_pdf(request, dv_id):
         parts = treasurer_step.action_by.full_name.split()
         treasurer_initials = ''.join(p[0].upper() for p in parts if p)
 
+    transaction_no = payload.get("dv_no", "")
+
+    transaction_date = (
+        localtime(report.dv.transaction_date).strftime("%Y-%m-%d")
+        if getattr(report.dv, "transaction_date_date", None)
+        else payload.get("dv_date", "")
+    )
+
+    sign = treasurer_initials or ""
+
     # --- MAIN HTML ---
     html = f"""
     <html>
@@ -1525,7 +1535,8 @@ def dv_report_pdf(request, dv_id):
         <!-- ROW 2 -->
         <tr>
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
-                Column 3 - Row 2
+                <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 35px;">Transact # / Date / Sign</span>
+                <div class="small" style="text-align:center;">{transaction_no} / {transaction_date} / {sign}</div>
             </td>
         </tr>
 
