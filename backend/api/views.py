@@ -1563,8 +1563,8 @@ def dv_report_pdf(request, dv_id):
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; width: 20%; height: 45px;">
-                <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 60px;">ACCOUNTING</span>
-                <div class="small" style="text-align:center;">{accounting_ref} / {accounting_date}</div>
+                <span class="bold small" style="position:absolute; margin-top: -14px; margin-left: 60px;">ACCOUNTING</span>
+                <div class="medium bold" style="text-align:center; color: darkblue;">{accounting_ref} / {accounting_date}</div>
             </td>
         </tr>
 
@@ -1572,7 +1572,7 @@ def dv_report_pdf(request, dv_id):
         <tr>
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 35px;">Transact # / Date / Sign</span>
-                <div class="small" style="text-align:center;">{transaction_no} / {transaction_date} / {sign}</div>
+                <div class="medium" style="text-align:center;">{transaction_no} / {transaction_date} / {sign}</div>
             </td>
         </tr>
 
@@ -1580,12 +1580,12 @@ def dv_report_pdf(request, dv_id):
         <tr>
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 43px;">Date:</span>
-                <div class="small" style="text-align:center;">{treasurer_approved_date}</div>
+                <div class="medium" style="text-align:center;">{treasurer_approved_date}</div>
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 49px;">Advice No. / Date</span>
-                <div class="small" style="text-align:center;">{advice_no} / {format_date(advice_date)}</div>
+                <div class="medium" style="text-align:center;">{advice_no} / {format_date(advice_date)}</div>
             </td>
         </tr>
 
@@ -1593,12 +1593,12 @@ def dv_report_pdf(request, dv_id):
         <tr>
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 41px;">Initial</span>
-                <div class="small" style="text-align:center;">{treasurer_initials}</div>
+                <div class="medium" style="text-align:center;">{treasurer_initials}</div>
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 46px;">Tracking No. / Date</span>
-                <div class="small" style="text-align:center;">{tracking_no} / {format_date(tracking_date)}</div>
+                <div class="medium" style="text-align:center;">{tracking_no} / {format_date(tracking_date)}</div>
             </td>
         </tr>
     </table>
