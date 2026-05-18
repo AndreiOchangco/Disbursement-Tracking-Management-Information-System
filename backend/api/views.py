@@ -1222,7 +1222,8 @@ def dv_report_pdf(request, dv_id):
     <tr>
         <td rowspan="1" class="center bold largest" style="width: 80px; height: 30px;">DISBURSEMENT VOUCHER</td>
         <td rowspan="1" class="bold small" style="width: 120px; position:relative; display:flex; align-items:center; justify-content:center;">
-            <span style="position:absolute; left:8px; font-weight:600;">DV No:</span>
+            <span class="bold small" style="text-align:center; display:block; width:100%; margin-top: -8px; margin-bottom: 2px; font-style: italic; color: darkblue;">For Accounting Use Only</span>
+            <span style="position:absolute; left:8px; font-weight:600; margin-bottom: -3px;">DV No:</span>
             <span style="text-align:center; display:block; width:100%;" class="medium">{payload.get('dv_no','')}</span>
         </td>
     </tr>
@@ -1551,7 +1552,7 @@ def dv_report_pdf(request, dv_id):
         <tr>
             <td rowspan="2" style="border: 1px solid #000; padding: 4px; width: 12%; position:relative; display:flex; align-items:center; justify-content:center;">
                 <span class="bold small" style="position:absolute; margin-top: -35px; margin-left: 45px;">MTO</span>
-                <div class="small bold" style="text-align:center;">RECEIVED</div>
+                <div class="medium bold" style="text-align:center; color: darkblue;"">RECEIVED</div>
             </td>
 
             <td rowspan="4" style="border: 1px solid #000; padding: 4px; width: 58%; vertical-align: top; position:relative; display:flex; align-items:center; justify-content:center;">
@@ -1572,7 +1573,7 @@ def dv_report_pdf(request, dv_id):
         <tr>
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 35px;">Transact # / Date / Sign</span>
-                <div class="medium" style="text-align:center;">{transaction_no} / {transaction_date} / {sign}</div>
+                <div class="medium bold" style="text-align:center; color: darkblue;">{transaction_no} / {transaction_date} / {sign}</div>
             </td>
         </tr>
 
@@ -1580,12 +1581,12 @@ def dv_report_pdf(request, dv_id):
         <tr>
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 43px;">Date:</span>
-                <div class="medium" style="text-align:center;">{treasurer_approved_date}</div>
+                <div class="medium bold" style="text-align:center; color: darkblue;">{treasurer_approved_date}</div>
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 49px;">Advice No. / Date</span>
-                <div class="medium" style="text-align:center;">{advice_no} / {format_date(advice_date)}</div>
+                <div class="medium bold" style="text-align:center; color: darkblue;">{advice_no} / {format_date(advice_date)}</div>
             </td>
         </tr>
 
@@ -1593,12 +1594,12 @@ def dv_report_pdf(request, dv_id):
         <tr>
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 41px;">Initial</span>
-                <div class="medium" style="text-align:center;">{treasurer_initials}</div>
+                <div class="medium bold" style="text-align:center; color: darkblue;">{treasurer_initials}</div>
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
                 <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 46px;">Tracking No. / Date</span>
-                <div class="medium" style="text-align:center;">{tracking_no} / {format_date(tracking_date)}</div>
+                <div class="medium bold" style="text-align:center; color: darkblue;">{tracking_no} / {format_date(tracking_date)}</div>
             </td>
         </tr>
     </table>
