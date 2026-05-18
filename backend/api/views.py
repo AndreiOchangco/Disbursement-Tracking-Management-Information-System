@@ -15,7 +15,6 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
-from django.utils.timezone import localtime
 from django.utils.html import strip_tags
 import os
 from pathlib import Path
@@ -67,6 +66,30 @@ def is_checked(value, expected):
             return "checked"
 
     return ""
+
+def format_date(dt_input):
+    if dt_input is None:
+        return ""
+    
+    # Use datetime.datetime here
+    if isinstance(dt_input, datetime.datetime):
+        return dt_input.strftime("%m-%d-%y")
+
+    elif isinstance(dt_input, str):
+        clean_str = dt_input.replace("Z", "")
+
+        if "T" in clean_str:
+            base_str = clean_str.split(".")[0]
+            # Use datetime.datetime here
+            parsed_dt = datetime.datetime.strptime(base_str, "%Y-%m-%dT%H:%M:%S")
+        else:
+            # Use datetime.datetime here
+            parsed_dt = datetime.datetime.strptime(clean_str, "%Y-%m-%d")
+
+        return parsed_dt.strftime("%m-%d-%y")
+
+    else:
+        raise TypeError("Input must be a datetime object or a string")
 
 DEPT_STEP = {
     'accounting': 1,
@@ -1028,7 +1051,7 @@ def dv_report_pdf(request, dv_id):
     for pay in payments:
         payment_info += f"""
         Bank: {pay.get('bank','-')}<br>
-        Date: {pay.get('pdate','-')}<br>
+        Date: {format_date(pay.get('pdate'))}<br>
         Ref No: {pay.get('reference_no','-')}<br><br>
         """
 
@@ -1094,7 +1117,7 @@ def dv_report_pdf(request, dv_id):
     )
 
     treasurer_approved_date = (
-        localtime(treasurer_step.action_date).strftime("%Y-%m-%d")
+        format_date(treasurer_step.action_date)
         if treasurer_step and treasurer_step.action_date else ''
     )
 
@@ -1102,6 +1125,20 @@ def dv_report_pdf(request, dv_id):
     if treasurer_step and treasurer_step.action_by:
         parts = treasurer_step.action_by.full_name.split()
         treasurer_initials = ''.join(p[0].upper() for p in parts if p)
+
+    sign = ""
+
+    if report.dv.accounting and report.dv.accounting.full_name:
+        parts = report.dv.accounting.full_name.split()
+        sign = "".join(p[0].upper() for p in parts if p)
+
+    transaction_no = payload.get("dv_no", "")
+
+    transaction_date = (
+        format_date(report.dv.transaction_date)
+        if getattr(report.dv, "transaction_date_date", None)
+        else format_date(payload.get("dv_date"))
+    )
 
     # --- MAIN HTML ---
     html = f"""
@@ -1192,7 +1229,7 @@ def dv_report_pdf(request, dv_id):
         </td>
         <td rowspan="1" class="bold small" style="width: 120px; position:relative; display:flex; align-items:center; justify-content:center;">
             <span style="position:absolute; margin-top: -6px;">Date:</span>
-            <div style="text-align:center;" class="medium">{payload.get('dv_date','')}</div>
+            <div style="text-align:center;" class="medium">{format_date(payload.get('dv_date'))}</div>
         </td>
     </tr>
 
@@ -1421,7 +1458,7 @@ def dv_report_pdf(request, dv_id):
                 <div style="border-top: 1px solid black; padding: 4px; font-size: 10px;">
                     Date
                     <span style="margin-left: 25px;">
-                        {date}
+                        {format_date(date)}
                     </span>
                 </div>
 
@@ -1525,7 +1562,8 @@ def dv_report_pdf(request, dv_id):
         <!-- ROW 2 -->
         <tr>
             <td style="border: 1px solid #000; padding: 4px; height: 45px;">
-                Column 3 - Row 2
+                <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 35px;">Transact # / Date / Sign</span>
+                <div class="small" style="text-align:center;">{transaction_no} / {transaction_date} / {sign}</div>
             </td>
         </tr>
 
@@ -1585,6 +1623,7 @@ def dv_report_pdf(request, dv_id):
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="dv_report_{report.dv.id}.pdf"'
     return response
+
 
 
 @api_view(['POST'])
