@@ -992,17 +992,17 @@ def dv_report_pdf(request, dv_id):
             </span>
             <table style="width: 80%; margin-top: 6px; left: 0;" class="small">
                 <tr>
-                    <td></td>
-                    <td>Net Pay</td>
-                    <td>15th</td>
-                    <td>31st</td>
+                    <td class="small bold"></td>
+                    <td class="small bold">Net Pay</td>
+                    <td class="small bold">15th</td>
+                    <td class="small bold">31st</td>
                 </tr>
                 {cat_rows}
                 <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="small bold"></td>
+                    <td class="small bold"></td>
+                    <td class="small bold"></td>
+                    <td class="small bold"></td>
                 </tr>
             </table>
         """
@@ -1222,9 +1222,9 @@ def dv_report_pdf(request, dv_id):
     <tr>
         <td rowspan="1" class="center bold largest" style="width: 80px; height: 30px;">DISBURSEMENT VOUCHER</td>
         <td rowspan="1" class="bold small" style="width: 120px; position:relative; display:flex; align-items:center; justify-content:center;">
-            <span class="bold small" style="text-align:center; display:block; width:100%; margin-top: -8px; margin-bottom: 2px; font-style: italic; color: darkblue;">For Accounting Use Only</span>
+            <span class="bold small" style="text-align:center; display:block; width:100%; margin-top: -5px; margin-bottom: 2px; font-style: italic; color: darkblue;">For Accounting Use Only</span>
             <span style="position:absolute; left:8px; font-weight:600; margin-bottom: -3px;">DV No:</span>
-            <span style="text-align:center; display:block; width:100%;" class="medium">{payload.get('dv_no','')}</span>
+            <span style="text-align:center; display:block; width:100%;" class="medium bold">{payload.get('dv_no','')}</span>
         </td>
     </tr>
 
@@ -1237,8 +1237,8 @@ def dv_report_pdf(request, dv_id):
             <label style="margin-left: 10px;">Specify: <span style="text-decoration: underline; font-size: 12px; margin-left: 10px;">{mop_specify if 'others' in mop else ''}</span></label>
         </td>
         <td rowspan="1" class="bold small" style="width: 120px; position:relative; display:flex; align-items:center; justify-content:center;">
-            <span style="position:absolute; margin-top: -6px;">Date:</span>
-            <div style="text-align:center;" class="medium">{format_date(payload.get('dv_date'))}</div>
+            <span style="position:absolute;">Date:</span>
+            <div style="text-align:center;" class="medium bold">{format_date(payload.get('dv_date'))}</div>
         </td>
     </tr>
 
@@ -1246,11 +1246,11 @@ def dv_report_pdf(request, dv_id):
         <td colspan="1" style="height: 60px;" class="center bold medium"><b>PAYEE</b></td>
         <td colspan="1" class="center bold">{payee_name}</td>
         <td rowspan="1" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
-            <span style="position:absolute; margin-top: -23px;">ID No. / TIN:</span>
+            <span style="position:absolute; margin-top: -22px;">ID No. / TIN:</span>
             <div class="medium" style="text-align:center;">{payload.get('tin','')}</div>
         </td>
         <td rowspan="1" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
-            <span style="position:absolute; margin-top: -23px;">CAFOA No:</span>
+            <span style="position:absolute; margin-top: -22px; margin-left: 73px;">CAFOA No.</span>
             <div class="medium" style="text-align:center;">{payload.get('cafoa_no','')}</div>
         </td>
     </tr>
@@ -1259,11 +1259,11 @@ def dv_report_pdf(request, dv_id):
         <td colspan="1" class="center bold medium"><b>POSITION / OFFICE</b></td>
         <td colspan="1" class="center">{payload.get('position_office','')}</td>
         <td rowspan="2" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
-            <span style="position:absolute; margin-top: -25px;">Office / Unit / Project:</span>
+            <span style="position:absolute; margin-top: -23px;">Office / Unit / Project:</span>
             <div class="medium" style="text-align:center;">{payload.get('office_unit_project','')}</div>
         </td>
         <td rowspan="2" class="bold small" style="position:relative; display:flex; align-items:center; justify-content:center;">
-            <span style="position:absolute; margin-top: -19px;">Responsibility Center:</span>
+            <span style="position:absolute; margin-top: -23px; margin-left: 48px;">Responsibility Center</span>
             <div class="medium" style="text-align:center;">{payload.get('responsibility_center','')}</div>
         </td>
     </tr>
@@ -1279,7 +1279,7 @@ def dv_report_pdf(request, dv_id):
     </tr>
 
     <tr>
-        <td colspan="3">
+        <td colspan="3" style="vertical-align: top; padding: 0; margin: 0;">
             {particulars_details_html}
         </td>
         <td colspan="1" style="text-align: right;">{total_ft_display}</td>
@@ -1287,9 +1287,9 @@ def dv_report_pdf(request, dv_id):
     </table>
     <table>
         <tr>
-            <td colspan="1" class="center bold" style="text-align: center; font-size: 11px;">Amount in </br> Words: </td>
+            <td colspan="1" class="center bold small" style="text-align: center; font-size: 11px;">Amount in </br> Words: </td>
             <td colspan="2" class="center bold medium" style="text-align: center; width: 58.48%;">{amount_in_words}</td>
-            <td colspan="2" class="center bold" style="text-align: center; font-size: 8px;">Amount Due: ></td>
+            <td colspan="2" class="center bold small" style="text-align: center; font-size: 8px;">Amount Due: ></td>
             <td colspan="1" class="center bold medium" style="text-align: center; width: 24.1%; font-size: 10px;">PHP {amount_due_display}</td>
         </tr>
     </table>
@@ -1311,7 +1311,7 @@ def dv_report_pdf(request, dv_id):
 
                 <!-- Centered bottom -->
                 <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
-                    <span style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 2px;">{mun_admin_name}</span>
+                    <span style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 2px;">{mun_admin_name}</span>
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Signature Over Printed Name/Position
                     </span><br>
@@ -1339,7 +1339,7 @@ def dv_report_pdf(request, dv_id):
 
                 <!-- Centered bottom -->
                 <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
-                    <span style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 2px;">{accounting_head_name}</span>
+                    <span style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 2px;">{accounting_head_name}</span>
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Signature Over Printed Name/Position
                     </span><br>
@@ -1366,7 +1366,7 @@ def dv_report_pdf(request, dv_id):
 
                 <!-- Centered bottom -->
                 <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
-                    <span style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 2px;">{treasurer_head_name}</span>
+                    <span style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 2px;">{treasurer_head_name}</span>
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Signature Over Printed Name/Position
                     </span><br>
@@ -1392,7 +1392,7 @@ def dv_report_pdf(request, dv_id):
 
                 <!-- Centered bottom -->
                 <div style="text-align: center; margin-top: 50px; margin-bottom: 10px;">
-                    <span style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 2px;">{mayors_office_head_name}</span>
+                    <span style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 2px;">{mayors_office_head_name}</span>
                     <span style="border-top: 1px solid black; font-size: 10px; display: inline-block; padding: 0 25px;">
                         Signature Over Printed Name/Position
                     </span><br>

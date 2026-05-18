@@ -9,11 +9,12 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Info,
-  X
+  Info
 } from 'lucide-react'
 
 import './DTMISToast.css'
+
+import { useState } from 'react'
 
 const toastStyles = {
   success: {
@@ -53,11 +54,11 @@ function CustomToast({
   type = 'info',
   title,
   message,
-  closeToast,
-  isPaused,
-  autoClose = 4000
+  autoClose = 5000
 }) {
   const style = toastStyles[type]
+
+  const [isHovered, setIsHovered] = useState(false)
 
   return (
     <div
@@ -74,6 +75,8 @@ function CustomToast({
       `}
       role="status"
       aria-live="polite"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* CONTENT */}
       <div className="flex gap-3 p-4 pr-10">
@@ -90,17 +93,6 @@ function CustomToast({
             {message}
           </p>
         </div>
-
-        <button
-          onClick={closeToast}
-          className="
-            absolute top-3 right-3
-            opacity-60 hover:opacity-100
-            transition
-          "
-        >
-          <X size={16} />
-        </button>
       </div>
 
       {/* CUSTOM PROGRESS BAR */}
@@ -112,7 +104,7 @@ function CustomToast({
             animate-progress
           `}
           style={{
-            animationPlayState: isPaused ? 'paused' : 'running',
+            animationPlayState: isHovered ? 'paused' : 'running',
             animationDuration: `${autoClose}ms`
           }}
         />
@@ -135,13 +127,12 @@ const baseConfig = {
 export const notify = {
   success(title, message) {
     toast(
-      ({ closeToast, isPaused }) => (
+      ({ toastProps }) => (
         <CustomToast
           type="success"
           title={title}
           message={message}
-          closeToast={closeToast}
-          isPaused={isPaused}
+          isPaused={toastProps.isPaused}
           autoClose={baseConfig.autoClose}
         />
       ),
@@ -154,13 +145,12 @@ export const notify = {
 
   error(title, message) {
     toast(
-      ({ closeToast, isPaused }) => (
+      ({ toastProps }) => (
         <CustomToast
           type="error"
           title={title}
           message={message}
-          closeToast={closeToast}
-          isPaused={isPaused}
+          isPaused={toastProps.isPaused}
           autoClose={5000}
         />
       ),
@@ -174,13 +164,12 @@ export const notify = {
 
   warning(title, message) {
     toast(
-      ({ closeToast, isPaused }) => (
+      ({ toastProps }) => (
         <CustomToast
           type="warning"
           title={title}
           message={message}
-          closeToast={closeToast}
-          isPaused={isPaused}
+          isPaused={toastProps.isPaused}
           autoClose={baseConfig.autoClose}
         />
       ),
@@ -193,13 +182,12 @@ export const notify = {
 
   info(title, message) {
     toast(
-      ({ closeToast, isPaused }) => (
+      ({ toastProps }) => (
         <CustomToast
           type="info"
           title={title}
           message={message}
-          closeToast={closeToast}
-          isPaused={isPaused}
+          isPaused={toastProps.isPaused}
           autoClose={baseConfig.autoClose}
         />
       ),
