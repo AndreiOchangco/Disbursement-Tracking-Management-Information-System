@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import DeptHead, User, DV, DVArchived, DVWorkflow, DVPayment, DVParticulars, DVJE, DVParticularValue, DVReport, Payee
+from django.utils.timezone import localtime
 
 
 STEP_LABELS = {
@@ -111,6 +112,10 @@ class PayeeSerializer(serializers.ModelSerializer):
 class DVSerializer(serializers.ModelSerializer):
     accounting_name = serializers.SerializerMethodField()
     current_step_label = serializers.SerializerMethodField()
+    treasurer_mto = serializers.SerializerMethodField()
+    treasurer_date = serializers.SerializerMethodField()
+    treasurer_initials = serializers.SerializerMethodField()
+
     payments = DVPaymentSerializer(many=True, read_only=True)
     payee = PayeeSerializer(read_only=True)
     particulars = DVParticularsSerializer(many=True, read_only=True)
@@ -127,6 +132,35 @@ class DVSerializer(serializers.ModelSerializer):
 
     def get_current_step_label(self, obj):
         return STEP_LABELS.get(obj.current_step, f'Step {obj.current_step}')
+    
+    from django.utils.timezone import localtime
+
+    def _get_treasurer_step(self, obj):
+        return (
+            obj.workflow_steps
+            .filter(status__iexact='approved', step=3)
+            .order_by('-action_date')
+            .first()
+        )
+    
+    def get_treasurer_mto(self, obj):
+        step = self._get_treasurer_step(obj)
+        return step.remarks if step else None
+    
+    def get_treasurer_date(self, obj):
+        step = self._get_treasurer_step(obj)
+        if not step:
+            return None
+        return localtime(step.action_date).strftime("%m/%d/%Y")
+    
+    def get_treasurer_initials(self, obj):
+        step = self._get_treasurer_step(obj)
+        if not step or not step.action_by:
+            return None
+
+        name_parts = step.action_by.full_name.split()
+        initials = "".join([p[0].upper() for p in name_parts if p])
+        return initials
 
 
 class DVCreateUpdateSerializer(serializers.ModelSerializer):

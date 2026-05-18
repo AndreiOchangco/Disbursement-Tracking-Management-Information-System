@@ -15,6 +15,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
+from django.utils.timezone import localtime
 from django.utils.html import strip_tags
 import os
 from pathlib import Path
@@ -1079,6 +1080,28 @@ def dv_report_pdf(request, dv_id):
     amount_in_words = amount_to_words(amount_due)
 
     fund_source = (payload.get('fund_source') or "").strip().lower()
+    
+    treasurer_step = (
+        report.dv.workflow_steps
+        .filter(status__iexact='approved', step=3)
+        .order_by('-action_date')
+        .first()
+    )
+
+    treasurer_head_name = (
+        treasurer_step.action_by.full_name.upper()
+        if treasurer_step and treasurer_step.action_by else ''
+    )
+
+    treasurer_approved_date = (
+        localtime(treasurer_step.action_date).strftime("%Y-%m-%d")
+        if treasurer_step and treasurer_step.action_date else ''
+    )
+
+    treasurer_initials = ''
+    if treasurer_step and treasurer_step.action_by:
+        parts = treasurer_step.action_by.full_name.split()
+        treasurer_initials = ''.join(p[0].upper() for p in parts if p)
 
     # --- MAIN HTML ---
     html = f"""
@@ -1482,11 +1505,10 @@ def dv_report_pdf(request, dv_id):
         <!-- ROW 1 -->
         <tr>
             <td rowspan="2" style="border: 1px solid #000; padding: 4px; width: 12%; position:relative; display:flex; align-items:center; justify-content:center;">
-                <span class="bold small" style="position:absolute; margin-top: -20px; margin-left: 55px;">MTO</span>
-                <div class="small" style="text-align:center;">RECEIVED</div>
+                <span class="bold small" style="position:absolute; margin-top: -35px; margin-left: 45px;">MTO</span>
+                <div class="small bold" style="text-align:center;">RECEIVED</div>
             </td>
 
-            <!-- Column 2 spans ALL 4 rows -->
             <td rowspan="4" style="border: 1px solid #000; padding: 4px; width: 58%; vertical-align: top; position:relative; display:flex; align-items:center; justify-content:center;">
                 <span class="bold small" style="position:absolute; color: red;">DOCUMENTARY REQUIREMENTS</span>
                 <div class="small" style="text-align: left; margin-top: 20px;">
@@ -1495,37 +1517,39 @@ def dv_report_pdf(request, dv_id):
                 </div>
             </td>
 
-            <td style="border: 1px solid #000; padding: 4px; width: 20%;">
-            Column 3 - Row 1
+            <td style="border: 1px solid #000; padding: 4px; width: 20%; height: 45px;">
+                Column 3 - Row 1
             </td>
         </tr>
 
         <!-- ROW 2 -->
         <tr>
-            <td style="border: 1px solid #000; padding: 4px;">
-            Column 3 - Row 2
+            <td style="border: 1px solid #000; padding: 4px; height: 45px;">
+                Column 3 - Row 2
             </td>
         </tr>
 
         <!-- ROW 3 -->
         <tr>
-            <td style="border: 1px solid #000; padding: 4px;">
-            Column 1 - Row 2
+            <td style="border: 1px solid #000; padding: 4px; height: 45px;">
+                <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 43px;">Date:</span>
+                <div class="small" style="text-align:center;">{treasurer_approved_date}</div>
             </td>
 
-            <td style="border: 1px solid #000; padding: 4px;">
-            Column 3 - Row 3
+            <td style="border: 1px solid #000; padding: 4px; height: 45px;">
+                Column 3 - Row 3
             </td>
         </tr>
 
         <!-- ROW 4 -->
         <tr>
-            <td style="border: 1px solid #000; padding: 4px;">
-            Column 1 - Row 3
+            <td style="border: 1px solid #000; padding: 4px; height: 45px;">
+                <span class="bold small" style="position:absolute; margin-top: -15px; margin-left: 41px;">Initial</span>
+                <div class="small" style="text-align:center;">{treasurer_initials}</div>
             </td>
 
-            <td style="border: 1px solid #000; padding: 4px;">
-            Column 3 - Row 4
+            <td style="border: 1px solid #000; padding: 4px; height: 45px;">
+                Column 3 - Row 4
             </td>
         </tr>
     </table>
