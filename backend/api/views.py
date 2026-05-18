@@ -1135,16 +1135,9 @@ def dv_report_pdf(request, dv_id):
     transaction_no = payload.get("dv_no", "")
 
     transaction_date = (
-<<<<<<< HEAD
         format_date(report.dv.transaction_date)
         if getattr(report.dv, "transaction_date_date", None)
         else format_date(payload.get("dv_date"))
-    )
-
-=======
-        localtime(report.dv.transaction_date).strftime("%Y-%m-%d")
-        if getattr(report.dv, "transaction_date_date", None)
-        else payload.get("dv_date", "")
     )
 
     advice_no = payload.get("advice_no", "")
@@ -1152,7 +1145,6 @@ def dv_report_pdf(request, dv_id):
     tracking_no = payload.get("dv_no", "")
     tracking_date = payload.get("dv_date", "")
 
->>>>>>> 0b1c1d3f80fe81ebb7fa09ca8bc2f39a2067b26e
     # --- MAIN HTML ---
     html = f"""
     <html>
