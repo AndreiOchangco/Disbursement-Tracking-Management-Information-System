@@ -9,7 +9,7 @@ This project was developed as part of the requirements for **ELECT COG 3 – Res
 <details>
 <summary><strong>Project Overview</strong></summary>
 
-# Project Overview
+## Project Overview
 
 Local government financial operations often rely on manual documentation and spreadsheet-based monitoring, resulting in delayed processing, fragmented records, repetitive follow-ups, and difficulty retrieving financial documents.
 
@@ -24,7 +24,7 @@ The system enables authorized departments to monitor disbursement vouchers from 
 <details>
 <summary><strong>Key Features</strong></summary>
 
-# Key Features
+## Key Features
 
 ## Core Financial Features
 
@@ -43,6 +43,9 @@ The system enables authorized departments to monitor disbursement vouchers from 
 </details>
 
 ---
+
+<details>
+<summary><strong>Workflow Management</strong></summary>
 
 ## Workflow Management
 
@@ -73,7 +76,11 @@ Each workflow action stores:
 - Department information
 - Transaction history
 
+</details>
+
 ---
+
+<details><strong>Responsive Frontend System</strong></summary>
 
 ## Responsive Frontend System
 
@@ -94,6 +101,8 @@ The frontend follows a **mobile-first responsive architecture** optimized for:
 | Tablets | 768px – 1023px |
 | Desktops | 1024px – 1439px |
 | Large Desktops | 1440px and above |
+
+</details>
 
 ---
 
