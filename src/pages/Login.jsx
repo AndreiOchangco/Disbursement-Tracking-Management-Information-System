@@ -8,7 +8,6 @@ import logo from '/MuniLuna.png'
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [isChecking, setIsChecking] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
@@ -20,7 +19,6 @@ export default function Login() {
   const onSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setError('')
 
     try {
       const data = await apiRequest('/auth/login/', 'POST', {
@@ -33,8 +31,7 @@ export default function Login() {
       setCurrentUser(data.user)
       navigate('/dashboard')
     } catch (err) {
-      notify.error(err.message || 'Login failed')
-      setError(err.message || 'Login failed')
+      notify.LoginError(err.message || 'Login failed', err.subMessage || 'Please check your credentials and try again.')
     } finally {
       setLoading(false)
     }
@@ -81,20 +78,6 @@ export default function Login() {
         <p className="text-center mb-6 font-semibold text-sm whitespace-nowrap" style={{ color: '#666' }}>
           Disbursement Tracking Management Information System
         </p>
-
-        {/* Error Alert */}
-        {error && (
-          <div className="mb-6 p-4 rounded-lg border-l-4 flex items-start gap-3 animate-pulse" style={{ 
-            backgroundColor: '#FEE2E2',
-            borderColor: '#DC2626'
-          }}>
-            <span style={{ color: '#DC2626', fontSize: '1.2rem', flexShrink: 0 }}><ion-icon name="warning"></ion-icon></span>
-            <div>
-              <p className="font-semibold" style={{ color: '#991B1B' }}>Oops! Sign in failed</p>
-              <p style={{ color: '#7F1D1D', fontSize: '0.9rem' }}>{error}</p>
-            </div>
-          </div>
-        )}
 
         {/* Form */}
         <form onSubmit={onSubmit} className="space-y-5" autoComplete="off">

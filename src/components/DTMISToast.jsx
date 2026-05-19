@@ -33,6 +33,14 @@ const toastStyles = {
     progress: 'bg-red-500'
   },
 
+  LoginError: {
+    icon: <AlertTriangle size={20} />,
+    border: 'border-red-500',
+    bg: 'bg-red-50',
+    text: 'text-red-900',
+    progress: 'bg-red-500'
+  },
+
   warning: {
     icon: <AlertTriangle size={20} />,
     border: 'border-amber-500',
@@ -54,6 +62,7 @@ function CustomToast({
   type = 'info',
   title,
   message,
+  subMessage,
   autoClose = 5000
 }) {
   const style = toastStyles[type]
@@ -89,9 +98,16 @@ function CustomToast({
             {title}
           </h4>
 
-          <p className="mt-1 text-sm opacity-90">
-            {message}
-          </p>
+          {message && (
+            <p className="mt-1 text-sm opacity-90">
+              {message}
+            </p>
+          )}
+          {subMessage && (
+            <p className="mt-1 text-xs opacity-70" style={{ marginTop: '-10px' }}>
+              {subMessage}
+            </p>
+          )}
         </div>
       </div>
 
@@ -158,6 +174,26 @@ export const notify = {
         ...baseConfig,
         autoClose: 5000,
         ariaLabel: 'Error notification'
+      }
+    )
+  },
+
+  LoginError(title, message, subMessage) {
+    toast(
+      ({ toastProps }) => (
+        <CustomToast
+          type="LoginError"
+          title={title}
+          message={message}
+          subMessage={subMessage}
+          isPaused={toastProps.isPaused}
+          autoClose={5000}
+        />
+      ),
+      {
+        ...baseConfig,
+        autoClose: 5000,
+        ariaLabel: 'Sign-in Failed'
       }
     )
   },
