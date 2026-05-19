@@ -387,7 +387,7 @@ git clone <repository_url>
 cd backend
 ```
 
-### Create Virtual Environment
+### Create Virtual Environment (Optional)
 
 ```bash
 python -m venv venv
@@ -442,7 +442,7 @@ cd frontend
 ### Install Dependencies
 
 ```bash
-npm install
+npm cli
 ```
 
 ### Start Development Server
