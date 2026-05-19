@@ -6,13 +6,16 @@ This project was developed as part of the requirements for **ELECT COG 3 – Res
 
 ---
 
-# Project Overview
+<details>
+<summary><strong>Project Overview</strong></summary>
 
 Local government financial operations often rely on manual documentation and spreadsheet-based monitoring, resulting in delayed processing, fragmented records, repetitive follow-ups, and difficulty retrieving financial documents.
 
 The **Disbursement Tracking Management Information System (DTMIS)** addresses these operational challenges through a centralized digital platform that streamlines the processing, monitoring, and management of disbursement transactions using workflow-based processing and role-based access control.
 
 The system enables authorized departments to monitor disbursement vouchers from creation up to completion while maintaining accountability, transparency, and auditability throughout the workflow lifecycle.
+
+</details>
 
 ---
 
