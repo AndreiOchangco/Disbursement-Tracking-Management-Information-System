@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // EmailTemplate.jsx
 export const generateDVEmailTemplate = (
   type = 'update',
@@ -80,11 +81,11 @@ export const generateDVEmailTemplate = (
           <div style="background: ${theme.bg}; color: ${theme.text}; border-left: 4px solid ${theme.border}; padding: 12px; border-radius: 8px;">
             ${remarks || 'No remarks provided.'}
           </div>
-          ` : ''}
-
           <p style="margin-top:16px;">
             ${type === 'completed' ? 'No further action is required.' : 'Please review the status details and take any necessary action.'}
           </p>
+          ` : ''}
+
 
           <p style="margin-top:20px;">Thank you.</p>
         </div>
