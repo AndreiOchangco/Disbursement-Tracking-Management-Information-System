@@ -587,12 +587,12 @@ Used for the design and development of the proposed information system.
 
 Developed by:
 
-- Kathleen Anne A. De Guzman
-- Jem Vladimir L. Negranza
-- Andrei Luise E. Ochangco
-- Louis Ricardo G. Servito
-- Jhuneille Mark A. Milan
-- John Michael N. Rivera
+- Kathleen Anne A. De Guzman (Assistant)
+- Jem Vladimir L. Negranza (Backend Developer)
+- Andrei Luise E. Ochangco (Leader)
+- Louis Ricardo G. Servito (Frontend Developer)
+- Jhuneille Mark A. Milan (Assistant)
+- John Michael N. Rivera (Assistant)
 
 ## Adviser
 
