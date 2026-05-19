@@ -1,4 +1,4 @@
-1# Disbursement Tracking Management Information System (DTMIS)
+# Disbursement Tracking Management Information System (DTMIS)
 
 A web-based **Disbursement Tracking Management Information System (DTMIS)** developed for the **Local Government Unit (LGU) of Luna, La Union** to improve the efficiency, accessibility, transparency, and accuracy of disbursement monitoring and financial record management.
 
@@ -21,6 +21,9 @@ The system enables authorized departments to monitor disbursement vouchers from 
 
 ---
 
+<details>
+<summary><strong>Key Features</strong></summary>
+
 # Key Features
 
 ## Core Financial Features
@@ -36,6 +39,8 @@ The system enables authorized departments to monitor disbursement vouchers from 
 - Transaction history monitoring
 - Status-based workflow management
 - Department-specific approval routing
+
+</details>
 
 ---
 
