@@ -31,7 +31,7 @@ export default function Login() {
       setCurrentUser(data.user)
       navigate('/dashboard')
     } catch (err) {
-      notify.LoginError(err.message || 'Login failed', err.subMessage || 'Please check your credentials and try again.')
+      notify.LoginError(err.title || 'Login failed', err.subMessage || 'Please check your credentials and try again.')
     } finally {
       setLoading(false)
     }
