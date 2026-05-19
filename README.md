@@ -80,7 +80,8 @@ Each workflow action stores:
 
 ---
 
-<details><strong>Responsive Frontend System</strong></summary>
+<details>
+<summary><strong>Responsive Frontend System</strong></summary>
 
 ## Responsive Frontend System
 
