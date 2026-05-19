@@ -6,10 +6,10 @@ This project was developed as part of the requirements for **ELECT COG 3 – Res
 
 ---
 
-<details>
+<details open>
 <summary><strong>Project Overview</strong></summary>
 
-## Project Overview
+# Project Overview 
 
 Local government financial operations often rely on manual documentation and spreadsheet-based monitoring, resulting in delayed processing, fragmented records, repetitive follow-ups, and difficulty retrieving financial documents.
 
@@ -24,7 +24,7 @@ The system enables authorized departments to monitor disbursement vouchers from 
 <details>
 <summary><strong>Key Features</strong></summary>
 
-## Key Features
+# Key Features
 
 ## Core Financial Features
 
@@ -47,7 +47,7 @@ The system enables authorized departments to monitor disbursement vouchers from 
 <details>
 <summary><strong>Workflow Management</strong></summary>
 
-## Workflow Management
+# Workflow Management
 
 The system supports complete workflow tracking across multiple departments:
 
@@ -83,7 +83,7 @@ Each workflow action stores:
 <details>
 <summary><strong>Responsive Frontend System</strong></summary>
 
-## Responsive Frontend System
+# Responsive Frontend System
 
 The frontend follows a **mobile-first responsive architecture** optimized for:
 
@@ -93,7 +93,7 @@ The frontend follows a **mobile-first responsive architecture** optimized for:
 - Desktop Monitors
 - Large Displays
 
-### Responsive Breakpoints
+## Responsive Breakpoints
 
 | Device Type | Screen Width |
 |---|---|
@@ -107,37 +107,45 @@ The frontend follows a **mobile-first responsive architecture** optimized for:
 
 ---
 
-## Frontend Features
+<details>
+<summary><strong>Frontend Features</strong></summary>
 
-### Responsive Layout System
+# Frontend Features
 
-#### Sidebar Navigation
+## Responsive Layout System
+
+### Sidebar Navigation
 - Horizontal navigation on mobile devices
 - Vertical sidebar layout on tablets and desktops
 
-#### Responsive Forms
+### Responsive Forms
 - Single-column forms on mobile
 - Two-column layout on tablets
 - Multi-column layout on desktop
 
-#### Responsive Tables
+### Responsive Tables
 - Horizontal scrolling support
 - Sticky table headers
 - Responsive spacing and touch support
 
-#### Responsive Dashboard
+### Responsive Dashboard
 - Adaptive dashboard card layouts
 - Auto-adjusting grid system
 - Responsive chart containers
 
-#### Responsive Modals
+### Responsive Modals
 - Dynamic modal scaling
 - Touch-friendly controls
 - Optimized scrolling behavior
 
+</details>
+
 ---
 
-## Accessibility Improvements
+<details>
+<summary><strong>Accessibility Improvements</strong></summary>
+
+# Accessibility Improvements
 
 - Minimum 44px touch targets
 - Responsive typography scaling
@@ -146,7 +154,12 @@ The frontend follows a **mobile-first responsive architecture** optimized for:
 - Landscape mode optimization
 - Cross-device spacing consistency
 
+</details>
+
 ---
+
+<details>
+<summary><strong>Technology Stack</strong></summary>
 
 # Technology Stack
 
@@ -158,8 +171,6 @@ The frontend follows a **mobile-first responsive architecture** optimized for:
 - CSS Grid
 - Responsive Mobile-First Design
 
----
-
 ## Backend
 
 - Django
@@ -167,15 +178,18 @@ The frontend follows a **mobile-first responsive architecture** optimized for:
 - JWT Authentication
 - RESTful API Architecture
 
----
-
 ## Database
 
 - SQLite (Development)
 - MySQL Compatible
 - PostgreSQL Compatible
 
+</details>
+
 ---
+
+<details>
+<summary><strong>System Users</strong></summary>
 
 # System Users
 
@@ -189,7 +203,12 @@ The frontend follows a **mobile-first responsive architecture** optimized for:
 | Mayor’s Secretary | Mayor’s office approval processing |
 | Technical Officer | Reports and monitoring oversight |
 
+</details>
+
 ---
+
+<details>
+<summary><strong>System Workflow</strong></summary>
 
 # System Workflow
 
@@ -203,19 +222,22 @@ The system processes disbursement transactions through the following workflow:
 6. Mayor’s Office Approval
 7. Completion and Reporting
 
+</details>
+
 ---
+
+<details>
+<summary><strong>API Documentation</strong></summary>
 
 # API Documentation
 
-# Authentication API
+## Authentication API
 
-## Login
+### Login
 
 ```http
 POST /api/auth/login/
 ```
-
-Authenticates a user and returns a JWT access token.
 
 ### Sample Request
 
@@ -241,15 +263,11 @@ Authenticates a user and returns a JWT access token.
 }
 ```
 
----
-
 ## Current User
 
 ```http
 GET /auth/me/
 ```
-
-Returns authenticated user information.
 
 Authorization Header:
 
@@ -257,19 +275,11 @@ Authorization Header:
 Authorization: Bearer <access_token>
 ```
 
----
-
-# User Management API
-
 ## Register User
 
 ```http
 POST /api/auth/signup/
 ```
-
-Creates a new user account.
-
----
 
 ## Fetch Users
 
@@ -277,30 +287,11 @@ Creates a new user account.
 GET /api/users/
 ```
 
-Returns all registered system users.
-
----
-
-# Disbursement Voucher API
-
 ## Fetch All DVs
 
 ```http
 GET /api/dv/
 ```
-
-Returns:
-
-- Workflow history
-- Journal entries
-- Payment records
-- DV particulars
-- Approval history
-- Archive information
-
----
-
-# Dashboard API
 
 ## Dashboard Summary
 
@@ -308,17 +299,12 @@ Returns:
 GET /api/dashboard/
 ```
 
-Returns dashboard statistics including:
-
-- Total transactions
-- Pending transactions
-- Draft transactions
-- Completed transactions
-- Archived transactions
-- Recent DVs
-- Pending workflow actions
+</details>
 
 ---
+
+<details>
+<summary><strong>Latest System Improvements</strong></summary>
 
 # Latest System Improvements
 
@@ -341,32 +327,12 @@ The latest frontend update introduced a full responsive redesign using a mobile-
 - Improved Core Web Vitals
 - Cross-browser responsive support
 
----
-
-## Performance Improvements
-
-### Frontend Optimizations
-
-- Reduced layout shifts
-- Progressive responsive enhancement
-- Optimized media queries
-- Improved rendering on smaller devices
-- Better responsive spacing behavior
+</details>
 
 ---
 
-## Browser Compatibility
-
-| Browser | Support |
-|---|---|
-| Google Chrome | Full Support |
-| Mozilla Firefox | Full Support |
-| Microsoft Edge | Full Support |
-| Safari | Full Support |
-| Android Chrome | Full Support |
-| iOS Safari | Full Support |
-
----
+<details>
+<summary><strong>Project Structure</strong></summary>
 
 # Project Structure
 
@@ -384,8 +350,6 @@ frontend/
 │   └── assets/
 ```
 
----
-
 ## Backend Structure
 
 ```plaintext
@@ -400,69 +364,62 @@ backend/
 └── requirements.txt
 ```
 
+</details>
+
 ---
+
+<details>
+<summary><strong>Installation Guide</strong></summary>
 
 # Installation Guide
 
-# Backend Setup
+## Backend Setup
 
-## 1. Clone Repository
+### Clone Repository
 
 ```bash
 git clone <repository_url>
 ```
 
----
-
-## 2. Navigate to Backend Directory
+### Navigate to Backend
 
 ```bash
 cd backend
 ```
 
----
-
-## 3. Create Virtual Environment
+### Create Virtual Environment
 
 ```bash
 python -m venv venv
 ```
 
----
+### Activate Virtual Environment
 
-## 4. Activate Virtual Environment
-
-### Windows
+#### Windows
 
 ```bash
 venv\Scripts\activate
 ```
 
-### Linux/MacOS
+#### Linux/MacOS
 
 ```bash
 source venv/bin/activate
 ```
 
----
-
-## 5. Install Dependencies
+### Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-## 6. Run Migrations
+### Run Migrations
 
 ```bash
 python manage.py migrate
 ```
 
----
-
-## 7. Start Backend Server
+### Start Backend Server
 
 ```bash
 python manage.py runserver
@@ -474,27 +431,21 @@ Backend URL:
 http://127.0.0.1:8000
 ```
 
----
+## Frontend Setup
 
-# Frontend Setup
-
-## 1. Navigate to Frontend Directory
+### Navigate to Frontend
 
 ```bash
 cd frontend
 ```
 
----
-
-## 2. Install Dependencies
+### Install Dependencies
 
 ```bash
 npm install
 ```
 
----
-
-## 3. Start Development Server
+### Start Development Server
 
 ```bash
 npm run dev
@@ -506,7 +457,12 @@ Frontend URL:
 http://localhost:5173
 ```
 
+</details>
+
 ---
+
+<details>
+<summary><strong>Development Notes</strong></summary>
 
 # Development Notes
 
@@ -520,8 +476,6 @@ http://localhost:5173
 - 1440px
 - 1920px
 
----
-
 ## Recommended Test Devices
 
 - iPhone SE
@@ -532,7 +486,12 @@ http://localhost:5173
 - Desktop 1366px
 - Desktop 1920px
 
+</details>
+
 ---
+
+<details>
+<summary><strong>System Scope and Limitations</strong></summary>
 
 # System Scope
 
@@ -545,9 +504,7 @@ The system focuses on:
 - Financial reporting
 - Audit trail management
 
----
-
-# System Limitations
+## System Limitations
 
 The system is not intended to function as a full accounting platform.
 
@@ -560,9 +517,12 @@ The following are outside the current project scope:
 - Banking Integration
 - National Government System Integration
 
-Financial data must still be manually encoded by authorized personnel.
+</details>
 
 ---
+
+<details>
+<summary><strong>Research Methodology</strong></summary>
 
 # Research Methodology
 
@@ -570,13 +530,9 @@ Financial data must still be manually encoded by authorized personnel.
 
 Used to analyze the existing disbursement monitoring workflow and identify operational inefficiencies.
 
----
-
 ## Developmental Research Design
 
 Used for the design and development of the proposed information system.
-
----
 
 ## Data Collection Methods
 
@@ -585,11 +541,14 @@ Used for the design and development of the proposed information system.
 - Spreadsheet workflow analysis
 - Office process observation
 
+</details>
+
 ---
 
-# Ethical Considerations
+<details>
+<summary><strong>Ethical Considerations</strong></summary>
 
-The study followed strict ethical standards:
+# Ethical Considerations
 
 - Informed consent from LGU personnel
 - Voluntary participation during interviews
@@ -597,11 +556,14 @@ The study followed strict ethical standards:
 - Compliance with the Data Privacy Act of 2012
 - Secure storage of collected research materials
 
+</details>
+
 ---
 
-# Future Improvements
+<details>
+<summary><strong>Future Improvements</strong></summary>
 
-Planned future enhancements include:
+# Future Improvements
 
 - Cloud deployment infrastructure
 - Advanced analytics dashboards
@@ -614,7 +576,12 @@ Planned future enhancements include:
 - Multi-office reporting tools
 - Government financial system integration
 
+</details>
+
 ---
+
+<details>
+<summary><strong>Project Team</strong></summary>
 
 # Project Team
 
@@ -627,13 +594,16 @@ Developed by:
 - Jhuneille Mark A. Milan
 - John Michael N. Rivera
 
----
-
-# Adviser
+## Adviser
 
 Marie Ann G. Fontanilla, MIT
 
+</details>
+
 ---
+
+<details>
+<summary><strong>Institution</strong></summary>
 
 # Institution
 
@@ -641,7 +611,12 @@ Saint Louis College
 City of San Fernando, La Union  
 Philippines
 
+</details>
+
 ---
+
+<details>
+<summary><strong>License</strong></summary>
 
 # License
 
@@ -649,10 +624,8 @@ Copyright © 2026
 
 Licensed under the Apache License, Version 2.0.
 
-You may obtain a copy of the License at:
-
 ```plaintext
 http://www.apache.org/licenses/LICENSE-2.0
 ```
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</details>
