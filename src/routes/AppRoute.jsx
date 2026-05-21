@@ -43,9 +43,6 @@ function AppLayout() {
         </div>
         <div className="header-actions">
           <span>{currentUser?.full_name || 'Guest'}</span>
-          <button type="button" onClick={handleLogout} className="btn-logout">
-            <ion-icon name="log-out" style={{ fontSize: '18px' }}></ion-icon> Logout
-          </button>
           <ReactModal />
         </div>
       </header>
@@ -109,6 +106,13 @@ function AppLayout() {
               </>
             )}
           </nav>
+
+          <div className="sidebar-actions">
+            <button type="button" onClick={handleLogout} className="btn-logout sidebar-logout" title="Logout">
+              <ion-icon name="log-out" style={{ fontSize: '18px' }}></ion-icon>
+              <span className="logout-text">Logout</span>
+            </button>
+          </div>
         </aside>
 
         <div className="app-content">

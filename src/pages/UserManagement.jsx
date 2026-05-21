@@ -397,7 +397,7 @@ export default function UserManagement() {
 
         <div className="table-wrap">
           <table>
-            <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
+            <thead className="table-head">
               <tr>
                 <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="id-card"></ion-icon>Full Name</th>
                 <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="mail"></ion-icon> Email</th>
@@ -565,7 +565,7 @@ export default function UserManagement() {
 
         <div className="table-wrap">
           <table>
-            <thead style={{ background: 'linear-gradient(90deg, #f0f7ff 0%, #fef3c7 50%, #f0f7ff 100%)', borderBottom: '2px solid #fbbf24' }}>
+            <thead className="table-head">
               <tr>
                 <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="id-card"></ion-icon> Full Name</th>
                 <th className='table-column-center table-column-border' style={{ color: '#2c5dff' }}><ion-icon name="business"></ion-icon> Department/Role</th>
