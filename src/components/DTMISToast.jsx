@@ -200,6 +200,7 @@ export const notify = {
           message={message}
           closeToast={closeToast}
           autoClose={5000}
+          onclick={() => toast.dismiss(toastProps.toastId)}
         />
       ),
       {
