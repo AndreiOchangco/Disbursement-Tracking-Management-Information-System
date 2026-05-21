@@ -12,8 +12,6 @@ import {
   Info
 } from 'lucide-react'
 
-import './DTMISToast.css'
-
 import { useState } from 'react'
 
 const toastStyles = {
