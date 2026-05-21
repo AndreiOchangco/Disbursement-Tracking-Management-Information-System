@@ -32,7 +32,7 @@ const toastStyles = {
   },
 
   LoginError: {
-    icon: <AlertTriangle size={20} />,
+    icon: <AlertTriangle size={30} />,
     border: 'border-red-500',
     bg: 'bg-red-50',
     text: 'text-red-900',
