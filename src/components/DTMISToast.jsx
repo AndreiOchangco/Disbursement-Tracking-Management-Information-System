@@ -24,7 +24,6 @@ const toastStyles = {
   },
 
   error: {
-    icon: <XCircle size={20} />,
     border: 'border-red-500',
     bg: 'bg-red-50',
     text: 'text-red-900',
