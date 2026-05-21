@@ -28,7 +28,8 @@ const toastStyles = {
     border: 'border-red-500',
     bg: 'bg-red-50',
     text: 'text-red-900',
-    progress: 'bg-red-500'
+    progress: 'bg-red-500',
+    close: <x size={20} />
   },
 
   LoginError: {
