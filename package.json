@@ -1,12 +1,12 @@
 {
   "name": "disbursement-tracking-management-information-system",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.3.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:fullstack": "pwsh -ExecutionPolicy Bypass -File ./start-all.ps1",
-    "both": "powershell -ExecutionPolicy Bypass -File ./start-all.ps1",
+    "dev:fullstack1": "pwsh -ExecutionPolicy Bypass -File ./start-all.ps1",
+    "dev:fullstack2": "powershell -ExecutionPolicy Bypass -File ./start-all.ps1",
     "build": "vite build",
     "lint": "eslint ."
   },

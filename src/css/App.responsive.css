@@ -341,7 +341,7 @@ button {
 
 .btn-logout:hover {
   box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
-  background: var(--accent-dark);
+  background: var(--accent-color);
   color: white;
 }
 
