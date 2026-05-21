@@ -9,7 +9,8 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Info
+  Info,
+  X
 } from 'lucide-react'
 
 import { useState } from 'react'
@@ -24,11 +25,11 @@ const toastStyles = {
   },
 
   error: {
+    icon: <XCircle size={20} />,
     border: 'border-red-500',
     bg: 'bg-red-50',
     text: 'text-red-900',
-    progress: 'bg-red-500',
-    close: <x size={20} />
+    progress: 'bg-red-500'
   },
 
   LoginError: {
@@ -61,6 +62,7 @@ function CustomToast({
   title,
   message,
   subMessage,
+  closeToast,
   autoClose = 5000
 }) {
   const style = toastStyles[type]
@@ -71,11 +73,14 @@ function CustomToast({
     <div
       className={`
         relative overflow-hidden
-        w-full
+        w-full min-h-[72px]
         rounded-lg
         border-l-4
         shadow-md
         backdrop-blur-sm
+        transition-all duration-300 ease-out
+        will-change-transform
+        hover:shadow-lg
         ${style.border}
         ${style.bg}
         ${style.text}
@@ -85,9 +90,32 @@ function CustomToast({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* CLOSE BUTTON */}
+      <button
+        onClick={closeToast}
+        className="
+          absolute top-3 right-3
+          z-20
+          flex items-center justify-center
+          w-5 h-5
+          leading-none
+          text-current
+          opacity-30
+          hover:opacity-80
+          transition-opacity duration-200
+          cursor-pointer
+        "
+        aria-label="Close notification"
+      >
+        <X
+          size={14}
+          strokeWidth={2.5}
+        />
+      </button>
+
       {/* CONTENT */}
-      <div className="flex gap-3 p-4 pr-10">
-        <div className="mt-0.5">
+      <div className="flex gap-3 p-4">
+        <div className="mt-0.5 shrink-0">
           {style.icon}
         </div>
 
@@ -101,8 +129,12 @@ function CustomToast({
               {message}
             </p>
           )}
+
           {subMessage && (
-            <p className="mt-1 text-xs opacity-70" style={{ marginTop: '-10px' }}>
+            <p
+              className="mt-1 text-xs opacity-70"
+              style={{ marginTop: '-2px' }}
+            >
               {subMessage}
             </p>
           )}
@@ -118,8 +150,10 @@ function CustomToast({
             animate-progress
           `}
           style={{
-            animationPlayState: isHovered ? 'paused' : 'running',
-            animationDuration: `${autoClose}ms`
+            animationPlayState: isHovered
+              ? 'paused'
+              : 'running',
+            animationDuration: `${autoClose - 150}ms`
           }}
         />
       </div>
@@ -141,12 +175,12 @@ const baseConfig = {
 export const notify = {
   success(title, message) {
     toast(
-      ({ toastProps }) => (
+      ({ closeToast }) => (
         <CustomToast
           type="success"
           title={title}
           message={message}
-          isPaused={toastProps.isPaused}
+          closeToast={closeToast}
           autoClose={baseConfig.autoClose}
         />
       ),
@@ -159,12 +193,12 @@ export const notify = {
 
   error(title, message) {
     toast(
-      ({ toastProps }) => (
+      ({ closeToast }) => (
         <CustomToast
           type="error"
           title={title}
           message={message}
-          isPaused={toastProps.isPaused}
+          closeToast={closeToast}
           autoClose={5000}
         />
       ),
@@ -178,13 +212,13 @@ export const notify = {
 
   LoginError(title, message, subMessage) {
     toast(
-      ({ toastProps }) => (
+      ({ closeToast }) => (
         <CustomToast
           type="LoginError"
           title={title}
           message={message}
           subMessage={subMessage}
-          isPaused={toastProps.isPaused}
+          closeToast={closeToast}
           autoClose={5000}
         />
       ),
@@ -198,12 +232,12 @@ export const notify = {
 
   warning(title, message) {
     toast(
-      ({ toastProps }) => (
+      ({ closeToast }) => (
         <CustomToast
           type="warning"
           title={title}
           message={message}
-          isPaused={toastProps.isPaused}
+          closeToast={closeToast}
           autoClose={baseConfig.autoClose}
         />
       ),
@@ -216,12 +250,12 @@ export const notify = {
 
   info(title, message) {
     toast(
-      ({ toastProps }) => (
+      ({ closeToast }) => (
         <CustomToast
           type="info"
           title={title}
           message={message}
-          isPaused={toastProps.isPaused}
+          closeToast={closeToast}
           autoClose={baseConfig.autoClose}
         />
       ),
@@ -237,11 +271,18 @@ export function DTMISToastContainer() {
   return (
     <ToastContainer
       newestOnTop
-      stacked
       limit={5}
+      position="top-right"
       toastClassName={() =>
-        '!bg-transparent !shadow-none !p-0 mb-3'
+        '!bg-transparent !shadow-none !p-0 !mb-3'
       }
+      bodyClassName={() => '!p-0'}
+      className="
+        !w-[380px]
+        !flex
+        !flex-col
+        !gap-3
+      "
     />
   )
 }
