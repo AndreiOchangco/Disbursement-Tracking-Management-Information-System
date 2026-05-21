@@ -339,7 +339,7 @@ The latest frontend update introduced a full responsive redesign using a mobile-
 ## Frontend Structure
 
 ```plaintext
-frontend/
+DTMIS/
 ├── src/
 │   ├── components/
 │   ├── css/
