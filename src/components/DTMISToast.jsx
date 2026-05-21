@@ -24,11 +24,12 @@ const toastStyles = {
   },
 
   error: {
+    icon: <XCircle size={20} />,
     border: 'border-red-500',
     bg: 'bg-red-50',
     text: 'text-red-900',
     progress: 'bg-red-500',
-    close: <x size={20} />
+    close: <XCircle size={20} />
   },
 
   LoginError: {
@@ -166,6 +167,7 @@ export const notify = {
           message={message}
           isPaused={toastProps.isPaused}
           autoClose={5000}
+          onclick={() => toast.dismiss(toastProps.toastId)}
         />
       ),
       {
