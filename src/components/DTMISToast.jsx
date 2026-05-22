@@ -33,7 +33,7 @@ const toastStyles = {
   },
 
   LoginError: {
-    icon: <AlertTriangle size={30} />,
+    icon: <AlertTriangle size={20} />,
     border: 'border-red-500',
     bg: 'bg-red-50',
     text: 'text-red-900',
@@ -90,28 +90,6 @@ function CustomToast({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* CLOSE BUTTON */}
-      <button
-        onClick={closeToast}
-        className="
-          absolute top-3 right-3
-          z-20
-          flex items-center justify-center
-          w-5 h-5
-          leading-none
-          text-current
-          opacity-30
-          hover:opacity-80
-          transition-opacity duration-200
-          cursor-pointer
-        "
-        aria-label="Close notification"
-      >
-        <X
-          size={14}
-          strokeWidth={2.5}
-        />
-      </button>
 
       {/* CONTENT */}
       <div className="flex gap-3 p-4">
@@ -139,7 +117,45 @@ function CustomToast({
             </p>
           )}
         </div>
+        {/* CLOSE BUTTON */}
+        <button
+          onClick={closeToast}
+          className="
+            absolute top-3 right-3
+            z-20
+
+            !bg-transparent
+            !border-0
+            !shadow-none
+            !outline-none
+            !ring-0
+
+            !p-5
+            !m-0
+
+            !min-w-0
+            !w-auto
+            !h-auto
+
+            !rounded-none
+
+            text-current
+            cursor-pointer
+
+            flex items-center justify-center
+
+            hover:!bg-transparent
+            focus:!bg-transparent
+            active:!bg-transparent
+
+            appearance-none
+          "
+          aria-label="Close notification"
+        >
+          <X size={16} strokeWidth={2.5} />
+        </button>
       </div>
+
 
       {/* CUSTOM PROGRESS BAR */}
       <div className="h-1 w-full bg-black/5">
