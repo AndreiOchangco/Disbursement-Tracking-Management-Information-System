@@ -290,11 +290,20 @@ export function DTMISToastContainer() {
       limit={5}
       position="top-right"
       toastClassName={() =>
-        '!bg-transparent !shadow-none !p-0 !mb-3'
+        `
+          !bg-transparent
+          !shadow-none
+          !p-0
+          !mb-3
+
+          !w-[350px]
+          !min-w-[350px]
+          !max-w-[350px]
+        `
       }
       bodyClassName={() => '!p-0'}
       className="
-        !w-[380px]
+        !w-[350px]
         !flex
         !flex-col
         !gap-3

@@ -21,17 +21,42 @@ export default function Login() {
     setLoading(true)
 
     try {
+      // EMPTY EMAIL
+      if (!email.trim()) {
+        throw {
+          title: 'Email Required',
+          subMessage: 'Please enter your email address.'
+        }
+      }
+
+      // EMPTY PASSWORD
+      if (!password.trim()) {
+        throw {
+          title: 'Password Required',
+          subMessage: 'Please enter your password.'
+        }
+      }
+
       const data = await apiRequest('/auth/login/', 'POST', {
         email,
         password,
       })
 
-      if (!data) throw new Error('Login failed')
+      if (!data) {
+        throw {
+          title: 'Login Failed',
+          subMessage: 'Invalid server response.'
+        }
+      }
 
       setCurrentUser(data.user)
       navigate('/dashboard')
+
     } catch (err) {
-      notify.LoginError(err.title || 'Login failed', err.subMessage || 'Please check your credentials and try again.')
+      notify.LoginError(
+        err.title || 'Login Failed',
+        err.subMessage || 'Please check your credentials and try again.'
+      )
     } finally {
       setLoading(false)
     }
