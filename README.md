@@ -442,7 +442,7 @@ cd frontend
 ### Install Dependencies
 
 ```bash
-npm cli
+npm ci
 ```
 
 ### Start Development Server
