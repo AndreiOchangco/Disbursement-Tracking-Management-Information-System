@@ -792,8 +792,11 @@ button {
   color: white;
   font-weight: 700;
   cursor: pointer;
+  padding: 0.6rem 1.5rem;
+  margin-top: 0.5rem;
+  width: fit-content;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
   display: flex;
