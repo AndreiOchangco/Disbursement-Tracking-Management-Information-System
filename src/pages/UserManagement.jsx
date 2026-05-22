@@ -341,24 +341,16 @@ export default function UserManagement() {
                 ))}
               </select>
             </label>
-            <label>
-              <span style={{ color: '#2c5dff', fontWeight: '600' }}>Status</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: '500' }}>
-                  <input
-                    readOnly
-                    disabled
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  />
-                </label>
-              </div>
-            </label>
+            <input
+              type="hidden"
+              name="status"
+              value={formData.status}
+            />
             <div style={{ gridColumn: 'span 2', display: 'flex', gap: '0.75rem' }}>
               <button type="submit" className="btn-primary" disabled={loading}>
                 {editingUser ? <><ion-icon name="save"></ion-icon> Update User</> : <><ion-icon name="add"></ion-icon> Add User</>}
               </button>
-              <button type="button" className="btn-danger" onClick={resetForm} style={{ marginTop: 0 }}>
+              <button type="button" className="btn-danger" onClick={resetForm}>
                 <ion-icon name="close-circle"></ion-icon> Cancel
               </button>
             </div>
@@ -468,16 +460,18 @@ export default function UserManagement() {
                         <>
                           <button
                             style={{
-                              fontSize: '0.8rem',
-                              padding: '0.5rem 0.85rem',
                               marginRight: '0.4rem',
                               background: user.status === 'active' ? '#fee2e2' : '#d1fae5',
                               color: user.status === 'active' ? '#991b1b' : '#065f46',
                               border: `2px solid ${user.status === 'active' ? '#dc2626' : '#10b981'}`,
-                              fontWeight: '600',
+                              fontWeight: '700',
                               cursor: 'pointer',
-                              borderRadius: '6px',
-                              transition: 'all 0.3s ease'
+                              padding: '0.6rem 1.5rem',
+                              marginTop: '0.5rem',
+                              width: 'fit-content',
+                              borderRadius: '8px',
+                              fontSize: '0.95rem',
+                              transition: 'all 0.3s ease',
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.transform = 'translateY(-2px)'
@@ -521,14 +515,17 @@ export default function UserManagement() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.3rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '4px',
                   border: '1px solid #d1d5db',
                   background: currentPage === 1 ? '#f3f4f6' : '#fff',
                   color: currentPage === 1 ? '#9ca3af' : '#2c5dff',
                   cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
+                  fontWeight: '700',
+                  padding: '0.6rem 1.5rem',
+                  marginTop: '0.5rem',
+                  width: 'fit-content',
+                  borderRadius: '8px',
+                  fontSize: '0.95rem',
+                  transition: 'all 0.3s ease',
                 }}
               >
                 <ion-icon name="chevron-back"></ion-icon> Previous
@@ -540,14 +537,17 @@ export default function UserManagement() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.3rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '4px',
                   border: '1px solid #d1d5db',
                   background: currentPage >= Math.ceil(filtered.length / itemsPerPage) ? '#f3f4f6' : '#fff',
                   color: currentPage >= Math.ceil(filtered.length / itemsPerPage) ? '#9ca3af' : '#2c5dff',
                   cursor: currentPage >= Math.ceil(filtered.length / itemsPerPage) ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: '500',
+                  fontWeight: '700',
+                  padding: '0.6rem 1.5rem',
+                  marginTop: '0.5rem',
+                  width: 'fit-content',
+                  borderRadius: '8px',
+                  fontSize: '0.95rem',
+                  transition: 'all 0.3s ease',
                 }}
               >
                 Next <ion-icon name="chevron-forward"></ion-icon>
@@ -597,13 +597,15 @@ export default function UserManagement() {
                       value={dh.fullname}
                       onChange={(e) => handleDeptHeadNameChange(dh.id, e.target.value)}
                       style={{
-                        padding: '0.45rem 0.75rem',
-                        borderRadius: '6px',
                         border: '1px solid #cbd5e1',
-                        width: '100%',
                         maxWidth: '280px',
-                        fontSize: '0.9rem',
-                        fontWeight: '500'
+                        fontWeight: '700',
+                        padding: '0.6rem 1.5rem',
+                        marginTop: '0.5rem',
+                        width: 'fit-content',
+                        borderRadius: '8px',
+                        fontSize: '0.95rem',
+                        transition: 'all 0.3s ease',
                       }}
                       placeholder="Enter Department Head Name"
                     />

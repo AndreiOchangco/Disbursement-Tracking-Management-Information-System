@@ -1077,13 +1077,35 @@ export default function Disbursements() {
       {isAccountant && (
         <button
           className="btn-archive btn-small"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.3rem',
+            fontWeight: '700',
+            padding: '0.6rem 1.5rem',
+            marginTop: '0.5rem',
+            width: 'fit-content',
+            borderRadius: '8px',
+            fontSize: '0.95rem',
+            transition: 'all 0.3s ease',
+          }}
           onClick={() => setShowCreateModal(true)}
         >
           <ion-icon name="add"></ion-icon> Create DV
         </button>
       )}
-      <Link to="/disbursements/archived" className="btn-archive btn-small" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+      <Link to="/disbursements/archived" className="btn-archive btn-small" style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '0.3rem',
+        fontWeight: '700',
+        padding: '0.6rem 1.5rem',
+        marginTop: '0.5rem',
+        width: 'fit-content',
+        borderRadius: '8px',
+        fontSize: '0.95rem',
+        transition: 'all 0.3s ease',
+        }}>
         <ion-icon name="archive"></ion-icon> Archived
       </Link>
       <input
@@ -1183,7 +1205,7 @@ export default function Disbursements() {
                     ) : (
                       // RENDER DROPDOWN
                       <div className="dropdown">
-                        <button className="btn-archive btn-small flex items-center gap-1">
+                        <button className="btn-single btn-archive flex items-center gap-1 ">
                           Actions <ion-icon name="chevron-down"></ion-icon>
                         </button>
                         <div className="dropdown-content">
