@@ -120,12 +120,18 @@ export default function UserManagement() {
     e.preventDefault()
 
     if (!formData.full_name || !formData.email) {
-      notify.error('Please fill in all required fields')
+      notify.error(
+        'Validation Error',
+        'Please fill in all required fields.'
+      )
       return
     }
 
     if (!editingUser && !formData.password) {
-      notify.error('Password is required for new users')
+      notify.error(
+        'Validation Error',
+        'Password is required for new users.'
+      )
       return
     }
 

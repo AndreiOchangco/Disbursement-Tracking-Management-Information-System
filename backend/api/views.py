@@ -1555,12 +1555,62 @@ def dv_report_pdf(request, dv_id):
                 <div class="medium bold" style="text-align:center; color: darkblue;"">RECEIVED</div>
             </td>
 
-            <td rowspan="4" style="border: 1px solid #000; padding: 4px; width: 58%; vertical-align: top; position:relative; display:flex; align-items:center; justify-content:center;">
-                <span class="bold small" style="position:absolute; color: red;">DOCUMENTARY REQUIREMENTS</span>
-                <div class="small" style="text-align: left; margin-top: 20px;">
-                    1. Purchase Request<br>
-                    2. BAC Resolution<br>
+            <td rowspan="4" style="border: 1px solid #000; padding: 4px; width: 58%; vertical-align: top;">
+
+                <div class="bold small" style="text-align:left; color:red; margin-bottom:6px; margin-top: -3px; margin-left: 5px;">
+                    DOCUMENTARY REQUIREMENTS
                 </div>
+
+                <table style="width:100%; border-collapse:collapse; margin-left: 10px;" class="small">
+                    <tr>
+                        
+                        <!-- LEFT COLUMN -->
+                        <td style="width:50%; vertical-align:top; padding-right:10px; line-height:1.6;">
+
+                            <div style="padding-bottom:2px;">1. Purchase Request</div>
+                            <div style="padding-bottom:2px;">2. BAC Resolution</div>
+                            <div style="padding-bottom:2px;">3. Request for Quotation</div>
+                            <div style="padding-bottom:2px;">4. Price Quotation (3)</div>
+                            <div style="padding-bottom:2px;">5. Abstract of Quotation</div>
+                            <div style="padding-bottom:2px;">6. Purchase Order</div>
+                            <div style="padding-bottom:2px;">7. CAFOA</div>
+                            <div style="padding-bottom:2px;">8. Delivery Receipt</div>
+
+                        </td>
+
+                        <!-- RIGHT COLUMN -->
+                        <td style="width:50%; vertical-align:top; line-height:1.6;">
+
+                            <div style="padding-bottom:2px;">
+                                9. Inspection and Acceptance Report
+                            </div>
+
+                            <div style="padding-bottom:2px;">
+                                10. Requisition and Issue Slip or
+                                Property Acknowledgement Receipt
+                            </div>
+
+                            <div style="padding-bottom:2px;">
+                                11. Official Receipt
+                            </div>
+
+                            <div style="padding-bottom:2px;">
+                                12. Trip Ticket, if Gas & Oil
+                            </div>
+
+                            <div style="padding-bottom:2px;">
+                                13. Program/Activity Proposal
+                            </div>
+
+                            <div style="padding-bottom:2px;">
+                                14. Attendance (multiple receipt)
+                            </div>
+
+                        </td>
+
+                    </tr>
+                </table>
+
             </td>
 
             <td style="border: 1px solid #000; padding: 4px; width: 20%; height: 45px;">
