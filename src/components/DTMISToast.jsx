@@ -215,12 +215,11 @@ export const notify = {
           title={title}
           message={message}
           closeToast={closeToast}
-          autoClose={5000}
+          autoClose={baseConfig.autoClose}
         />
       ),
       {
         ...baseConfig,
-        autoClose: 5000,
         ariaLabel: 'Error notification'
       }
     )
@@ -235,12 +234,11 @@ export const notify = {
           message={message}
           subMessage={subMessage}
           closeToast={closeToast}
-          autoClose={5000}
+          autoClose={baseConfig.autoClose}
         />
       ),
       {
         ...baseConfig,
-        autoClose: 5000,
         ariaLabel: 'Sign-in Failed'
       }
     )
