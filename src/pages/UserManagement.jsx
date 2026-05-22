@@ -147,19 +147,27 @@ export default function UserManagement() {
         }
         result = await apiRequest(`/users/signup/${editingUser.id}/`, 'PUT', submitData)
         setUsers(users.map(u => u.id === editingUser.id ? result : u))
-        notify.success('User updated successfully')
+        notify.success(
+          'User updated successfully',
+          'Please wait...'
+        )
       } else {
         // Create user
         result = await apiRequest('/users/signup/', 'POST', submitData)
         setUsers([result, ...users])
-        notify.success('User created successfully')
+        notify.success(
+          'User created successfully',
+          'Please wait...'
+        )
       }
 
       calculateStats([...users.filter(u => u.id !== editingUser?.id), result])
       resetForm()
     } catch (err) {
-      console.error('Failed to save user:', err)
-      notify.error('Error saving user')
+      notify.error(
+        'Error saving user',
+        'Please check your inputs'
+      )
     } finally {
       setLoading(false)
     }
