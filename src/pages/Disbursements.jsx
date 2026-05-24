@@ -645,64 +645,83 @@ export default function Disbursements() {
   };
 
   /**
-   * Send rejection email for selected DV
-   */
+ * Send rejection email for selected DV
+ */
   const sendRejectedDVEmail = async () => {
-  if (!selectedDV || !selectedDV.payee?.email) {
-    notify.error('Payee email not found');
-    return;
-  }
-  
-  setSendingEmail(true);
-  try {
-    const payeeName = selectedDV.payee?.name || 'Payee';
-    const trackingNo = selectedDV.tracking_no || 'N/A';
-    const dvNo = selectedDV.dv_no || 'N/A';
-    const createdDate = selectedDV.created_date ? formatDateMMDDYYYY(selectedDV.created_date) : 'N/A';
-    
-    const steps = selectedDV.workflow_steps || [];
-    
-    // Option 2: Get the last step directly from the end of the array
-    const lastStep = steps.length > 0 
-      ? steps[steps.length - 1]
-      : null;
+    if (!selectedDV) {
+      notify.error('No Disbursement Voucher selected');
+      return;
+    }
 
-    const lastRemark = lastStep?.remarks || 'No remarks provided';
-    
-    // Fix property name to action_by_department & format it nicely
-    const rawDept = lastStep?.action_by_department;
-    const rejectingDept = rawDept
-      ? rawDept
-          .replace(/_/g, ' ')
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ')
-      : 'System';
-    
-    const htmlContent = generateDVEmailTemplate(
-      'rejected',
-      payeeName,
-      trackingNo,
-      dvNo,
-      createdDate,
-      lastRemark,
-      rejectingDept
-    );
-    
-    await apiRequest('/send-email/', 'POST', {
-      to: selectedDV.payee.email,
-      subject: `DV REJECTED (Tracking #${trackingNo})`,
-      html: htmlContent
-    });
-    
-    notify.success('Rejection email sent successfully');
-  } catch (error) {
-    console.error('Failed to send email:', error);
-    notify.error('Failed to send email: ' + (error?.message || 'Unknown error'));
-  } finally {
-    setSendingEmail(false);
-  }
-};
+    if (!selectedDV.payee?.email) {
+      notify.error('Payee email not found');
+      return;
+    }
+
+    setSendingEmail(true);
+
+    try {
+      const payeeName = selectedDV.payee?.name || 'Payee';
+      const trackingNo = selectedDV.tracking_no || 'N/A';
+      const dvNo = selectedDV.dv_no || 'N/A';
+      const createdDate = selectedDV.created_date
+        ? formatDateMMDDYYYY(selectedDV.created_date)
+        : 'N/A';
+
+      const steps = selectedDV.workflow_steps || [];
+
+      // Get the latest DISAPPROVED step only
+      const rejectedStep = [...steps]
+        .reverse()
+        .find(
+          (step) =>
+            String(step.status || '').toLowerCase() === 'disapproved'
+        );
+
+      const lastRemark =
+        rejectedStep?.remarks || 'No remarks provided';
+
+      const rawDept = rejectedStep?.action_by_department;
+
+      const rejectingDept = rawDept
+        ? rawDept
+            .replace(/_/g, ' ')
+            .split(' ')
+            .map(
+              (word) =>
+                word.charAt(0).toUpperCase() + word.slice(1)
+            )
+            .join(' ')
+        : 'System';
+
+      const htmlContent = generateDVEmailTemplate(
+        'rejected',
+        payeeName,
+        trackingNo,
+        dvNo,
+        createdDate,
+        lastRemark,
+        rejectingDept
+      );
+
+      await apiRequest('/send-email/', 'POST', {
+        to: selectedDV.payee.email,
+        subject: `DV REJECTED (Tracking #${trackingNo})`,
+        html: htmlContent,
+      });
+
+      notify.success('Rejection email sent successfully');
+    } catch (error) {
+      console.error('Failed to send email:', error);
+
+      notify.error(
+        'Failed to send email: ' +
+          (error?.message || 'Unknown error')
+      );
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   const handleView = (dv) => {
     setSelectedDV(dv);
@@ -1618,22 +1637,32 @@ export default function Disbursements() {
               </section>
 
               {/* --- DYNAMIC ACTIONS BASED ON DEPARTMENT --- */}
-              {canSave && (
+              {(canSave || currentUserDeptKey === 'accounting') && (
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #eee', gap: '10px' }}>
-                  {canEditAccounting ? (
+                  {currentUserDeptKey === 'accounting' ? (
                     <>
-                      <button type="submit" className="btn-archive py-0.5 px-1 flex items-center gap-1" disabled={updatingDV}>
-                        {updatingDV ? (
-                          <>
-                            <ion-icon name="refresh-circle-outline" className="spinner-icon"/>
-                            Saving...
-                          </>
-                        ) : (
-                          <>
-                            <ion-icon name="send-outline"></ion-icon> Save & Resubmit DV
-                          </>
-                        )}
-                      </button>
+                      {canEditAccounting && (
+                        <button
+                          type="submit"
+                          className="btn-archive py-0.5 px-1 flex items-center gap-1"
+                          disabled={updatingDV}
+                        >
+                          {updatingDV ? (
+                            <>
+                              <ion-icon
+                                name="refresh-circle-outline"
+                                className="spinner-icon"
+                              />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <ion-icon name="send-outline"></ion-icon>
+                              Save & Resubmit DV
+                            </>
+                          )}
+                        </button>
+                      )}
 
                       <button
                         type="button"
@@ -1643,11 +1672,16 @@ export default function Disbursements() {
                       >
                         {sendingEmail ? (
                           <>
-                            <ion-icon name="refresh-circle-outline" className="spinner-icon"/>Sending...
+                            <ion-icon
+                              name="refresh-circle-outline"
+                              className="spinner-icon"
+                            />
+                            Sending...
                           </>
                         ) : (
                           <>
-                            <ion-icon name="mail-outline"/> Send Rejection Email
+                            <ion-icon name="mail-outline"></ion-icon>
+                            Send Rejection Email
                           </>
                         )}
                       </button>
