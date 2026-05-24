@@ -871,7 +871,7 @@ export default function Disbursements() {
         : 'N/A';
 
       const staticRemarks =
-        'Your Disbursement Voucher request has been rejected. Please coordinate with the Accounting Office for further clarification.';
+        'Your Disbursement Voucher Entry request has been rejected. Please coordinate with the Municipal Accounting Office for further clarification.';
 
       const htmlContent = generateDVEmailTemplate(
         'rejected',
