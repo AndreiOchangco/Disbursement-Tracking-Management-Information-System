@@ -847,6 +847,60 @@ export default function Disbursements() {
       sendRejectedDVEmailAuto(selectedDV, emailConfig);
     }
   };
+
+  const rejectionEmail = async () => {
+    if (!selectedDV) {
+      notify.error('No Disbursement Voucher selected');
+      return;
+    }
+
+    if (!selectedDV.payee?.email) {
+      notify.error('Payee email not found');
+      return;
+    }
+
+    setSendingEmail(true);
+
+    try {
+      const payeeName = selectedDV.payee?.name || 'Payee';
+      const trackingNo = selectedDV.tracking_no || 'N/A';
+      const dvNo = selectedDV.dv_no || 'N/A';
+
+      const createdDate = selectedDV.created_date
+        ? formatDateMMDDYYYY(selectedDV.created_date)
+        : 'N/A';
+
+      const staticRemarks =
+        'Your Disbursement Voucher request has been rejected. Please coordinate with the Accounting Office for further clarification.';
+
+      const htmlContent = generateDVEmailTemplate(
+        'rejected',
+        payeeName,
+        trackingNo,
+        dvNo,
+        createdDate,
+        staticRemarks,
+        'Accounting Department'
+      );
+
+      await apiRequest('/send-email/', 'POST', {
+        to: selectedDV.payee.email,
+        subject: `DV REQUEST REJECTED (Tracking #${trackingNo})`,
+        html: htmlContent,
+      });
+
+      notify.success('Rejection email sent successfully');
+    } catch (error) {
+      console.error('Failed to send rejection email:', error);
+
+      notify.error(
+        'Failed to send rejection email: ' +
+          (error?.message || 'Unknown error')
+      );
+    } finally {
+      setSendingEmail(false);
+    }
+  };
   
   return (
     <div className='noselect'>
@@ -1666,7 +1720,7 @@ export default function Disbursements() {
 
                       <button
                         type="button"
-                        onClick={sendRejectedDVEmail}
+                        onClick={rejectionEmail}
                         className="btn-danger py-0.5 px-1 flex items-center gap-1"
                         disabled={sendingEmail}
                       >
